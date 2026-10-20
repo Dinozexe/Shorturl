@@ -17,7 +17,7 @@ const th = {
   'common.copyFailed': 'คัดลอกไม่สำเร็จ',
   'common.copyFailedManual': 'คัดลอกไม่สำเร็จ ลองเลือกข้อความแล้วคัดลอกเอง',
   'common.loading': 'กำลังโหลด…',
-  'app.title': 'Shorturl By Kittamet',
+  'app.title': 'Short URL By Kittamet',
   'api.network': 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',
   'api.generic': 'เกิดข้อผิดพลาด กรุณาลองใหม่',
   // header / ตัวควบคุม
@@ -441,7 +441,7 @@ const en: Record<MsgKey, string> = {
   'common.copyFailed': 'Couldn\'t copy',
   'common.copyFailedManual': 'Couldn\'t copy. Select the text and copy it manually.',
   'common.loading': 'Loading…',
-  'app.title': 'Shorturl By Kittamet',
+  'app.title': 'Short URL By Kittamet',
   'api.network': 'Can\'t reach the server. Check your connection and try again.',
   'api.generic': 'Something went wrong. Please try again.',
   'nav.home': 'Home',

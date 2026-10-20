@@ -12,7 +12,7 @@ const sans = Noto_Sans_Thai({ subsets: ['thai', 'latin'], weight: ['400', '500',
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-mono', display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Shorturl By Kittamet',
+  title: 'Short URL By Kittamet',
   description: 'ทำลิงก์ยาวให้สั้น สร้าง QR Code และดูสถิติว่ามีคนเปิดกี่ครั้ง จากอุปกรณ์และเว็บไหน',
 };
 

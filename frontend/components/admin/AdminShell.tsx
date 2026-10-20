@@ -131,11 +131,11 @@ export function AdminShell({ tab, onNav, role, children }: ShellProps) {
             <AdminIcon name="chevron" className={`h-3.5 w-3.5 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
           </button>
 
-          <Link href="/" className={`flex h-14 shrink-0 items-center gap-3 px-1 ${collapsed ? 'md:justify-center' : ''}`} aria-label="Shorturl By Kittamet">
+          <Link href="/" className={`flex h-14 shrink-0 items-center gap-3 px-1 ${collapsed ? 'md:justify-center' : ''}`} aria-label="Short URL By Kittamet">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-128.png" alt="" width={44} height={44} className="h-11 w-11 shrink-0 rounded-full shadow-md" />
             <span className={`flex min-w-0 flex-col leading-tight ${lbl}`}>
-              <span className="truncate text-[15px] font-bold">Shorturl</span>
+              <span className="truncate text-[15px] font-bold">Short URL</span>
               <span className="truncate text-xs text-muted">By Kittamet</span>
             </span>
           </Link>
