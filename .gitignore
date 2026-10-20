@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+.next/
+out/
+*.log
+.DS_Store
+
+# เอกสารโจทย์ข้อสอบ (ไม่ใช่งานส่ง)
+docs/*.pdf
