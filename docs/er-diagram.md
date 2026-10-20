@@ -91,10 +91,10 @@ erDiagram
 
 | เรื่อง | การตัดสินใจ |
 |---|---|
-| ไม่มีรหัสผ่าน | เข้าสู่ระบบด้วย SSO เท่านั้น → ไม่มี `password_hash`, ไม่มีตารางรีเซ็ตรหัส/ยืนยันอีเมลให้ดูแล |
+| ไม่เก็บรหัสผ่านใน DB | ผู้ใช้ทั่วไปเข้าด้วย SSO; บัญชีเดโมของกรรมการล็อกอินด้วยรหัสที่ตั้งใน env (`DEMO_ADMIN_PASSWORD`) เทียบตรงๆ ตอนล็อกอิน → ตาราง `users` ไม่มีคอลัมน์รหัสผ่าน/hash ไม่มีตารางรีเซ็ตรหัส/ยืนยันอีเมล และไม่มี API ตั้ง/เปลี่ยนรหัส |
 | `sso_identities` แยกจาก `users` | 1 คนผูกได้หลาย provider (unique `(provider, subject)` และ `(user_id, provider)`); ระบุตัวตนด้วย `sub` ไม่ใช่อีเมล (อีเมลเปลี่ยนได้); `email_verified` ใช้กันการยึดบัญชีข้าม provider (Microsoft ไม่รับรองอีเมล) |
 | แอดมินคนแรก | seed สร้าง `users` (role ADMIN) ที่ยังไม่มี identity — เจ้าของอีเมลล็อกอินด้วย Google ครั้งแรกแล้วถูกผูกเข้าบัญชีนี้ |
-| `api_keys` | CLI ไม่มีรหัสผ่านให้ใช้ → ใช้ personal access token; เก็บเฉพาะ sha256 (key เต็มแสดงครั้งเดียว), ลบแถว = เพิกถอน |
+| `api_keys` | CLI ไม่ใช้รหัสผ่าน (ผู้ใช้ทั่วไปไม่มี) → ใช้ personal access token; เก็บเฉพาะ sha256 (key เต็มแสดงครั้งเดียว), ลบแถว = เพิกถอน |
 | `links.status` 3 สถานะ | `ADMIN_DISABLED` แยกจาก `DISABLED` (เจ้าของปิดเอง) — เดิมใช้ `status` + flag ซึ่งเกิดสถานะขัดแย้งได้ |
 | `links.original_host` | เก็บ hostname แยก (มี index) → บล็อกโดเมน/ปิดลิงก์เดิมด้วย `WHERE original_host = d OR LIKE '%.d'` ไม่ต้อง parse URL ทุกแถว |
 | `links.user_id` SET NULL | ลบผู้ใช้แล้วลิงก์/QR ที่แจกไปแล้วยังใช้ได้ |
@@ -116,6 +116,7 @@ erDiagram
 | `rt:{jti}` | string | refresh token ที่ยังใช้ได้ (ใช้ได้ครั้งเดียว: ลบทันทีตอนหมุน) | 7 วัน |
 | `rtnbf:{userId}` | string (epoch ms) | "ไม่รับ token ที่ออกก่อนเวลานี้" เทียบกับ claim `iatMs` ใน JWT (ละเอียดกว่า `iat` ที่เป็นวินาที) — เพิกถอนทุก session (ban / ตรวจพบใช้ซ้ำ / ผูก SSO) | 7 วัน |
 | `rl:{name}:{ip}` | counter | rate limit | ตามหน้าต่างเวลา |
+| `rl:login-email:{email}` | counter | จำกัดการเดารหัสผ่านต่ออีเมล (10 ครั้ง/15 นาที; ล็อกอินสำเร็จแล้วลบ) | 15 นาที |
 | `sso:{state}` | string (JSON) | state/nonce/PKCE verifier ของ SSO flow (GETDEL ตอน callback) | 10 นาที |
 | `clicks:queue` | list | คิวคลิกรอเขียนลง DB | — |
 | `clicks:flush:lock` | string | lock กันหลาย instance flush พร้อมกัน | 30 วิ |

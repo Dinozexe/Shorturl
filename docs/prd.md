@@ -1,7 +1,7 @@
 # PRD — ShortURL (Synnerry Developer Test)
 
 > สเปกผลิตภัณฑ์ + แผนงานแบ่งเป็น Phase สำหรับทำเองและ commit ทีละส่วน  
-> เอกสารอ้างอิง: `CLAUDE.md` (กฎสถาปัตยกรรม), `docs/er-diagram.md`, `docs/dfd.md`, `docs/diagrams.html`
+> เอกสารอ้างอิง: `README.md`, `docs/er-diagram.md`, `docs/dfd.md`, `docs/diagrams.html`
 
 ## 1. ภาพรวม
 
@@ -10,7 +10,7 @@
 | ปัญหา | ลิงก์ยาว แชร์/พิมพ์/ใส่ QR ไม่สะดวก และเจ้าของลิงก์ไม่รู้ว่าใครคลิกจากไหน |
 | ทางแก้ | ระบบย่อลิงก์ที่ต้องล็อกอิน (SSO) สร้างลิงก์สั้น + QR ดูสถิติการคลิก (อุปกรณ์/ประเทศ/referer) มีหน้าแอดมินคุมการใช้งาน |
 | บริบท | ข้อสอบ Developer (Synnerry): Node.js + React, ส่ง GitHub + README + URL ทดสอบ ภายใน 3 วัน, Video Call ≤ 30 นาที |
-| จุดเด่นที่เลือกทำ | **Micro Service** (core-api / redirect-service / analytics-service) + Architecture Diagram, SSO อย่างเดียว (ไม่มีรหัสผ่าน), RBAC 3 บทบาท, audit log, บล็อกโดเมน, CLI |
+| จุดเด่นที่เลือกทำ | **Micro Service** (core-api / redirect-service / analytics-service) + Architecture Diagram, SSO เป็นหลัก + บัญชีเดโมล็อกอินรหัสผ่านให้กรรมการ, RBAC 3 บทบาท, audit log, บล็อกโดเมน, CLI |
 | ข้อจำกัด | deploy ฟรี ไม่ผูกบัตร (Render + Neon + Upstash + Cloudflare Pages), ใช้โดเมน `kittametdev.com` เดิม |
 
 ### เป้าหมาย
@@ -19,7 +19,7 @@
 3. อธิบายสถาปัตยกรรมและเหตุผลการออกแบบได้ใน Video Call ≤ 30 นาที
 
 ### ไม่ใช่เป้าหมาย (Non-goals)
-- สร้างลิงก์แบบ guest (ไม่ล็อกอิน) · ล็อกอินด้วยรหัสผ่าน/ลืมรหัสผ่าน · custom domain ต่อผู้ใช้ · เก็บเงิน/แพ็กเกจ · A/B หรือ deep link · รองรับ traffic ระดับ production จริง
+- สร้างลิงก์แบบ guest (ไม่ล็อกอิน) · สมัครสมาชิก/ลืมรหัสผ่าน/เปลี่ยนรหัสผ่าน (รหัสผ่านมีเฉพาะบัญชีเดโมใน env ไม่เก็บใน DB) · custom domain ต่อผู้ใช้ · เก็บเงิน/แพ็กเกจ · A/B หรือ deep link · รองรับ traffic ระดับ production จริง
 
 ## 2. ผู้ใช้
 
@@ -44,6 +44,7 @@
 | AUTH-4 | logout (ลบ refresh + blacklist access) | M |
 | AUTH-5 | ระบุตัวตนด้วย `sub` ของ provider ผูกบัญชีข้าม provider เฉพาะอีเมลที่ provider รับรอง | S |
 | AUTH-6 | แอดมินคนแรกจาก `ADMIN_EMAIL` (seed) | M |
+| AUTH-7 | บัญชีเดโมสำหรับกรรมการ: `POST /api/auth/login` อีเมล+รหัสผ่าน เทียบกับ env `DEMO_ADMIN_EMAIL/PASSWORD` โดยตรง ไม่เก็บรหัส/hash ใน DB (ไม่มีสมัคร/ลืม/เปลี่ยนรหัส) | M |
 | RBAC-1 | 3 บทบาท USER/MODERATOR/ADMIN ตรวจทั้ง API และ UI; ban/เปลี่ยนบทบาทมีผลทันที | M |
 | USR-1 | แอดมินดูรายชื่อ ระงับ/ยกเลิก เปลี่ยนบทบาท (ห้ามทำกับตัวเอง/แอดมินด้วยกัน) | M |
 
@@ -88,7 +89,7 @@
 | หมวด | เกณฑ์ |
 |---|---|
 | ประสิทธิภาพ | redirect ที่ cache hit ไม่แตะ DB; p95 < 150 ms (ตอน service ตื่น) |
-| ความปลอดภัย | ไม่มีรหัสผ่านในระบบ; secret ผ่าน env เท่านั้น; ตรวจ URL กัน SSRF/loop; rate limit ที่ SSO endpoint; internal API ใช้ `x-internal-key`; IP เก็บแบบ hash; cookie httpOnly + SameSite=Lax |
+| ความปลอดภัย | ไม่เก็บรหัสผ่านใน DB (รหัสบัญชีเดโมอยู่ใน env เท่านั้น, rate limit ต่อ IP + ต่ออีเมล); secret ผ่าน env เท่านั้น; ตรวจ URL กัน SSRF/loop; rate limit ที่ SSO endpoint; internal API ใช้ `x-internal-key`; IP เก็บแบบ hash; cookie httpOnly + SameSite=Lax |
 | ความพร้อมใช้ | ยอมรับ cold start ของ Render free (30–50 วิ); analytics ล่มต้องไม่ทำให้ redirect ล้ม (คิวค้างใน Redis แล้ว flush ทีหลัง) |
 | ต้นทุน | 0 บาท ไม่ผูกบัตร; Upstash ≤ 500k คำสั่ง/เดือน (ไม่มี polling/cron) |
 | บำรุงรักษา | migration ทุกครั้งที่แก้ schema; error/UI ภาษาไทย; เอกสารตรงกับโค้ด |
@@ -96,7 +97,7 @@
 ## 5. สถาปัตยกรรมโดยย่อ
 
 `frontend (Cloudflare Pages)` → `core-api (Render)` · `redirect-service (Render)` · `analytics-service (Render)` ใช้ PostgreSQL (Neon) ร่วมกัน + Redis (Upstash)  
-สัญญาระหว่าง service: cache `link:{code}` = `{i,u,e}`, คิว `clicks:queue`, `POST /internal/flush`, `GET /internal/links/:id/stats` ดูรายละเอียดที่ `CLAUDE.md` และ `docs/diagrams.html`
+สัญญาระหว่าง service: cache `link:{code}` = `{i,u,e}`, คิว `clicks:queue`, `POST /internal/flush`, `GET /internal/links/:id/stats` ดูรายละเอียดที่ `docs/diagrams.html`
 
 ## 6. ตรวจกับเกณฑ์ข้อสอบ
 
@@ -110,7 +111,7 @@
 | ไอเดียเพิ่มเติม | RBAC, audit, บล็อกโดเมน, device/ประเทศ, CLI | P7, P8 |
 | Micro Service + Architecture Diagram (พิเศษ) | 3 service + `docs/diagrams.html` | P2–P5 |
 | GitHub + README ละเอียด | README | P9 |
-| URL ออนไลน์ + user/password | Render/Cloudflare Pages + บัญชี Google ทดสอบ | P9 |
+| URL ออนไลน์ + user/password | Render/Cloudflare Pages + บัญชีเดโม (อีเมล/รหัสผ่าน) + บัญชี Google สำรอง | P9 |
 
 ---
 
@@ -126,14 +127,14 @@
 ```
 
 ### P0 — วางแผนและเอกสาร ✅
-ER, DFD L0–2, Architecture, `CLAUDE.md`, PRD นี้
+ER, DFD L0–2, Architecture, PRD นี้
 
 ### P1 — โครงโปรเจกต์และฐานข้อมูล (~2 ชม.)
 - [ ] สร้าง repo + โครง `services/{core-api,redirect-service,analytics-service}`, `frontend/`, `docs/`
 - [ ] `docker-compose.yml`: postgres 16 + redis (service ค่อยเพิ่มทีละ phase)
 - [ ] `schema.prisma` + migration `init` ตาม `docs/er-diagram.md` (ใส่ CHECK constraint ใน SQL เอง)
 - [ ] seed: จองอีเมลแอดมินจาก `ADMIN_EMAIL`
-- [ ] `.env.example`
+- [ ] `.env` ที่ root (ไม่ commit; รายการตัวแปรอยู่ใน `README.md`)
 
 **เสร็จเมื่อ:** `prisma migrate dev` ผ่านบน DB เปล่า, ตารางครบ 8 ตาราง (ตาม ER), seed ทำงาน  
 **Commit:** `chore: scaffold + db schema`
@@ -215,7 +216,7 @@ ER, DFD L0–2, Architecture, `CLAUDE.md`, PRD นี้
 **Commit:** `chore: deploy config`
 
 ### P10 — README, บัญชีทดสอบ, ซ้อมเดโม (~2 ชม.)
-- [ ] README: ภาพรวม, สถาปัตยกรรม, ติดตั้ง/รัน (docker compose), env, URL ออนไลน์, **บัญชี Google ทดสอบ** (ไม่มีรหัสผ่านในระบบ), ลิงก์ ER/DFD, ข้อจำกัดที่รู้ (cold start, free tier)
+- [ ] README: ภาพรวม, สถาปัตยกรรม, ติดตั้ง/รัน (docker compose), env, URL ออนไลน์, **บัญชีเดโม** (อีเมล/รหัสผ่านจาก `DEMO_ADMIN_*`, role ADMIN) + บัญชี Google สำรอง, ลิงก์ ER/DFD, ข้อจำกัดที่รู้ (cold start, free tier)
 - [ ] ตรวจ `docs/*` ให้ตรงกับโค้ดจริง (ER/API/DFD)
 - [ ] ปลุกทุก service ก่อนเดโม (เปิด `/health` ของ 3 service)
 - [ ] ซ้อมสคริปต์เดโม (ข้อ 8)
