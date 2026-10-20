@@ -92,20 +92,39 @@ export function HeroShortener() {
       )}
 
       {guestResult && (
-        <div className="card mt-4 p-4 text-left" role="status">
-          <p className="text-xs font-medium text-muted">{t('hero.guest.done')}</p>
-          <div className="mt-1.5 flex items-center gap-2">
-            <a href={guestResult} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate font-mono text-base font-semibold text-accent hover:underline">
-              {guestResult}
-            </a>
-            <button type="button" onClick={copy} className="btn-ink shrink-0">
-              {t('hero.guest.copy')}
+        <div className="mt-5 overflow-hidden rounded-2xl bg-surface text-left shadow-[0_10px_34px_rgba(0,0,0,0.08)] ring-1 ring-line" role="status">
+          <div className="p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-muted">{t('hero.guest.done')}</p>
+              <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5 text-xs font-semibold">{t('hero.guest.valid')}</span>
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              <a href={guestResult} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate font-mono text-lg font-semibold text-accent hover:underline sm:text-xl">
+                {guestResult}
+              </a>
+              <button type="button" onClick={copy} className="btn-ink h-10 shrink-0 px-5">
+                {t('hero.guest.copy')}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-accent/[0.07] p-5 sm:p-6">
+            <p className="text-sm font-semibold">{t('hero.guest.upsellTitle')}</p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {(['hero.guest.p1', 'hero.guest.p2', 'hero.guest.p3', 'hero.guest.p4', 'hero.guest.p5'] as const).map((k) => (
+                <li key={k} className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-[13px] font-medium ring-1 ring-line">
+                  <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 shrink-0" aria-hidden="true">
+                    <circle cx="10" cy="10" r="10" className="fill-accent" />
+                    <path d="m6 10.5 2.6 2.6L14 7.8" fill="none" className="stroke-on-accent" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {t(k)}
+                </li>
+              ))}
+            </ul>
+            <button type="button" onClick={goLogin} className="btn-primary mt-4 w-full py-2.5 text-[15px]">
+              {t('hero.guest.login')}
             </button>
           </div>
-          <p className="mt-3 text-[13px] leading-relaxed text-muted">{t('hero.guest.upsell')}</p>
-          <button type="button" onClick={goLogin} className="btn mt-3">
-            {t('hero.guest.login')}
-          </button>
         </div>
       )}
 

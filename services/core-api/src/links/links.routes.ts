@@ -1,10 +1,12 @@
-import { LinkStatus } from '@prisma/client';
+import { LinkStatus, Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { requireAuth } from '../auth/auth.middleware';
 import { config } from '../common/config';
 import { HttpError } from '../common/http-error';
 import { rateLimit } from '../common/rate-limit';
-import { renderQr, type QrFormat } from '../qr/qr.service';
+import { parseQrStyle } from '../qr/qr-style';
+import { qrMatrix, renderQr, type QrFormat } from '../qr/qr.service';
+import { prisma } from '../prisma/client';
 import { toLinkDto } from './link.dto';
 import { AnalyticsNotFound, fetchLinkStats } from './stats.client';
 import { createLink, deleteLink, getOwnedLink, listLinks, updateLink } from './links.service';
@@ -97,11 +99,23 @@ linksRouter.get('/:id/stats', async (req, res) => {
 });
 
 // รูปแบบ ?format=png|svg&scale=1..20 (PNG: พิกเซลต่อโมดูล)&download=1
+// บันทึก/ล้างสไตล์ QR ของลิงก์ (body: {style: {...}} หรือ {style: null} = กลับเป็นค่าเริ่มต้น)
+linksRouter.put('/:id/qr-style', async (req, res) => {
+  const link = await getOwnedLink(req.user!.id, parseId(req.params.id));
+  const b = bodyOf(req.body);
+  if (!('style' in b)) throw new HttpError(400, 'ไม่มีข้อมูลสไตล์');
+  const style = b.style === null ? null : parseQrStyle(b.style);
+  await prisma.link.update({ where: { id: link.id }, data: { qrStyle: style === null ? Prisma.DbNull : (style as unknown as Prisma.InputJsonValue) } });
+  res.json({ style });
+});
+
 linksRouter.get('/:id/qr', async (req, res) => {
   const link = await getOwnedLink(req.user!.id, parseId(req.params.id));
 
   const format = req.query.format ?? 'png';
-  if (format !== 'png' && format !== 'svg') throw new HttpError(400, 'format ต้องเป็น png หรือ svg');
+  // matrix = ข้อมูลโมดูลให้หน้าเว็บวาด QR ตามสไตล์เอง (แสดงตัวอย่างสด + ดาวน์โหลด)
+  if (format === 'matrix') return void res.json({ ...qrMatrix(`${config.publicBaseUrl}/${link.shortCode}`), style: link.qrStyle ?? null });
+  if (format !== 'png' && format !== 'svg') throw new HttpError(400, 'format ต้องเป็น png, svg หรือ matrix');
   const scale = req.query.scale === undefined ? 10 : Number(req.query.scale);
   if (!Number.isInteger(scale) || scale < 1 || scale > 20) throw new HttpError(400, 'scale ต้องเป็นจำนวนเต็ม 1–20');
 

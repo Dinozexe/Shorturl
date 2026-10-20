@@ -223,7 +223,7 @@ export default function DashboardPage() {
         </section>
       </main>
 
-      <QrDialog link={qrLink} onClose={() => setQrLink(null)} />
+      <QrDialog link={qrLink} onClose={() => setQrLink(null)} onSaved={refresh} />
       <StatsDialog link={statsLink} onClose={() => setStatsLink(null)} />
       <EditDialog
         link={editLink}

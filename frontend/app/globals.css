@@ -183,3 +183,10 @@
   .decor-label-short { opacity: 0; }
   .decor-scan { opacity: 0; }
 }
+
+@layer components {
+  /* การ์ดแนว bento: มุมโค้งมาก เงานุ่ม ไม่มีกรอบทึบ (ขอบจางช่วยแยกจากพื้นในโหมดมืด) */
+  .bento {
+    @apply rounded-3xl bg-surface shadow-[0_8px_30px_rgba(15,18,28,0.06)] ring-1 ring-line/60;
+  }
+}

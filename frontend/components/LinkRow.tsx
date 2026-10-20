@@ -3,6 +3,7 @@
 import { copyText } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 import type { Link } from '@/lib/types';
+import { ActionIcon } from './admin/parts';
 import { useToast } from './Toast';
 
 export type RowAction = 'qr' | 'stats' | 'edit' | 'toggle' | 'delete';
@@ -60,27 +61,13 @@ export function LinkRow({ link, onAction, busy }: { link: Link; onAction: (a: Ro
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2 md:col-span-2">
-        <button type="button" className="btn" onClick={copy} aria-label={t('row.aria.copy', { code })}>
-          {t('common.copy')}
-        </button>
-        <button type="button" className="btn" onClick={act('qr')} aria-label={t('row.aria.qr', { code })}>
-          {t('row.qr')}
-        </button>
-        <button type="button" className="btn" onClick={act('stats')} aria-label={t('row.aria.stats', { code })}>
-          {t('row.stats')}
-        </button>
-        <button type="button" className="btn" onClick={act('edit')} aria-label={t('row.aria.edit', { code })}>
-          {t('row.edit')}
-        </button>
-        {canToggle && (
-          <button type="button" className="btn" disabled={busy} onClick={act('toggle')} aria-label={t(on ? 'row.aria.off' : 'row.aria.on', { code })}>
-            {on ? t('row.turnOff') : t('row.turnOn')}
-          </button>
-        )}
-        <button type="button" className="btn-danger" onClick={act('delete')} aria-label={t('row.aria.delete', { code })}>
-          {t('row.delete')}
-        </button>
+      <div className="flex flex-wrap items-center gap-1 md:col-span-2">
+        <ActionIcon icon="copy" label={t('row.aria.copy', { code })} onClick={copy} />
+        <ActionIcon icon="qr" label={t('row.aria.qr', { code })} onClick={act('qr')} />
+        <ActionIcon icon="clicks" label={t('row.aria.stats', { code })} onClick={act('stats')} />
+        <ActionIcon icon="edit" label={t('row.aria.edit', { code })} onClick={act('edit')} />
+        {canToggle && <ActionIcon icon={on ? 'linkOff' : 'links'} tone={on ? 'default' : 'ok'} label={t(on ? 'row.aria.off' : 'row.aria.on', { code })} disabled={busy} onClick={act('toggle')} />}
+        <ActionIcon icon="trash" tone="danger" label={t('row.aria.delete', { code })} onClick={act('delete')} />
       </div>
     </li>
   );

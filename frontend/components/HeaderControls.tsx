@@ -27,7 +27,7 @@ function ThemeIcon({ to }: { to: Theme }) {
 }
 
 // สลับภาษา (ไทย/EN) และธีม (สว่าง ⇄ มืด) — ค่าที่เลือกถูกจำไว้ในเบราว์เซอร์
-export function HeaderControls() {
+export function HeaderControls({ compact }: { compact?: boolean } = {}) {
   const { lang, setLang, t } = useI18n();
   const { theme, toggle } = useTheme();
   const next: Theme = theme === 'dark' ? 'light' : 'dark';
@@ -46,6 +46,21 @@ export function HeaderControls() {
     const id = requestAnimationFrame(() => setAnimate(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  // แบบย่อ (แถบข้างที่พับอยู่): ปุ่มภาษาปุ่มเดียวสลับไปอีกภาษา + ปุ่มธีม เรียงลง
+  if (compact) {
+    const other = lang === 'th' ? LANGS[1] : LANGS[0];
+    return (
+      <div className="flex flex-col items-center gap-1.5">
+        <button type="button" onClick={() => setLang(other.id)} lang={other.id} title={other.full} aria-label={other.full} className="flex h-9 w-11 items-center justify-center rounded-xl bg-ink/[0.05] text-xs font-bold text-ink/80 transition-colors hover:bg-ink/[0.09]">
+          {other.label}
+        </button>
+        <button type="button" onClick={toggle} className="flex h-9 w-11 items-center justify-center rounded-xl text-muted transition-colors hover:bg-ink/[0.06] hover:text-ink" title={label} aria-label={label}>
+          <ThemeIcon to={next} />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">

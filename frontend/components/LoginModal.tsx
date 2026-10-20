@@ -84,10 +84,11 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
     setError(null);
     setBusy(true);
     try {
-      await loginWithPassword(email.trim(), password);
+      const u = await loginWithPassword(email.trim(), password);
       setOpen(false);
       setPassword('');
-      router.replace('/dashboard');
+      // ผู้ดูแลระบบเข้าหน้าแอดมินเลย (ยกเว้นมีลิงก์ที่วางค้างไว้ต้องย่อก่อน จึงไปหน้ารายการลิงก์)
+      router.replace(u.role !== 'USER' && !peekPendingUrl() ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('login.failed'));
     } finally {

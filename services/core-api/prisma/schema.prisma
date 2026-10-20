@@ -114,6 +114,7 @@ model Link {
   status       LinkStatus @default(ACTIVE)
   expiresAt    DateTime?  @map("expires_at")
   clickCount   Int        @default(0) @map("click_count")
+  qrStyle      Json?      @map("qr_style")
   createdAt    DateTime   @default(now()) @map("created_at")
 
   user       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)

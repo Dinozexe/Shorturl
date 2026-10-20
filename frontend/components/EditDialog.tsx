@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminIcon } from './Icon';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '@/lib/api';
 import { isoToLocalInput, localInputToIso } from '@/lib/format';
@@ -64,9 +65,11 @@ export function EditDialog({ link, onClose, onSaved }: { link: Link | null; onCl
           )}
           <div className="flex gap-2">
             <button type="submit" className="btn-ink" disabled={busy || !url.trim()}>
+              <AdminIcon name="check" className="h-4 w-4" />
               {busy ? t('edit.saving') : t('edit.save')}
             </button>
             <button type="button" className="btn" onClick={onClose}>
+              <AdminIcon name="x" className="h-4 w-4" />
               {t('common.cancel')}
             </button>
           </div>

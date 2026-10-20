@@ -188,10 +188,10 @@ ER, DFD L0–2, Architecture, PRD นี้
 **Commit:** `feat(frontend): login + dashboard`
 
 ### P7 — แอดมิน, RBAC, audit, บล็อกโดเมน (~3 ชม.)
-- [ ] API `/api/admin/*`: stats, users (list/ban/role), links (list/status), blocked-domains (CRUD + **ปิดลิงก์เดิมอัตโนมัติ** ผ่าน `original_host`), audit-logs (กรอง action)
-- [ ] เมทริกซ์สิทธิ์: MODERATOR ทำ stats/links/domains; ADMIN ทำเพิ่ม users/audit-logs
-- [ ] หน้า `/admin`: แท็บ ภาพรวม / ผู้ใช้ (เลือกบทบาท) / ลิงก์ / โดเมนที่บล็อก (แจ้งจำนวนลิงก์ที่ถูกปิด) / บันทึกกิจกรรม; ซ่อนแท็บตามบทบาท
-- [ ] audit ครบทุก action ใน PRD ข้อ ADM-4
+- [x] API `/api/admin/*`: stats, users (list/ban/role), links (list/status), blocked-domains (CRUD + **ปิดลิงก์เดิมอัตโนมัติ** ผ่าน `original_host`), audit-logs (กรอง action)
+- [x] เมทริกซ์สิทธิ์: MODERATOR ทำ overview/links/domains; ADMIN ทำเพิ่ม users/audit (API 403 + ซ่อนแท็บ)
+- [x] หน้า `/admin`: แท็บ ภาพรวม / ผู้ใช้ (เลือกบทบาท) / ลิงก์ / โดเมนที่บล็อก (แจ้งจำนวนลิงก์ที่ถูกปิด) / บันทึกกิจกรรม; ซ่อนแท็บตามบทบาท
+- [x] audit ครบทุก action ใน PRD ข้อ ADM-4
 
 **เสร็จเมื่อ:** บล็อก `example.org` แล้วลิงก์เก่าของโดเมนนั้นเปิดไม่ได้ทันที + มี log; MODERATOR เข้าแท็บผู้ใช้ไม่ได้ (UI และ API 403)  
 **Commit:** `feat(admin): users, rbac, audit, blocked domains`

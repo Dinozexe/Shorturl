@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminIcon } from './Icon';
 import { copyText } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 import type { Link } from '@/lib/types';
@@ -34,9 +35,11 @@ export function ResultStrip({ link, onQr, onDismiss }: Props) {
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" onClick={copy} className="btn-light">
+          <AdminIcon name="copy" className="h-4 w-4" />
           {t('result.copy')}
         </button>
         <button type="button" onClick={() => onQr(link)} className="btn-light">
+          <AdminIcon name="qr" className="h-4 w-4" />
           {t('result.qr')}
         </button>
       </div>

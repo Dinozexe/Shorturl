@@ -49,6 +49,20 @@ const EXACT: Record<string, string> = {
   'เกิดข้อผิดพลาด กรุณาลองใหม่': 'Something went wrong. Please try again.',
   'รูปแบบข้อมูลไม่ถูกต้อง': 'The request wasn\'t valid.',
   'ข้อมูลใหญ่เกินไป': 'The request is too large.',
+  'ไม่สามารถแก้ไขบัญชีของตัวเองได้': 'You can\'t edit your own account.',
+  'ไม่พบผู้ใช้': 'User not found.',
+  'ค่าการระงับไม่ถูกต้อง': 'That suspension value isn\'t valid.',
+  'บทบาทไม่ถูกต้อง': 'That role isn\'t valid.',
+  'ไม่มีข้อมูลที่จะแก้ไข': 'There is nothing to change.',
+  'คุณไม่มีสิทธิ์จัดการบัญชีนี้': 'You don\'t have permission to manage this account.',
+  'เฉพาะผู้ดูแลระบบสูงสุดที่เปลี่ยนบทบาทได้': 'Only a full admin can change roles.',
+  'สถานะต้องเป็น ADMIN_DISABLED หรือ ACTIVE': 'Status must be ADMIN_DISABLED or ACTIVE.',
+  'ลิงก์นี้ไม่ได้ถูกปิดโดยผู้ดูแลระบบ': 'This link wasn\'t turned off by an administrator.',
+  'โดเมนของลิงก์นี้ยังถูกบล็อกอยู่ ต้องปลดบล็อกโดเมนก่อน': 'This link\'s domain is still blocked. Unblock the domain first.',
+  'โดเมนไม่ถูกต้อง เช่น example.com': 'That domain isn\'t valid, e.g. example.com.',
+  'กรุณากรอกโดเมน': 'Please enter a domain.',
+  'โดเมนนี้ถูกบล็อกอยู่แล้ว': 'This domain is already blocked.',
+  'ไม่พบโดเมน': 'Domain not found.',
 };
 
 const PATTERNS: Array<[RegExp, (m: RegExpMatchArray) => string]> = [

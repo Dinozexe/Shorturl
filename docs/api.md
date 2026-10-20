@@ -9,7 +9,7 @@
 | GET | `/api/health` | — | `{status:"ok"}` |
 | GET | `/api/auth/sso/providers` | — | `[{id,label}]` เฉพาะ provider ที่ตั้ง env แล้ว |
 | GET | `/api/auth/sso/:provider/start` | — (rate limit 20/นาที/IP) | 302 → หน้าล็อกอิน provider (code flow + PKCE + state + nonce); provider ไม่รู้จัก → 404 |
-| GET | `/api/auth/sso/:provider/callback` | — (rate limit 20/นาที/IP) | แลก code, ตรวจ id_token, สร้าง/ผูกผู้ใช้, ตั้ง cookie `rt` แล้ว 302 → `FRONTEND_ORIGIN/dashboard`; พลาด → `FRONTEND_ORIGIN/login?sso_error=<ข้อความไทย>` |
+| GET | `/api/auth/sso/:provider/callback` | — (rate limit 20/นาที/IP) | แลก code, ตรวจ id_token, สร้าง/ผูกผู้ใช้, ตั้ง cookie `rt` แล้ว 302 → `FRONTEND_ORIGIN/dashboard`; พลาด → `FRONTEND_ORIGIN/login?sso_error=<ข้อความไทย>` (หน้า `/login` ไม่ใช่หน้าแยกแล้ว: เปิดหน้าต่างเข้าสู่ระบบทับหน้าแรกพร้อมข้อความ) |
 | POST | `/api/auth/login` | — (rate limit 10/นาที/IP + 10/15 นาที/อีเมล) | body `{email,password}` → `{accessToken, expiresIn, user}` + cookie `rt`; **เฉพาะบัญชีเดโมใน env (`DEMO_ADMIN_EMAIL/PASSWORD`) — ไม่เก็บรหัสใน DB; ปิดเมื่อเว้น env ว่าง**; 400 body ไม่ถูกต้อง, 401 อีเมล/รหัสผิด (ข้อความเดียวกันทุกกรณี), 403 บัญชีถูกระงับ (หลังรหัสถูก), 429 ถี่เกินไป |
 | POST | `/api/auth/refresh` | cookie `rt` (rate limit 30/นาที/IP) | หมุน refresh token → `{accessToken, expiresIn, user}` + cookie `rt` ใหม่; 401 เมื่อไม่ถูกต้อง/ใช้ซ้ำ (ใช้ซ้ำ = เพิกถอนทุก session) |
 | POST | `/api/auth/logout` | cookie `rt` + (ถ้ามี) `Authorization: Bearer` | ลบ refresh + blacklist access token → `{ok:true}` |
@@ -18,6 +18,28 @@
 **Token:** access = JWT 15 นาที (ส่งเป็น `Authorization: Bearer`, เก็บใน memory ฝั่ง client) · refresh = JWT 7 วัน, cookie `rt` (httpOnly, SameSite=Lax, path `/api/auth`) หมุนทุกครั้ง · ทั้งสองมี claim `iatMs` (ms) ใช้เทียบกับ `rtnbf:{userId}`
 
 **ข้อควรระวัง (frontend):** ห้ามเรียก `/api/auth/refresh` ซ้อนกันด้วย cookie เดียว (เช่น 2 แท็บ/2 request พร้อมกัน) — ตัวที่สองถูกมองว่าใช้ซ้ำและเตะทุก session; ให้ทำ single-flight
+
+## Guest — `/api/guest` (ย่อลิงก์โดยไม่ล็อกอิน)
+
+| Method | Path | อธิบาย |
+|---|---|---|
+| POST | `/api/guest/links` | body `{url}` → 201 `{shortUrl, originalUrl, expiresAt}`; ไม่ต้องมี token; รหัสสุ่มเท่านั้น (ไม่มี alias), **หมดอายุใน 7 วัน**, `user_id = null` จึงไม่มี QR/สถิติ/ประวัติ; กฎตรวจ URL + โดเมนบล็อกเหมือนผู้ใช้ปกติ; rate limit 10/นาที/IP |
+
+## Admin — `/api/admin` (P7)
+
+ต้อง `Authorization: Bearer` ของบัญชี `MODERATOR` หรือ `ADMIN` (API key ใช้ไม่ได้); rate limit 120/นาที/IP · ทุกการเปลี่ยนแปลงบันทึกใน `audit_logs`
+
+| Method | Path | สิทธิ์ | อธิบาย |
+|---|---|---|---|
+| GET | `/api/admin/overview` | MOD, ADMIN | `{users, bannedUsers, links, adminDisabledLinks, blockedDomains, clicks}` |
+| GET | `/api/admin/users?q=&page=&pageSize=` | ADMIN | ผู้ใช้ + `linkCount`; `q` ค้นอีเมล/ชื่อ |
+| PATCH | `/api/admin/users/:id` | ADMIN | `{isBanned?, role?}`; แก้ตัวเองไม่ได้ (400); ระงับ/เปลี่ยนบทบาท = เพิกถอนทุก session ของผู้นั้นทันที |
+| GET | `/api/admin/links?q=&status=&page=` | MOD, ADMIN | ลิงก์ทุกคน + `ownerEmail` (null = ผู้เยี่ยมชม); `q` ค้นรหัส/ปลายทาง/อีเมลเจ้าของ |
+| PATCH | `/api/admin/links/:id` | MOD, ADMIN | `{status: "ADMIN_DISABLED" \| "ACTIVE"}`; เปิดคืนได้เฉพาะลิงก์ที่ถูกผู้ดูแลปิด และโดเมนต้องไม่ถูกบล็อก (400) |
+| GET | `/api/admin/blocked-domains?q=` | MOD, ADMIN | รายการโดเมนที่บล็อก |
+| POST | `/api/admin/blocked-domains` | MOD, ADMIN | `{domain, reason?}` (รับ URL ได้ จะตัดเหลือโดเมน) → 201 `{…, disabledLinks}`; **ปิดลิงก์เดิมที่ชี้โดเมนนี้ (รวม subdomain) เป็น `ADMIN_DISABLED` และล้าง cache**; ซ้ำ = 409 |
+| DELETE | `/api/admin/blocked-domains/:id` | MOD, ADMIN | 204; **ไม่เปิดลิงก์ที่เคยถูกปิดคืนอัตโนมัติ** (ผู้ดูแลเปิดเองทีละลิงก์) |
+| GET | `/api/admin/audit?action=&page=` | ADMIN | บันทึกกิจกรรมใหม่สุดก่อน + `actorEmail` |
 
 ## Links — `/api/links` (P3)
 
@@ -30,7 +52,8 @@
 | GET | `/api/links/:id` | ลิงก์เดียว |
 | PATCH | `/api/links/:id` | แก้ `{url?, expiresAt? (null = ไม่หมดอายุ), status? ACTIVE\|DISABLED}`; **เปลี่ยน alias ไม่ได้ (400)**; ลิงก์ `ADMIN_DISABLED` เจ้าของเปิดเองไม่ได้ (403) |
 | DELETE | `/api/links/:id` | 204 (ลบคลิกที่เกี่ยวข้องด้วย) |
-| GET | `/api/links/:id/qr?format=png\|svg&scale=1..20&download=1` | รูป QR ของ short URL — ดำบนขาว, ECC ระดับ H, quiet zone 4 โมดูล; PNG ขนาด = (โมดูล+8)×`scale` พิกเซล (จำนวนเต็ม, ค่าเริ่มต้น 10); `download=1` ส่งเป็นไฟล์แนบ |
+| PUT | `/api/links/:id/qr-style` | body `{style}` บันทึกสไตล์ QR ของลิงก์ (`{style:null}` = ล้าง); ฟิลด์: `dots` square/rounded/dots/diamond/classy, `eyes` square/rounded/circle, `fg`/`fg2`/`bg`/`eyeColor` เป็น `#rrggbb` (`fg2`=ไล่เฉด, `bg:null`=โปร่งใส), `angle` 0/45/90/135, `logo` none/link/star/heart/bolt, `logoSize` 10–22, `caption` ≤24 ตัว, `margin` 2–8; ฟิลด์ที่ไม่รู้จักถูกทิ้ง ค่าผิด = 400; **ไม่เก็บรูปโลโก้ที่อัปโหลด** (ใช้เฉพาะในเบราว์เซอร์) |
+| GET | `/api/links/:id/qr?format=png\|svg\|matrix&scale=1..20&download=1` | รูป QR ของ short URL (แบบมาตรฐานไม่ใส่สไตล์ — สำหรับสคริปต์/CLI; หน้าเว็บใช้ `format=matrix` แล้ววาดเองตามสไตล์) — ดำบนขาว, ECC ระดับ H, quiet zone 4 โมดูล; PNG ขนาด = (โมดูล+8)×`scale` พิกเซล (จำนวนเต็ม, ค่าเริ่มต้น 10); `download=1` ส่งเป็นไฟล์แนบ |
 
 **ลิงก์ (response):** `{id, shortCode, shortUrl, originalUrl, originalHost, status, expiresAt, expired, clickCount, createdAt}`
 **กติกา**

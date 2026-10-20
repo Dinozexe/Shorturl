@@ -49,7 +49,8 @@ authRouter.get('/sso/:provider/callback', rateLimit('sso', 20, 60), async (req, 
     const tokens = await auth.issueTokens(user.id);
     setRefreshCookie(res, tokens.refreshToken);
     // access token ไม่ส่งผ่าน URL — frontend เรียก POST /api/auth/refresh เพื่อรับเอง
-    res.redirect(`${config.frontendOrigin}/dashboard`);
+    // ผู้ดูแลระบบเข้าหน้าแอดมินเลย ผู้ใช้ทั่วไปเข้ารายการลิงก์ของตัวเอง
+    res.redirect(`${config.frontendOrigin}${user.role === 'USER' ? '/dashboard' : '/admin'}`);
   } catch (e) {
     if (e instanceof SsoError) return fail(e.message);
     console.error('sso callback error', e);

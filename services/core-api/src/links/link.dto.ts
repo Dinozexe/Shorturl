@@ -12,6 +12,7 @@ export function toLinkDto(link: Link) {
     expiresAt: link.expiresAt,
     expired: link.expiresAt !== null && link.expiresAt.getTime() <= Date.now(),
     clickCount: link.clickCount,
+    qrStyle: link.qrStyle ?? null,
     createdAt: link.createdAt,
   };
 }

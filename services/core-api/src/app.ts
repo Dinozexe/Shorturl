@@ -1,6 +1,7 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
+import { adminRouter } from './admin/admin.routes';
 import { authRouter } from './auth/auth.routes';
 import { config } from './common/config';
 import { guestRouter, linksRouter } from './links/links.routes';
@@ -18,6 +19,7 @@ export function createApp() {
     res.json({ status: 'ok' });
   });
   app.use('/api/auth', authRouter);
+  app.use('/api/admin', adminRouter);
   app.use('/api/guest', guestRouter);
   app.use('/api/links', linksRouter);
 

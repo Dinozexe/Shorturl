@@ -9,7 +9,7 @@ type Status = 'loading' | 'authed' | 'anon';
 interface AuthState {
   status: Status;
   user: AuthUser | null;
-  loginWithPassword: (email: string, password: string) => Promise<void>;
+  loginWithPassword: (email: string, password: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
   /** true เมื่อผู้ใช้กดออกจากระบบเอง (ต่างจาก session หมดอายุ) — guard ของหน้าต่างๆ ไม่ควรพาไป /login ทับ */
   signedOut: boolean;
@@ -50,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
     setSignedOut(false);
     setStatus('authed');
+    return u;
   }, []);
 
   const logout = useCallback(async () => {
