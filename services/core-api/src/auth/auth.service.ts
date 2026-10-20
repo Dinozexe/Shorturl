@@ -181,7 +181,7 @@ export async function refresh(refreshToken: string | undefined): Promise<TokenPa
   const owner = await redis.getdel(`rt:${payload.jti}`);
   if (!owner) {
     await revokeAllSessions(payload.sub);
-    throw new HttpError(401, 'ตรวจพบการใช้ token ซ้ำ ระบบออกจากระบบทุกอุปกรณ์แล้ว กรุณาเข้าสู่ระบบใหม่');
+    throw new HttpError(401, 'ตรวจพบการใช้เซสชันซ้ำ ระบบออกจากระบบทุกอุปกรณ์แล้ว กรุณาเข้าสู่ระบบใหม่');
   }
 
   const user = await prisma.user.findUnique({ where: { id: payload.sub } });

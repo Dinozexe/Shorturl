@@ -16,9 +16,9 @@ const ALIAS_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{1,28}[A-Za-z0-9]$/;
 
 export function validateAlias(alias: string): string {
   if (!ALIAS_RE.test(alias)) {
-    throw new HttpError(400, 'alias ต้องยาว 3–30 ตัว ใช้ได้เฉพาะ A–Z a–z 0–9 _ - และขึ้นต้น/ลงท้ายด้วยตัวอักษรหรือตัวเลข');
+    throw new HttpError(400, 'ชื่อลิงก์ต้องยาว 3–30 ตัว ใช้ได้เฉพาะ A–Z a–z 0–9 _ - และขึ้นต้น/ลงท้ายด้วยตัวอักษรหรือตัวเลข');
   }
-  if (RESERVED_ALIASES.has(alias.toLowerCase())) throw new HttpError(400, 'alias นี้เป็นคำสงวน กรุณาใช้ชื่ออื่น');
+  if (RESERVED_ALIASES.has(alias.toLowerCase())) throw new HttpError(400, 'ชื่อลิงก์นี้เป็นคำสงวน กรุณาใช้ชื่ออื่น');
   return alias;
 }
 
@@ -79,29 +79,29 @@ function ownHosts(): Set<string> {
 /** ตรวจ URL ปลายทาง: http/https เท่านั้น, ไม่มี credentials, ไม่ใช่ host ภายใน/IP ส่วนตัว, ไม่ชี้ตัวเอง */
 export function validateTargetUrl(input: string): TargetUrl {
   const raw = input.trim();
-  if (!raw || raw.length > MAX_URL_LENGTH) throw new HttpError(400, `URL ต้องไม่ว่างและยาวไม่เกิน ${MAX_URL_LENGTH} ตัวอักษร`);
+  if (!raw || raw.length > MAX_URL_LENGTH) throw new HttpError(400, `ลิงก์ต้องไม่ว่างและยาวไม่เกิน ${MAX_URL_LENGTH} ตัวอักษร`);
 
   let url: URL;
   try {
     url = new URL(raw); // WHATWG แปลง IP รูปแบบแปลก (เลขฐาน 10/16/8) เป็น dotted decimal ให้แล้ว
   } catch {
-    throw new HttpError(400, 'URL ไม่ถูกต้อง (ต้องขึ้นต้นด้วย http:// หรือ https://)');
+    throw new HttpError(400, 'ลิงก์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย http:// หรือ https://)');
   }
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw new HttpError(400, 'รองรับเฉพาะลิงก์ http:// และ https://');
   }
-  if (url.username || url.password) throw new HttpError(400, 'URL ต้องไม่มีชื่อผู้ใช้/รหัสผ่านฝังอยู่');
+  if (url.username || url.password) throw new HttpError(400, 'ลิงก์ต้องไม่มีชื่อผู้ใช้/รหัสผ่านฝังอยู่');
 
   const host = url.hostname.toLowerCase().replace(/\.$/, '');
-  if (host.startsWith('[')) throw new HttpError(400, 'ไม่รองรับ URL ที่ใช้ IPv6 โดยตรง');
+  if (host.startsWith('[')) throw new HttpError(400, 'ไม่รองรับลิงก์ที่ใช้ที่อยู่ IPv6 โดยตรง');
 
   const ip = ipv4ToInt(host);
   if (ip !== null) {
-    if (isNonPublicV4(ip)) throw new HttpError(400, 'ไม่รองรับ URL ที่ชี้ไปยัง IP ภายในหรือ IP ที่สงวนไว้');
+    if (isNonPublicV4(ip)) throw new HttpError(400, 'ไม่รองรับลิงก์ที่ชี้ไปยัง IP ภายในหรือ IP ที่สงวนไว้');
   } else {
     const labels = host.split('.');
     if (labels.length < 2 || INTERNAL_TLDS.has(labels[labels.length - 1]) || /^\d+$/.test(labels[labels.length - 1])) {
-      throw new HttpError(400, 'ไม่รองรับ URL ที่ชี้ไปยังโฮสต์ภายใน');
+      throw new HttpError(400, 'ไม่รองรับลิงก์ที่ชี้ไปยังเครื่องหรือเครือข่ายภายใน');
     }
   }
   if (ownHosts().has(host)) throw new HttpError(400, 'ไม่สามารถย่อลิงก์ที่ชี้กลับมายังระบบนี้ได้');

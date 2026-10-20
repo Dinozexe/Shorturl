@@ -40,7 +40,7 @@ export async function createLink(userId: string, input: { url: string; alias?: s
     try {
       link = await prisma.link.create({ data: { ...data, shortCode: validateAlias(input.alias) } });
     } catch (e) {
-      if (isUniqueViolation(e)) throw new HttpError(409, 'alias นี้ถูกใช้แล้ว กรุณาใช้ชื่ออื่น');
+      if (isUniqueViolation(e)) throw new HttpError(409, 'ชื่อลิงก์นี้ถูกใช้แล้ว กรุณาใช้ชื่ออื่น');
       throw e;
     }
   } else {

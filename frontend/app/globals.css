@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: 255 255 255; /* พื้นหน้า: ขาวล้วน */
+  --surface: 255 255 255;
+  --ink: 15 18 28; /* #0F121C ดำอมน้ำเงินนิดๆ: ตัวอักษรและปุ่มหลัก */
+  --muted: 98 106 122; /* #626A7A */
+  --line: 223 227 235; /* #DFE3EB เส้นขอบ */
+  --danger: 200 52 43;
+  --ok: 27 127 92;
+  color-scheme: light;
+}
+
+/* ธีมมืด: เลือกเอง (data-theme="dark") หรือ ตามระบบเมื่อไม่ได้เลือก (ไม่มี data-theme) */
+:root[data-theme='dark'] {
+  --paper: 12 14 20;
+  --surface: 19 22 31;
+  --ink: 240 242 247;
+  --muted: 155 162 178;
+  --line: 40 45 58;
+  --danger: 255 128 118;
+  --ok: 94 210 164;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --paper: 12 14 20;
+    --surface: 19 22 31;
+    --ink: 240 242 247;
+    --muted: 155 162 178;
+    --line: 40 45 58;
+    --danger: 255 128 118;
+    --ok: 94 210 164;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+    font-feature-settings: 'tnum' 1;
+  }
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-ink;
+  }
+  ::selection {
+    background: rgb(var(--ink));
+    color: rgb(var(--paper));
+  }
+  dialog::backdrop {
+    background: rgb(var(--ink) / 0.55);
+  }
+}
+
+@layer components {
+  /* การ์ด: พื้นขาวขอบบาง ใช้เป็นภาชนะหลักของทุกหน้า */
+  .card {
+    @apply rounded-lg border border-line bg-surface;
+  }
+  /* ปุ่มหลัก: พื้นดำ ตัวอักษรขาว */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-ink px-5 py-3 font-semibold text-paper transition-[opacity,transform] hover:opacity-85 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:border-ink/50 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-danger/40 bg-surface px-3.5 py-2 text-sm font-medium text-danger transition-colors hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .field {
+    @apply w-full rounded-md border border-line bg-surface px-3.5 py-3 text-ink placeholder:text-muted/70 focus:border-ink;
+  }
+  /* ไม้บรรทัด: ขีดสั้นยาวสลับ สีขีดกำหนดด้วยตัวแปร --ruler (ค่าเริ่มต้น = สีหมึก) */
+  .ruler {
+    background-image:
+      repeating-linear-gradient(90deg, rgb(var(--ruler, var(--ink)) / 0.4) 0 1.5px, transparent 1.5px 10px),
+      repeating-linear-gradient(90deg, rgb(var(--ruler, var(--ink)) / 0.7) 0 1.5px, transparent 1.5px 50px);
+    background-size: 100% 6px, 100% 12px;
+    background-position: left bottom;
+    background-repeat: no-repeat;
+  }
+}
+
+
+@layer components {
+  /* ปุ่มสีหมึก: ใช้บนแถบเหลือง */
+  /* ปุ่มสีอ่อนบนพื้นดำ (แถบผลลัพธ์) */
+  .btn-light {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-paper px-4 py-2.5 text-sm font-semibold text-ink transition-opacity hover:opacity-85 active:translate-y-px;
+  }
+  .btn-ink {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-paper transition-[filter,transform] hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
+  }
+}
+
+@layer components {
+  /* ปุ่มเลือกวิธีเข้าสู่ระบบ: เต็มความกว้าง ไอคอนนำหน้าข้อความ สไตล์เดียวกับปุ่มอื่นในระบบ */
+  .btn-provider {
+    @apply flex h-14 w-full items-center justify-center gap-3 rounded-xl border border-line bg-surface px-4 font-medium text-ink shadow-sm transition-colors hover:border-ink;
+  }
+}
+
+/* ===== การ์ดตกแต่งหน้าแรก: โผล่เข้ามาทีละใบ แล้วลอยเบาๆ + แต่ละใบมีภาพเคลื่อนไหวตามเนื้อหา ===== */
+@keyframes decor-in {
+  from { opacity: 0; scale: 0.88; translate: 0 14px; }
+  to { opacity: 1; scale: 1; translate: 0 0; }
+}
+@keyframes decor-float {
+  0% { transform: translateY(0) rotate(var(--r)); }
+  100% { transform: translateY(-10px) rotate(calc(var(--r) + 1.5deg)); }
+}
+.decor {
+  transform: rotate(var(--r));
+  animation:
+    decor-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--in, 0s) both,
+    decor-float var(--fd, 7s) ease-in-out calc(var(--in, 0s) + 0.8s) infinite alternate both;
+}
+
+/* ลิงก์ยาว → หดเหลือลิงก์สั้น แล้วเริ่มใหม่ */
+@keyframes line-collapse {
+  0%, 30% { transform: scaleX(1); }
+  50%, 78% { transform: scaleX(var(--to, 0.25)); }
+  98%, 100% { transform: scaleX(1); }
+}
+@keyframes label-long { 0%, 40% { opacity: 1; } 50%, 88% { opacity: 0; } 96%, 100% { opacity: 1; } }
+@keyframes label-short { 0%, 40% { opacity: 0; } 50%, 88% { opacity: 1; } 96%, 100% { opacity: 0; } }
+.decor-line { transform-origin: left; animation: line-collapse 6s ease-in-out var(--ld, 0s) infinite; }
+.decor-label-long { animation: label-long 6s ease-in-out infinite; }
+.decor-label-short { animation: label-short 6s ease-in-out infinite; }
+
+/* QR: เส้นสแกนวิ่งลงและจุดบางจุดกะพริบ */
+@keyframes qr-scan {
+  0% { transform: translateY(0); opacity: 0; }
+  12%, 88% { opacity: 1; }
+  100% { transform: translateY(52px); opacity: 0; }
+}
+@keyframes qr-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.12; } }
+.decor-scan { animation: qr-scan 2.8s ease-in-out infinite; }
+.decor-twinkle { animation: qr-twinkle 3.2s ease-in-out infinite; animation-delay: calc(var(--i) * -0.41s); }
+
+/* กราฟ: แท่งโตขึ้นทีละแท่งแล้วยุบ วนซ้ำ */
+@keyframes bar-rise {
+  0% { transform: scaleY(0.08); }
+  30%, 78% { transform: scaleY(1); }
+  100% { transform: scaleY(0.08); }
+}
+.decor-bar { transform-origin: bottom; animation: bar-rise 5s ease-in-out infinite; animation-delay: calc(var(--i) * 0.14s); }
+
+/* อุปกรณ์: แถบสัดส่วนเติมไปมา จุดสถานะเต้นเบาๆ */
+@keyframes fill-a { 0%, 100% { transform: scaleX(0.2); } 50% { transform: scaleX(0.85); } }
+@keyframes fill-b { 0%, 100% { transform: scaleX(0.7); } 50% { transform: scaleX(0.3); } }
+@keyframes dot-pulse { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 1.6; opacity: 0.55; } }
+.decor-fill-a { transform-origin: left; animation: fill-a 4.6s ease-in-out infinite; }
+.decor-fill-b { transform-origin: left; animation: fill-b 4.6s ease-in-out infinite; }
+.decor-dot { animation: dot-pulse 2.2s ease-in-out infinite; }
+
+/* ผู้ใช้ตั้งลดการเคลื่อนไหว: หยุดทั้งหมด (การ์ดแสดงนิ่งในท่าสุดท้าย) */
+@media (prefers-reduced-motion: reduce) {
+  .decor, .decor *, .decor-line, .decor-label-long, .decor-label-short, .decor-scan, .decor-twinkle, .decor-bar, .decor-fill-a, .decor-fill-b, .decor-dot {
+    animation: none !important;
+  }
+  .decor-label-short { opacity: 0; }
+  .decor-scan { opacity: 0; }
+}

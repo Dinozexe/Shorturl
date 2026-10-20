@@ -1,4 +1,4 @@
-# Short URL
+# Shorturl By Kittamet
 
 ระบบย่อลิงก์ ย่อได้ทุกลิงก์ สร้าง QR Code ดูประวัติและสถิติการคลิก พร้อมหน้าจัดการสำหรับแอดมิน
 
@@ -14,7 +14,7 @@
 | P3 | ลิงก์ + QR (core-api: สร้าง/ค้นหา/แก้/ลบ, alias, ตรวจ URL, โดเมนต้องห้าม, QR PNG/SVG) | เสร็จ |
 | P4 | redirect-service (`GET /:code` → 302, cache Redis, เข้าคิวคลิก) | เสร็จ |
 | P5 | analytics-service (flush คิวคลิกลง DB เป็นชุด, สถิติ) + `GET /api/links/:id/stats` | เสร็จ |
-| P6 | Frontend | ยังไม่ทำ |
+| P6 | Frontend (Next.js): เข้าสู่ระบบ, ย่อลิงก์, รายการ/ค้นหา, QR, สถิติ, แก้ไข/ปิด/ลบ | เสร็จ |
 | P7 | แอดมิน (ผู้ใช้ / ลิงก์ / โดเมนต้องห้าม / audit log) | ยังไม่ทำ |
 | P8 | API key + CLI สำหรับจัดการลิงก์ (`surl login/shorten/ls/...`) | ถ้ามีเวลา (CLI สำหรับรันโปรเจกต์ `surl dev` ทำแล้ว) |
 | P9–P10 | Deploy, README ฉบับสมบูรณ์ | ยังไม่ทำ |
@@ -58,7 +58,7 @@
 
 ## ติดตั้งและรันในเครื่อง
 
-ตอนนี้รันได้ `core-api`, `redirect-service` และ `analytics-service` (P1–P5) — ย่อลิงก์ผ่าน core-api, กดลิงก์สั้นที่ redirect-service ได้จริง และดูสถิติคลิกผ่าน `GET /api/links/:id/stats`
+ตอนนี้รันได้ทั้งระบบ (P1–P6): เปิด http://localhost:3000 → เข้าสู่ระบบ → ย่อลิงก์ → กดลิงก์สั้น → ดู QR และสถิติ
 
 ```bash
 git clone <repo-url> && cd Shorturl
@@ -92,13 +92,25 @@ surl migrate                  # prisma migrate deploy ด้วยค่าจ�
 
 `surl dev` จะ: เปิด PostgreSQL + Redis ผ่าน docker compose และรอจนพร้อม → `npm install` ให้ถ้ายังไม่มี `node_modules` → `prisma migrate deploy` (ข้ามด้วยคำท้าย `nomigrate`) → เริ่ม service ที่เลือกพร้อมกัน โดยแสดง log แยกสีตามชื่อ service ส่งค่าจาก `.env` ให้ทุกตัว ข้าม service ที่ port ถูกใช้อยู่แล้ว กด **Ctrl+C** เพื่อปิดทั้งหมด (ใส่คำท้าย `down` ถ้าต้องการให้หยุด docker ด้วย เช่น `surl dev all down`; ค่าเริ่มต้นปล่อยรันต่อ)
 
-เมนูจะแสดงเฉพาะ service ที่มีโค้ดแล้ว ตอนนี้คือ infra, core-api, redirect-service และ analytics-service
+เมนูจะแสดงเฉพาะ service ที่มีโค้ดแล้ว ตอนนี้คือ infra, core-api, redirect-service, analytics-service และ frontend
 
 สร้างค่า secret (รันแยกกันทีละค่า ให้ได้คนละค่า):
 
 ```bash
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
+
+### Frontend
+
+```bash
+cd frontend && npm install && npm run dev      # http://localhost:3000 (หรือ `surl dev frontend`)
+npm run build                                  # static export → frontend/dist/ (dev ใช้ .next แยกกัน รันพร้อมกันได้ไม่ชน)
+```
+
+ตัวแปรของ frontend (ฝังตอน build; ห้ามใส่ค่าลับ): `NEXT_PUBLIC_API_URL` (ค่าเริ่มต้น `http://localhost:4000`) และ `NEXT_PUBLIC_SHORT_HOST` (โดเมนที่โชว์ในหน้าแรก) — เปลี่ยนแล้วต้อง build ใหม่ ห้ามใช้ dynamic route `[id]` / API route ของ Next เพราะเป็น static export
+Access token เก็บใน memory เท่านั้น เมื่อรีเฟรชหน้าจะขอใหม่จาก refresh cookie อัตโนมัติ (รวมคำขอ refresh เป็นครั้งเดียวทั้งในแท็บและข้ามแท็บ เพราะ refresh token ใช้ได้ครั้งเดียว)
+
+หน้าแรก (`/`) มีช่องวางลิงก์ทันที: ถ้ายังไม่ล็อกอิน ระบบจำลิงก์ไว้ใน `sessionStorage` ของเบราว์เซอร์นั้น พาไป `/login` แล้วย่อให้อัตโนมัติหลังเข้าสู่ระบบ (ไม่ส่งข้อมูลไปเซิร์ฟเวอร์จนกว่าจะล็อกอิน)
 
 ## ตัวแปรสภาพแวดล้อม (`.env` ที่ root)
 
@@ -183,7 +195,10 @@ services/
   analytics-service/      Express: flush คิวคลิกลง DB (transaction เดียว), สถิติ, ลบคลิกเก่า (internal เท่านั้น)
     src/                  flush.ts stats.ts events.ts auth.ts app.ts db.ts redis.ts config.ts index.ts
     Dockerfile
-frontend/                 (P6)
+frontend/                 Next.js 14 (static export) + Tailwind
+  app/                    หน้า: / (แนะนำ), /login, /dashboard
+  components/             ฟอร์มย่อลิงก์, แถบผลลัพธ์, แถวลิงก์, dialog (QR / สถิติ / แก้ไข / ลบ), กราฟ
+  lib/                    api.ts (access token ใน memory + refresh แบบ single-flight), auth.tsx, format.ts
 cli/surl.mjs             CLI (`surl dev`, `surl status`, `surl migrate`; คำสั่งจัดการลิงก์เพิ่มใน P8)
 package.json              (root) ลงทะเบียนคำสั่ง `surl` + `npm run dev`
 docs/                     prd, er-diagram, dfd, api, diagrams.html, img/

@@ -24,8 +24,8 @@ const bodyOf = (body: unknown): Record<string, unknown> =>
 
 linksRouter.post('/', rateLimit('link-create', 30, 60), async (req, res) => {
   const b = bodyOf(req.body);
-  if (!isString(b.url)) throw new HttpError(400, 'กรุณากรอก URL');
-  if (b.alias !== undefined && b.alias !== null && !isString(b.alias)) throw new HttpError(400, 'alias ไม่ถูกต้อง');
+  if (!isString(b.url)) throw new HttpError(400, 'กรุณากรอกลิงก์');
+  if (b.alias !== undefined && b.alias !== null && !isString(b.alias)) throw new HttpError(400, 'ชื่อลิงก์ไม่ถูกต้อง');
   if (b.expiresAt !== undefined && b.expiresAt !== null && !isString(b.expiresAt)) throw new HttpError(400, 'วันหมดอายุไม่ถูกต้อง');
 
   const link = await createLink(req.user!.id, {
@@ -50,8 +50,8 @@ linksRouter.get('/:id', async (req, res) => {
 
 linksRouter.patch('/:id', async (req, res) => {
   const b = bodyOf(req.body);
-  if ('alias' in b) throw new HttpError(400, 'ไม่สามารถเปลี่ยน alias หลังสร้างได้ (QR ที่แจกไปแล้วจะใช้ไม่ได้)');
-  if (b.url !== undefined && !isString(b.url)) throw new HttpError(400, 'URL ไม่ถูกต้อง');
+  if ('alias' in b) throw new HttpError(400, 'ไม่สามารถเปลี่ยนชื่อลิงก์หลังสร้างได้ (QR Code ที่แจกไปแล้วจะใช้ไม่ได้)');
+  if (b.url !== undefined && !isString(b.url)) throw new HttpError(400, 'ลิงก์ไม่ถูกต้อง');
   if (b.expiresAt !== undefined && b.expiresAt !== null && !isString(b.expiresAt)) throw new HttpError(400, 'วันหมดอายุไม่ถูกต้อง');
   if (b.status !== undefined && b.status !== 'ACTIVE' && b.status !== 'DISABLED') {
     throw new HttpError(400, 'สถานะต้องเป็น ACTIVE หรือ DISABLED');
