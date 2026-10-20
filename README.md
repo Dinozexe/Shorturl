@@ -12,7 +12,7 @@
 | P1 | โครงโปรเจกต์ + ฐานข้อมูล (Prisma schema, migration, seed) | เสร็จ |
 | P2 | core-api: SSO, JWT + refresh rotation, RBAC, audit, บัญชีเดโม | เสร็จ (ยังไม่ได้ทดสอบกับ Google จริง) |
 | P3 | ลิงก์ + QR (core-api: สร้าง/ค้นหา/แก้/ลบ, alias, ตรวจ URL, โดเมนต้องห้าม, QR PNG/SVG) | เสร็จ |
-| P4 | redirect-service | ยังไม่ทำ |
+| P4 | redirect-service (`GET /:code` → 302, cache Redis, เข้าคิวคลิก) | เสร็จ |
 | P5 | analytics-service | ยังไม่ทำ |
 | P6 | Frontend | ยังไม่ทำ |
 | P7 | แอดมิน (ผู้ใช้ / ลิงก์ / โดเมนต้องห้าม / audit log) | ยังไม่ทำ |
@@ -58,7 +58,7 @@
 
 ## ติดตั้งและรันในเครื่อง
 
-ตอนนี้รันได้เฉพาะ `core-api` (P1–P3)
+ตอนนี้รันได้ `core-api` และ `redirect-service` (P1–P4) — ย่อลิงก์ผ่าน core-api แล้วกดลิงก์สั้นที่ redirect-service ได้จริง
 
 ```bash
 git clone <repo-url> && cd Shorturl
@@ -92,7 +92,7 @@ surl migrate                  # prisma migrate deploy ด้วยค่าจ�
 
 `surl dev` จะ: เปิด PostgreSQL + Redis ผ่าน docker compose และรอจนพร้อม → `npm install` ให้ถ้ายังไม่มี `node_modules` → `prisma migrate deploy` (ข้ามด้วยคำท้าย `nomigrate`) → เริ่ม service ที่เลือกพร้อมกัน โดยแสดง log แยกสีตามชื่อ service ส่งค่าจาก `.env` ให้ทุกตัว ข้าม service ที่ port ถูกใช้อยู่แล้ว กด **Ctrl+C** เพื่อปิดทั้งหมด (ใส่คำท้าย `down` ถ้าต้องการให้หยุด docker ด้วย เช่น `surl dev all down`; ค่าเริ่มต้นปล่อยรันต่อ)
 
-เมนูจะแสดงเฉพาะ service ที่มีโค้ดแล้ว ตอนนี้คือ infra และ core-api
+เมนูจะแสดงเฉพาะ service ที่มีโค้ดแล้ว ตอนนี้คือ infra, core-api และ redirect-service
 
 สร้างค่า secret (รันแยกกันทีละค่า ให้ได้คนละค่า):
 
@@ -177,13 +177,15 @@ services/
       common/             config, error handler, rate limit
       prisma/ redis/      client
       app.ts main.ts      สร้าง express app / เปิดพอร์ต
-  redirect-service/       (P4)
+  redirect-service/       Express: GET /:code → 302 (Redis cache → DB), ส่งคลิกเข้าคิว
+    src/                  app.ts clicks.ts ua.ts db.ts redis.ts pages.ts config.ts index.ts
+    Dockerfile
   analytics-service/      (P5)
 frontend/                 (P6)
 cli/surl.mjs             CLI (`surl dev`, `surl status`, `surl migrate`; คำสั่งจัดการลิงก์เพิ่มใน P8)
 package.json              (root) ลงทะเบียนคำสั่ง `surl` + `npm run dev`
 docs/                     prd, er-diagram, dfd, api, diagrams.html, img/
-docker-compose.yml        PostgreSQL + Redis สำหรับพัฒนา
+docker-compose.yml        PostgreSQL + Redis สำหรับพัฒนา (เพิ่ม service แอปด้วย `docker compose --profile full up --build`)
 ```
 
 ## ข้อจำกัดที่ต้องรู้

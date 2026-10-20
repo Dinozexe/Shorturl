@@ -23,5 +23,20 @@ services:
     ports:
       - "6380:6379" # host 6380 กันชนกับ redis ที่ลงในเครื่อง (6379)
 
+  # service ของแอป (ไม่รันตอน `docker compose up -d` ปกติ; ใช้: docker compose --profile full up --build)
+  redirect-service:
+    profiles: ["full"]
+    build: ./services/redirect-service
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://shorturl:shorturl@postgres:5432/shorturl
+      REDIS_URL: redis://redis:6379
+      PORT: "4001"
+    ports:
+      - "4001:4001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   pgdata:

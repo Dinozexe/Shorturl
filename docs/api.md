@@ -42,4 +42,33 @@
 
 **สัญญา cache กับ redirect-service:** key `link:{code}` = JSON `{i: id, u: url, e: หมดอายุ epoch ms | null}` TTL ≤ 1 ชม. (ไม่เกินเวลาหมดอายุ) เขียนเฉพาะลิงก์ที่ ACTIVE และยังไม่หมดอายุ; ปิด/ลบ/แก้ให้ไม่ ACTIVE = ล้าง key; `0` = negative cache ที่ redirect-service เขียนเอง (ถูกเขียนทับเมื่อสร้าง/เปิดลิงก์)
 
+## redirect-service (P4) — ไม่มี prefix `/api`
+
+| Method | Path | อธิบาย |
+|---|---|---|
+| GET | `/:code` | **302** ไป URL ปลายทาง + `Cache-Control: no-store` (ห้าม 301 เพราะ browser แคชแล้วนับคลิกไม่ครบ); ไม่พบ/ปิด/หมดอายุ → หน้าไทย **404**; `code` ต้องเป็น `[A-Za-z0-9_-]{3,30}` ไม่งั้น 404 ทันทีโดยไม่แตะ Redis/DB (แยกตัวพิมพ์เล็กใหญ่) |
+| HEAD | `/:code` | redirect เหมือน GET แต่ **ไม่นับคลิก** (ตัวพรีวิวลิงก์) |
+| GET | `/` | 302 → `FRONTEND_ORIGIN` |
+| GET | `/health` | `{status:"ok"}` · `/favicon.ico` → 204 |
+
+**ลำดับการทำงาน:** อ่าน Redis `link:{code}` → hit: redirect (ไม่แตะ DB) · miss: `SELECT` จาก `links` แล้วเขียน cache (positive TTL ≤ 1 ชม. หรือไม่เกินเวลาหมดอายุ; negative `0` TTL 60 วิ) · Redis ล่ม = ไปถาม DB แทน · DB ล่ม = 503
+**สัญญาที่ห้ามเปลี่ยนฝั่งเดียว:** cache `link:{code}` (ดูหัวข้อ Links) และคิวคลิกด้านล่าง
+
+**คิวคลิก** — Redis list `clicks:queue` (ต่อท้ายด้วย RPUSH หลังตอบ redirect ไปแล้ว ไม่หน่วงผู้ใช้) แต่ละรายการเป็น JSON:
+
+| ฟิลด์ | ความหมาย |
+|---|---|
+| `l` | link id |
+| `h` | `sha256(ip + IP_HASH_SALT)` — **ไม่เก็บ IP ดิบ** |
+| `ua` | User-Agent (≤ 512 ตัว) หรือ null |
+| `r` | **origin** ของ referer เท่านั้น (ตัด path/query) หรือ null |
+| `c` | ประเทศ ISO2 จาก `CF-IPCountry` — **เชื่อเฉพาะเมื่อ `BEHIND_CLOUDFLARE=true`** ไม่งั้น null (กันปลอม header) |
+| `d` | `desktop` / `mobile` / `tablet` / `bot` / `unknown` |
+| `o`, `b` | ระบบปฏิบัติการ / เบราว์เซอร์ (null ถ้าไม่รู้) |
+| `t` | เวลา epoch ms |
+
+- คิวยาวเกิน `CLICK_QUEUE_MAX` (ค่าเริ่มต้น 50000) = ทิ้งคลิกเก่าสุด (กัน Redis เต็มตอน analytics ล่ม)
+- **Ping flush:** หลังคลิก redirect-service เรียก `POST {ANALYTICS_URL}/internal/flush` พร้อม header `x-internal-key` แบบไม่รอผล ≤ 1 ครั้งต่อ `CLICK_FLUSH_SECONDS` (ข้าม instance ด้วย lock `clicks:flush:ping`) และถ้ามีคลิกในรอบที่ถูกกัน จะตั้ง timer ping ตอนครบรอบ — ไม่มี polling/cron; analytics ล่มไม่กระทบ redirect (คิวค้างใน Redis)
+- **ข้อควรระวังสำหรับ analytics-service (P5):** คอลัมน์เวลาใน DB เป็น `timestamp` (UTC ไม่มี time zone) — ตอน INSERT/อ่านด้วย `pg` ต้องแปลงชัดเจน (`to_timestamp(t/1000.0) AT TIME ZONE 'UTC'`, `... AT TIME ZONE 'UTC'` ตอนอ่าน) ไม่งั้นเพี้ยนตาม timezone ของเครื่อง
+
 **Middleware:** `requireAuth` (ตรวจ Bearer + blacklist + ban จาก DB) → `requireRole(...roles)` (ระบุบทบาทที่อนุญาตให้ครบ; ปฏิเสธ API key)
