@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useI18n, type Lang } from '@/lib/i18n';
 import { useTheme, type Theme } from '@/lib/theme';
 
@@ -32,24 +33,48 @@ export function HeaderControls() {
   const next: Theme = theme === 'dark' ? 'light' : 'dark';
   const label = t(next === 'dark' ? 'theme.toDark' : 'theme.toLight');
 
+  // แถบสีฟ้าที่เลื่อนไปอยู่หลังปุ่มภาษาที่เลือก (ปุ่มกว้างไม่เท่ากัน จึงวัดตำแหน่ง/ความกว้างจริง)
+  const refs = useRef<Partial<Record<Lang, HTMLButtonElement | null>>>({});
+  const [pill, setPill] = useState<{ left: number; width: number } | null>(null);
+  const [animate, setAnimate] = useState(false);
+  useLayoutEffect(() => {
+    const el = refs.current[lang];
+    if (el) setPill({ left: el.offsetLeft, width: el.offsetWidth });
+  }, [lang]);
+  useEffect(() => {
+    // เปิดแอนิเมชันหลังวางตำแหน่งแรกแล้ว กันแถบไหลเข้ามาตอนโหลดหน้า
+    const id = requestAnimationFrame(() => setAnimate(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
     <div className="flex items-center gap-2">
-      <div role="group" aria-label={t('lang.label')} className="flex items-center gap-1 text-sm font-medium">
+      <div role="group" aria-label={t('lang.label')} className="relative flex items-center gap-1 text-sm font-medium">
+        {pill && (
+          <span
+            aria-hidden="true"
+            className={`absolute inset-y-0 rounded-md bg-accent ${animate ? 'transition-[left,width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none' : ''}`}
+            style={{ left: pill.left, width: pill.width }}
+          />
+        )}
         {LANGS.map((l) => (
           <button
             key={l.id}
+            ref={(el) => {
+              refs.current[l.id] = el;
+            }}
             type="button"
             onClick={() => setLang(l.id)}
             aria-pressed={lang === l.id}
             lang={l.id}
             title={l.full}
-            className={`rounded-full px-2.5 py-1.5 transition-colors ${lang === l.id ? 'bg-ink text-paper' : 'text-muted hover:bg-ink/[0.06] hover:text-ink'}`}
+            className={`relative rounded-md px-2.5 py-1.5 transition-colors duration-300 ${lang === l.id ? 'text-on-accent' : 'text-muted hover:text-ink'}`}
           >
             {l.label}
           </button>
         ))}
       </div>
-      <button type="button" onClick={toggle} className="rounded-full p-2 text-muted transition-colors hover:bg-ink/[0.06] hover:text-ink" title={label} aria-label={label}>
+      <button type="button" onClick={toggle} className="rounded-md p-2 text-muted transition-colors hover:bg-ink/[0.06] hover:text-ink" title={label} aria-label={label}>
         <ThemeIcon to={next} />
       </button>
     </div>

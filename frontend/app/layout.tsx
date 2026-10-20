@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { JetBrains_Mono, Noto_Sans_Thai } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { LoginModalProvider } from '@/components/LoginModal';
 import { ToastProvider } from '@/components/Toast';
 import { AuthProvider } from '@/lib/auth';
 import { I18nProvider } from '@/lib/i18n';
@@ -29,7 +30,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <I18nProvider>
           <ThemeProvider>
             <AuthProvider>
-              <ToastProvider>{children}</ToastProvider>
+              <ToastProvider>
+                <LoginModalProvider>{children}</LoginModalProvider>
+              </ToastProvider>
             </AuthProvider>
           </ThemeProvider>
         </I18nProvider>

@@ -6,8 +6,8 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "next dev -p 3000",
-    "build": "NEXT_DIST_DIR=dist next build"
+    "dev": "NEXT_DIST_DIR=.next-dev next dev -p 3000",
+    "build": "next build"
   },
   "dependencies": {
     "next": "^14.2.35",

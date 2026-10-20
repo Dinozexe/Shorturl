@@ -22,7 +22,7 @@ export function DailyChart({ daily }: { daily: Stats['daily'] }) {
         <span className="absolute left-0 top-0 text-xs text-muted">{fmt.number(max)}</span>
         {daily.map((d) => (
           <div key={d.day} className="group relative flex h-full flex-1 items-end" title={t('stats.barTitle', { d: fmt.day(d.day), n: fmt.number(d.clicks) })}>
-            <div className={`w-full rounded-t-[2px] ${d.clicks > 0 ? 'bg-ink' : 'bg-line'}`} style={{ height: d.clicks > 0 ? `${Math.max(4, (d.clicks / max) * 100)}%` : '2px' }} />
+            <div className={`w-full rounded-t-[2px] ${d.clicks > 0 ? 'bg-accent' : 'bg-line'}`} style={{ height: d.clicks > 0 ? `${Math.max(4, (d.clicks / max) * 100)}%` : '2px' }} />
           </div>
         ))}
       </div>
@@ -55,7 +55,7 @@ export function Breakdown({ title, items, label }: { title: string; items: Bucke
                 <span className="font-semibold tabular-nums">{fmt.number(i.clicks)}</span>
               </div>
               <div className="mt-1 h-1.5 rounded-full bg-line" aria-hidden="true">
-                <div className="h-full rounded-full bg-ink" style={{ width: `${(i.clicks / max) * 100}%` }} />
+                <div className="h-full rounded-full bg-accent" style={{ width: `${(i.clicks / max) * 100}%` }} />
               </div>
             </li>
           ))}

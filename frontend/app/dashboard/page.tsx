@@ -1,5 +1,6 @@
 'use client';
 
+import { useLoginModal } from '@/components/LoginModal';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DeleteDialog } from '@/components/ConfirmDialog';
@@ -32,6 +33,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
+  const { openLogin } = useLoginModal();
   const [busyId, setBusyId] = useState<number | null>(null);
 
   const [created, setCreated] = useState<Link | null>(null);
@@ -44,8 +46,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // session หมดอายุ → ไปหน้าเข้าสู่ระบบ; แต่ถ้าผู้ใช้กดออกจากระบบเอง ปุ่มนั้นจะพาไปหน้าแรกเอง
-    if (status === 'anon' && !signedOut) router.replace('/login');
-  }, [status, signedOut, router]);
+    if (status === 'anon' && !signedOut) {
+      router.replace('/');
+      openLogin();
+    }
+  }, [status, signedOut, router, openLogin]);
 
   useEffect(() => {
     const t = setTimeout(() => {

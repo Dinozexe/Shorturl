@@ -6,10 +6,12 @@
   --paper: 255 255 255; /* พื้นหน้า: ขาวล้วน */
   --surface: 255 255 255;
   --ink: 15 18 28; /* #0F121C ดำอมน้ำเงินนิดๆ: ตัวอักษรและปุ่มหลัก */
+  --accent: 37 99 235; /* #2563EB สีธีมหลัก (ฟ้า): ปุ่มหลัก เมนูที่เปิดอยู่ ไฮไลต์ กราฟ */
+  --on-accent: 255 255 255; /* ตัวอักษรบนสีธีม (ขาวบนฟ้าเข้ม = 5.2:1) */
   --muted: 98 106 122; /* #626A7A */
   --line: 223 227 235; /* #DFE3EB เส้นขอบ */
   --danger: 200 52 43;
-  --ok: 27 127 92;
+  --ok: 21 108 76; /* เขียวเข้มขึ้นให้ป้าย "ใช้งานอยู่" อ่านชัด */
   color-scheme: light;
 }
 
@@ -18,6 +20,8 @@
   --paper: 12 14 20;
   --surface: 19 22 31;
   --ink: 240 242 247;
+  --accent: 96 165 250;
+  --on-accent: 12 14 20; /* โหมดมืดสีธีมสว่างขึ้น → ตัวอักษรบนสีธีมเป็นสีเข้ม (≈8:1) */
   --muted: 155 162 178;
   --line: 40 45 58;
   --danger: 255 128 118;
@@ -30,6 +34,8 @@
     --paper: 12 14 20;
     --surface: 19 22 31;
     --ink: 240 242 247;
+    --accent: 96 165 250;
+    --on-accent: 12 14 20;
     --muted: 155 162 178;
     --line: 40 45 58;
     --danger: 255 128 118;
@@ -63,9 +69,9 @@
   .card {
     @apply rounded-lg border border-line bg-surface;
   }
-  /* ปุ่มหลัก: พื้นดำ ตัวอักษรขาว */
+  /* ปุ่มหลัก: สีธีม (ฟ้า) ตัวอักษรตามสีธีมของโหมด */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-md bg-ink px-5 py-3 font-semibold text-paper transition-[opacity,transform] hover:opacity-85 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-accent px-5 py-3 font-semibold text-on-accent transition-[opacity,transform] hover:opacity-90 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:border-ink/50 disabled:cursor-not-allowed disabled:opacity-60;
@@ -95,14 +101,14 @@
     @apply inline-flex items-center justify-center gap-2 rounded-md bg-paper px-4 py-2.5 text-sm font-semibold text-ink transition-opacity hover:opacity-85 active:translate-y-px;
   }
   .btn-ink {
-    @apply inline-flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-paper transition-[filter,transform] hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition-[opacity,transform] hover:opacity-90 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
   }
 }
 
 @layer components {
   /* ปุ่มเลือกวิธีเข้าสู่ระบบ: เต็มความกว้าง ไอคอนนำหน้าข้อความ สไตล์เดียวกับปุ่มอื่นในระบบ */
   .btn-provider {
-    @apply flex h-14 w-full items-center justify-center gap-3 rounded-xl border border-line bg-surface px-4 font-medium text-ink shadow-sm transition-colors hover:border-ink;
+    @apply flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-line bg-surface px-4 font-medium text-ink shadow-sm transition-colors hover:border-ink;
   }
 }
 
@@ -138,7 +144,7 @@
 @keyframes qr-scan {
   0% { transform: translateY(0); opacity: 0; }
   12%, 88% { opacity: 1; }
-  100% { transform: translateY(52px); opacity: 0; }
+  100% { transform: translateY(88px); opacity: 0; }
 }
 @keyframes qr-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.12; } }
 .decor-scan { animation: qr-scan 2.8s ease-in-out infinite; }
@@ -160,9 +166,18 @@
 .decor-fill-b { transform-origin: left; animation: fill-b 4.6s ease-in-out infinite; }
 .decor-dot { animation: dot-pulse 2.2s ease-in-out infinite; }
 
+/* สวิตช์เปิด/ปิดลิงก์: ปุ่มกลมเลื่อนไปมา พื้นสวิตช์เปลี่ยนสีตาม */
+@keyframes knob-slide { 0%, 40% { transform: translateX(0); } 50%, 90% { transform: translateX(22px); } 100% { transform: translateX(0); } }
+@keyframes knob-bg { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
+.decor-knob { animation: knob-slide 5s ease-in-out infinite; }
+.decor-knob-bg { animation: knob-bg 5s ease-in-out infinite; }
+/* วงคลื่นแผ่ออก (ปลอดภัย/บัญชี) */
+@keyframes ring-out { 0% { transform: scale(0.8); opacity: 0.5; } 100% { transform: scale(1.6); opacity: 0; } }
+.decor-ring { animation: ring-out 2.8s ease-out infinite; }
+
 /* ผู้ใช้ตั้งลดการเคลื่อนไหว: หยุดทั้งหมด (การ์ดแสดงนิ่งในท่าสุดท้าย) */
 @media (prefers-reduced-motion: reduce) {
-  .decor, .decor *, .decor-line, .decor-label-long, .decor-label-short, .decor-scan, .decor-twinkle, .decor-bar, .decor-fill-a, .decor-fill-b, .decor-dot {
+  .decor, .decor *, .decor-line, .decor-label-long, .decor-label-short, .decor-scan, .decor-twinkle, .decor-bar, .decor-fill-a, .decor-fill-b, .decor-dot, .decor-knob, .decor-knob-bg, .decor-ring {
     animation: none !important;
   }
   .decor-label-short { opacity: 0; }

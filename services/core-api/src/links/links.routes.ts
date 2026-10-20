@@ -9,6 +9,18 @@ import { toLinkDto } from './link.dto';
 import { AnalyticsNotFound, fetchLinkStats } from './stats.client';
 import { createLink, deleteLink, getOwnedLink, listLinks, updateLink } from './links.service';
 
+// ผู้ใช้ที่ยังไม่ล็อกอิน: ย่อได้แต่ลิงก์สั้นล้วน (สุ่มรหัส ไม่มีชื่อเอง ไม่มี QR/สถิติ/ประวัติ) และลิงก์หมดอายุใน 7 วัน
+export const guestRouter = Router();
+const GUEST_LINK_DAYS = 7;
+
+guestRouter.post('/links', rateLimit('guest-link-create', 10, 60), async (req, res) => {
+  const b = bodyOf(req.body);
+  if (!isString(b.url)) throw new HttpError(400, 'กรุณากรอกลิงก์');
+  const expiresAt = new Date(Date.now() + GUEST_LINK_DAYS * 24 * 3600 * 1000).toISOString();
+  const link = await createLink(null, { url: b.url, expiresAt });
+  res.status(201).json({ shortUrl: toLinkDto(link).shortUrl, originalUrl: link.originalUrl, expiresAt: link.expiresAt });
+});
+
 export const linksRouter = Router();
 linksRouter.use(requireAuth);
 

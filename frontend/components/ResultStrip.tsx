@@ -19,10 +19,10 @@ export function ResultStrip({ link, onQr, onDismiss }: Props) {
   const copy = async () => toast((await copyText(link.shortUrl)) ? t('common.copied') : t('common.copyFailedManual'));
 
   return (
-    <section aria-label={t('result.aria')} className="ruler rounded-md bg-ink px-5 pb-8 pt-5 text-paper [--ruler:var(--paper)] sm:px-7">
+    <section aria-label={t('result.aria')} className="ruler rounded-md bg-accent px-5 pb-8 pt-5 text-on-accent [--ruler:var(--on-accent)] sm:px-7">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-semibold">{t('result.title')}</p>
-        <button type="button" onClick={onDismiss} className="-mr-2 -mt-1 rounded px-2 py-1 text-sm font-medium underline underline-offset-2 hover:bg-paper/15">
+        <button type="button" onClick={onDismiss} className="-mr-2 -mt-1 rounded px-2 py-1 text-sm font-medium underline underline-offset-2 hover:bg-on-accent/15">
           {t('result.hide')}
         </button>
       </div>

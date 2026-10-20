@@ -25,6 +25,10 @@ export function CreateForm({ onCreated, prefill }: { onCreated: (link: Link) => 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!url.trim()) {
+      setError(t('hero.empty'));
+      return;
+    }
     setBusy(true);
     try {
       const link = await api<Link>('/api/links', {
@@ -50,7 +54,7 @@ export function CreateForm({ onCreated, prefill }: { onCreated: (link: Link) => 
         placeholder={t('hero.placeholder')}
         label={t('hero.label')}
         submit={busy ? t('create.submitting') : t('hero.submit')}
-        disabled={busy || !url.trim()}
+        disabled={busy}
         invalid={!!error}
         describedBy={error ? 'create-error' : undefined}
       />

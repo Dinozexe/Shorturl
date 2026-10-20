@@ -30,7 +30,7 @@ function parseExpiry(value: unknown): Date {
   return d;
 }
 
-export async function createLink(userId: string, input: { url: string; alias?: string; expiresAt?: string | null }) {
+export async function createLink(userId: string | null, input: { url: string; alias?: string; expiresAt?: string | null }) {
   const target = await checkTarget(input.url);
   const expiresAt = input.expiresAt ? parseExpiry(input.expiresAt) : null;
   const data = { userId, originalUrl: target.href, originalHost: target.host, expiresAt };

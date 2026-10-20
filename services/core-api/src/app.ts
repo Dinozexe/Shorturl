@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import { authRouter } from './auth/auth.routes';
 import { config } from './common/config';
-import { linksRouter } from './links/links.routes';
+import { guestRouter, linksRouter } from './links/links.routes';
 import { errorHandler, notFoundHandler } from './common/http-error';
 
 export function createApp() {
@@ -18,6 +18,7 @@ export function createApp() {
     res.json({ status: 'ok' });
   });
   app.use('/api/auth', authRouter);
+  app.use('/api/guest', guestRouter);
   app.use('/api/links', linksRouter);
 
   app.use(notFoundHandler);

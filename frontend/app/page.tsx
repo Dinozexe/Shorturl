@@ -6,13 +6,12 @@ import { HeroShortener } from '@/components/HeroShortener';
 import { useI18n } from '@/lib/i18n';
 
 const PERKS = ['home.perk1', 'home.perk2', 'home.perk3'] as const;
-const FACTS = [1, 2, 3] as const;
 
 function Check() {
   return (
     <svg viewBox="0 0 20 20" className="h-4 w-4 shrink-0" aria-hidden="true">
-      <circle cx="10" cy="10" r="10" className="fill-ink" />
-      <path d="m6 10.5 2.6 2.6L14 7.8" fill="none" className="stroke-paper" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="10" cy="10" r="10" className="fill-accent" />
+      <path d="m6 10.5 2.6 2.6L14 7.8" fill="none" className="stroke-on-accent" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -31,19 +30,19 @@ export default function HomePage() {
           />
           <HeroDecor />
 
-          <div className="relative z-10 px-5 py-16 text-center sm:py-24 lg:pb-48 lg:pt-28">
-            <h1 className="text-[2.5rem] font-bold leading-[1.18] tracking-tight sm:text-6xl sm:leading-[1.12]">
+          <div className="relative z-10 px-5 py-14 text-center sm:py-20 lg:pb-52 lg:pt-32">
+            <h1 className="text-[1.875rem] font-bold leading-[1.22] tracking-tight sm:text-[2.75rem] sm:leading-[1.15]">
               <span className="block">{t('home.h1a')}</span>
               <span className="block">{t('home.h1b')}</span>
             </h1>
 
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted">{t('home.sub')}</p>
+            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-muted">{t('home.sub')}</p>
 
-            <div className="mt-9">
+            <div className="mt-7">
               <HeroShortener />
             </div>
 
-            <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium">
+            <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] font-medium">
               {PERKS.map((k) => (
                 <li key={k} className="flex items-center gap-2">
                   <Check />
@@ -53,15 +52,6 @@ export default function HomePage() {
             </ul>
           </div>
         </section>
-
-        <dl className="card mt-8 grid divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-          {FACTS.map((n) => (
-            <div key={n} className="p-5 sm:p-6">
-              <dt className="font-bold">{t(`home.fact${n}.title` as 'home.fact1.title')}</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-muted">{t(`home.fact${n}.body` as 'home.fact1.body')}</dd>
-            </div>
-          ))}
-        </dl>
       </main>
     </>
   );
