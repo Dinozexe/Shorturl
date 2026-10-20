@@ -19,6 +19,12 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     res.status(err.status).json({ statusCode: err.status, message: err.message });
     return;
   }
+  // body-parser (JSON พัง/ใหญ่เกิน) ส่ง status 4xx มาเอง
+  const status = (err as { status?: unknown })?.status;
+  if (typeof status === 'number' && status >= 400 && status < 500) {
+    res.status(status).json({ statusCode: status, message: status === 413 ? 'ข้อมูลใหญ่เกินไป' : 'รูปแบบข้อมูลไม่ถูกต้อง' });
+    return;
+  }
   console.error(err);
   res.status(500).json({ statusCode: 500, message: 'เกิดข้อผิดพลาดภายในระบบ' });
 };

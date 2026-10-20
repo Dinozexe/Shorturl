@@ -32,6 +32,8 @@ export const config = {
   jwtRefreshSecret: secret('JWT_REFRESH_SECRET'),
   accessTtlSec: 15 * 60,
   refreshTtlSec: 7 * 24 * 60 * 60,
+  publicBaseUrl: required('PUBLIC_BASE_URL').replace(/\/+$/, ''),
+  shortCodeLength: Math.min(12, Math.max(3, Number(process.env.SHORT_CODE_LENGTH ?? 5) || 5)),
   frontendOrigin: required('FRONTEND_ORIGIN'),
   apiBaseUrl: required('API_BASE_URL'),
   behindCloudflare: process.env.BEHIND_CLOUDFLARE === 'true',

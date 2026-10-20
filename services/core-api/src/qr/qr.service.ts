@@ -1,0 +1,12 @@
+import QRCode from 'qrcode';
+
+export type QrFormat = 'png' | 'svg';
+
+// ดำบนขาว, ECC ระดับ H, quiet zone 4 โมดูล (ตามมาตรฐาน) — ไม่ใส่โลโก้/สีเพื่อให้สแกนติดแน่
+const BASE = { errorCorrectionLevel: 'H', margin: 4, color: { dark: '#000000', light: '#ffffff' } } as const;
+
+/** PNG: scale = จำนวนพิกเซลต่อ 1 โมดูล (จำนวนเต็ม) ภาพจึงคมไม่เบลอ */
+export async function renderQr(text: string, format: QrFormat, scale: number): Promise<Buffer | string> {
+  if (format === 'svg') return QRCode.toString(text, { ...BASE, type: 'svg' });
+  return QRCode.toBuffer(text, { ...BASE, type: 'png', scale });
+}

@@ -11,12 +11,12 @@
 | P0 | ER, DFD, Architecture Diagram, PRD | เสร็จ |
 | P1 | โครงโปรเจกต์ + ฐานข้อมูล (Prisma schema, migration, seed) | เสร็จ |
 | P2 | core-api: SSO, JWT + refresh rotation, RBAC, audit, บัญชีเดโม | เสร็จ (ยังไม่ได้ทดสอบกับ Google จริง) |
-| P3 | ลิงก์ + QR | ยังไม่ทำ |
+| P3 | ลิงก์ + QR (core-api: สร้าง/ค้นหา/แก้/ลบ, alias, ตรวจ URL, โดเมนต้องห้าม, QR PNG/SVG) | เสร็จ |
 | P4 | redirect-service | ยังไม่ทำ |
 | P5 | analytics-service | ยังไม่ทำ |
 | P6 | Frontend | ยังไม่ทำ |
 | P7 | แอดมิน (ผู้ใช้ / ลิงก์ / โดเมนต้องห้าม / audit log) | ยังไม่ทำ |
-| P8 | API key + CLI | ถ้ามีเวลา |
+| P8 | API key + CLI สำหรับจัดการลิงก์ (`surl login/shorten/ls/...`) | ถ้ามีเวลา (CLI สำหรับรันโปรเจกต์ `surl dev` ทำแล้ว) |
 | P9–P10 | Deploy, README ฉบับสมบูรณ์ | ยังไม่ทำ |
 
 แผนละเอียดและเกณฑ์ตรวจรับอยู่ที่ [`docs/prd.md`](docs/prd.md)
@@ -58,7 +58,7 @@
 
 ## ติดตั้งและรันในเครื่อง
 
-ตอนนี้รันได้เฉพาะ `core-api` (P1–P2)
+ตอนนี้รันได้เฉพาะ `core-api` (P1–P3)
 
 ```bash
 git clone <repo-url> && cd Shorturl
@@ -75,6 +75,24 @@ npx prisma migrate deploy     # สร้างตาราง
 npx prisma db seed            # จองแอดมินคนแรก + สร้างบัญชีเดโม
 npm run start:dev             # http://localhost:4000/api/health
 ```
+
+### รันด้วย `surl dev` (CLI)
+
+มี CLI สำหรับรันทั้งโปรเจกต์ (ไม่มี dependency ใช้ Node 18+) — เปิดเมนูให้เลือก service หรือรันทั้งหมด:
+
+```bash
+npm link                      # ครั้งเดียว ที่ root เพื่อให้เรียก `surl` ได้ทุกที่ (หรือใช้ `npm run dev` / `node cli/surl.mjs dev` แทนก็ได้)
+
+surl dev                      # เมนู: ↑↓ เลื่อน, เว้นวรรค เลือก/ยกเลิก, a ทั้งหมด, Enter เริ่ม, q ออก
+surl dev all                  # รันทุก service ที่มีโค้ดแล้ว ไม่ถามเมนู
+surl dev core-api frontend    # รันเฉพาะที่ระบุ (ชื่อย่อ: db, core, redirect, analytics, web)
+surl status                   # ดูว่า port ไหนเปิดอยู่
+surl migrate                  # prisma migrate deploy ด้วยค่าจาก .env
+```
+
+`surl dev` จะ: เปิด PostgreSQL + Redis ผ่าน docker compose และรอจนพร้อม → `npm install` ให้ถ้ายังไม่มี `node_modules` → `prisma migrate deploy` (ข้ามด้วยคำท้าย `nomigrate`) → เริ่ม service ที่เลือกพร้อมกัน โดยแสดง log แยกสีตามชื่อ service ส่งค่าจาก `.env` ให้ทุกตัว ข้าม service ที่ port ถูกใช้อยู่แล้ว กด **Ctrl+C** เพื่อปิดทั้งหมด (ใส่คำท้าย `down` ถ้าต้องการให้หยุด docker ด้วย เช่น `surl dev all down`; ค่าเริ่มต้นปล่อยรันต่อ)
+
+เมนูจะแสดงเฉพาะ service ที่มีโค้ดแล้ว ตอนนี้คือ infra และ core-api
 
 สร้างค่า secret (รันแยกกันทีละค่า ให้ได้คนละค่า):
 
@@ -154,13 +172,16 @@ services/
     src/
       auth/               SSO, JWT, middleware (requireAuth / requireRole), routes
       audit/              บันทึก audit log
+      links/              CRUD ลิงก์ + cache `link:{code}`
+      qr/                 สร้าง QR (PNG/SVG)
       common/             config, error handler, rate limit
       prisma/ redis/      client
       app.ts main.ts      สร้าง express app / เปิดพอร์ต
   redirect-service/       (P4)
   analytics-service/      (P5)
 frontend/                 (P6)
-cli/                      (P8)
+cli/surl.mjs             CLI (`surl dev`, `surl status`, `surl migrate`; คำสั่งจัดการลิงก์เพิ่มใน P8)
+package.json              (root) ลงทะเบียนคำสั่ง `surl` + `npm run dev`
 docs/                     prd, er-diagram, dfd, api, diagrams.html, img/
 docker-compose.yml        PostgreSQL + Redis สำหรับพัฒนา
 ```

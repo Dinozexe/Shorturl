@@ -1,0 +1,12 @@
+{
+  "name": "shorturl",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Short URL — CLI (`surl`) และสคริปต์ระดับ root",
+  "bin": { "surl": "cli/surl.mjs" },
+  "scripts": {
+    "dev": "node cli/surl.mjs dev",
+    "status": "node cli/surl.mjs status"
+  },
+  "engines": { "node": ">=18" }
+}
