@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum SsoProvider {
+  google
+  microsoft
+}
+
+enum LinkStatus {
+  ACTIVE
+  DISABLED
+  ADMIN_DISABLED
+}
+
+enum Device {
+  desktop
+  mobile
+  tablet
+  bot
+  unknown
+}
+
+enum AuditAction {
+  USER_REGISTER
+  USER_LOGIN
+  USER_LOGIN_BLOCKED
+  USER_BAN
+  USER_UNBAN
+  USER_ROLE_CHANGE
+  LINK_DISABLE
+  LINK_ENABLE
+  DOMAIN_BLOCK
+  DOMAIN_UNBLOCK
+  API_KEY_CREATE
+  API_KEY_REVOKE
+}
+
+enum AuditTarget {
+  USER
+  LINK
+  DOMAIN
+  API_KEY
+}
+
+model User {
+  id          String    @id @default(uuid()) @db.Uuid
+  email       String    @unique
+  name        String?
+  role        Role      @default(USER)
+  isBanned    Boolean   @default(false) @map("is_banned")
+  lastLoginAt DateTime? @map("last_login_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  identities     SsoIdentity[]
+  apiKeys        ApiKey[]
+  links          Link[]
+  auditLogs      AuditLog[]
+  blockedDomains BlockedDomain[]
+
+  @@map("users")
+}
+
+model SsoIdentity {
+  id            String      @id @default(uuid()) @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  provider      SsoProvider
+  subject       String
+  email         String
+  emailVerified Boolean     @default(false) @map("email_verified")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  lastLoginAt   DateTime    @default(now()) @map("last_login_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, subject])
+  @@unique([userId, provider])
+  @@map("sso_identities")
+}
+
+model ApiKey {
+  id         Int       @id @default(autoincrement())
+  userId     String    @map("user_id") @db.Uuid
+  name       String
+  prefix     String
+  keyHash    String    @unique @map("key_hash")
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("api_keys")
+}
+
+model Link {
+  id           Int        @id @default(autoincrement())
+  userId       String?    @map("user_id") @db.Uuid
+  shortCode    String     @unique @map("short_code")
+  originalUrl  String     @map("original_url")
+  originalHost String     @map("original_host")
+  status       LinkStatus @default(ACTIVE)
+  expiresAt    DateTime?  @map("expires_at")
+  clickCount   Int        @default(0) @map("click_count")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  user       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  clicks     Click[]
+  dailyStats LinkDailyStat[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([originalHost])
+  @@map("links")
+}
+
+model Click {
+  id        BigInt   @id @default(autoincrement())
+  linkId    Int      @map("link_id")
+  ipHash    String   @map("ip_hash")
+  userAgent String?  @map("user_agent")
+  referer   String?
+  country   String?
+  device    Device   @default(unknown)
+  os        String?
+  browser   String?
+  clickedAt DateTime @default(now()) @map("clicked_at")
+
+  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@index([linkId, clickedAt])
+  @@index([clickedAt])
+  @@map("clicks")
+}
+
+model LinkDailyStat {
+  linkId Int      @map("link_id")
+  day    DateTime @db.Date
+  clicks Int      @default(0)
+
+  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@id([linkId, day])
+  @@map("link_daily_stats")
+}
+
+model BlockedDomain {
+  id          Int      @id @default(autoincrement())
+  domain      String   @unique
+  reason      String?
+  createdById String?  @map("created_by_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@map("blocked_domains")
+}
+
+model AuditLog {
+  id         Int          @id @default(autoincrement())
+  actorId    String?      @map("actor_id") @db.Uuid
+  action     AuditAction
+  targetType AuditTarget? @map("target_type")
+  targetId   String?      @map("target_id")
+  detail     String?
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([action, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}

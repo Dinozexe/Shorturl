@@ -135,7 +135,7 @@ ER, DFD L0–2, Architecture, `CLAUDE.md`, PRD นี้
 - [ ] seed: จองอีเมลแอดมินจาก `ADMIN_EMAIL`
 - [ ] `.env.example`
 
-**เสร็จเมื่อ:** `prisma migrate dev` ผ่านบน DB เปล่า, ตารางครบ 9 ตาราง, seed ทำงาน  
+**เสร็จเมื่อ:** `prisma migrate dev` ผ่านบน DB เปล่า, ตารางครบ 8 ตาราง (ตาม ER), seed ทำงาน  
 **Commit:** `chore: scaffold + db schema`
 
 ### P2 — core-api: SSO, JWT, RBAC (~4 ชม.)

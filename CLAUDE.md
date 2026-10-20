@@ -4,7 +4,7 @@
 
 ## โปรเจกต์คืออะไร
 
-ระบบย่อลิงก์ (short URL) ของนักศึกษา มหาวิทยาลัยแม่ฟ้าหลวง ฟีเจอร์: ล็อกอินด้วย SSO เท่านั้น (ไม่มีรหัสผ่าน; JWT + refresh), API key สำหรับ CLI (`cli/`), สร้างลิงก์พร้อม alias และวันหมดอายุ, redirect ผ่าน Redis cache, QR Code, สถิติการคลิก, หน้า Admin (ผู้ใช้ / ลิงก์ / โดเมนต้องห้าม / audit log) งานส่งคือ ER Diagram + DFD (อยู่ใน `docs/`) และต้อง deploy ขึ้นเซิร์ฟเวอร์จริงทั้ง frontend / backend / DB
+ระบบย่อลิงก์ (short URL) สำหรับทุกคน — ย่อได้ทุกลิงก์ (http/https ที่เข้าถึงได้จากภายนอก) ไม่จำกัดกลุ่มผู้ใช้หรือองค์กร ฟีเจอร์: ล็อกอินด้วย SSO เท่านั้น (ไม่มีรหัสผ่าน; JWT + refresh), API key สำหรับ CLI (`cli/`), สร้างลิงก์พร้อม alias และวันหมดอายุ, redirect ผ่าน Redis cache, QR Code, สถิติการคลิก, หน้า Admin (ผู้ใช้ / ลิงก์ / โดเมนต้องห้าม / audit log) งานส่งคือ ER Diagram + DFD (อยู่ใน `docs/`) และต้อง deploy ขึ้นเซิร์ฟเวอร์จริงทั้ง frontend / backend / DB
 
 **บริบทงาน:** โปรเจกต์นี้คือข้อสอบ Developer ของ Synnerry (Node.js/React/Vue/PHP; DB: MySQL/MSSQL/PostgreSQL/MongoDB; ส่ง repo + README ติดตั้ง + URL ทดสอบ + user/password ภายใน 3 วัน แล้ว Video Call ≤ 30 นาที) เกณฑ์: DFD Level 0, ER, สร้าง Short URL แล้วคลิกได้จริง, QR Code, ประวัติ + สถิติคลิก, ไอเดียเพิ่มเติม; ทำเป็น **Micro Service + Architecture Diagram** จะพิจารณาเป็นพิเศษ → เจ้าของเลือกแยก 3 service และ **ต้องล็อกอินก่อนสร้างลิงก์ (ไม่ทำ guest)** โดยใช้ SSO เป็นทางหลัก
 
@@ -87,7 +87,7 @@ cd ../../frontend && npm run build          # next build (ตรวจ type ด�
 ## ข้อควรระวัง
 
 - **Render free:** ทั้ง 3 service หลับแยกกันหลังว่าง ~15 นาที (ปลุก 30–50 วิ), 750 ชม./เดือนรวมทั้งบัญชี; ไม่มี shell → migrate/seed รันตอนสตาร์ทผ่าน `dockerCommand`; ใช้ Neon แบบ direct URL (ไม่ใช่ pooler) + `sslmode=require`; `REDIS_URL` ต้องเป็น `rediss://`
-- **SSO:** Microsoft tenant ของ มฟล. อาจบล็อก consent ของแอปภายนอก; Microsoft ไม่รับรองอีเมล (ไม่ผูกบัญชีเดิมอัตโนมัติ) → แอดมินคนแรกต้องล็อกอินด้วย Google
+- **SSO:** Microsoft tenant ขององค์กร (เช่นมหาวิทยาลัย) อาจบล็อก consent ของแอปภายนอก; Microsoft ไม่รับรองอีเมล (ไม่ผูกบัญชีเดิมอัตโนมัติ) → แอดมินคนแรกต้องล็อกอินด้วย Google
 - **บัญชีทดสอบให้กรรมการ:** ไม่มีรหัสผ่าน ต้องใช้บัญชี Google ทดสอบ (Google อาจขอยืนยันตัวตนเพิ่มจากเครื่องใหม่)
 - **Prisma:** `schema.prisma` เขียนไม่ได้ CHECK constraint → ต้องใส่ใน migration SQL เอง (ดูหมายเหตุ CHECK ใน `docs/er-diagram.md`)
 - ข้อมูลเงื่อนไข free tier ที่ใช้ตัดสินใจ ตรวจครั้งล่าสุด ต.ค. 2026 — เปลี่ยนได้ ให้ยืนยันกับหน้าทางการก่อนสร้างทรัพยากร
