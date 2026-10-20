@@ -6,6 +6,7 @@ import { HttpError } from '../common/http-error';
 import { rateLimit } from '../common/rate-limit';
 import { renderQr, type QrFormat } from '../qr/qr.service';
 import { toLinkDto } from './link.dto';
+import { AnalyticsNotFound, fetchLinkStats } from './stats.client';
 import { createLink, deleteLink, getOwnedLink, listLinks, updateLink } from './links.service';
 
 export const linksRouter = Router();
@@ -66,6 +67,21 @@ linksRouter.patch('/:id', async (req, res) => {
 linksRouter.delete('/:id', async (req, res) => {
   await deleteLink(req.user!.id, parseId(req.params.id));
   res.status(204).end();
+});
+
+// สถิติการคลิก (?days=1..365 ค่าเริ่มต้น 30) — ดึงจาก analytics-service; ล่มแล้วตอบ unavailable: true แทน error
+linksRouter.get('/:id/stats', async (req, res) => {
+  const link = await getOwnedLink(req.user!.id, parseId(req.params.id));
+  const days = req.query.days === undefined ? 30 : Number(req.query.days);
+  if (!Number.isInteger(days) || days < 1 || days > 365) throw new HttpError(400, 'days ต้องเป็นจำนวนเต็ม 1–365');
+
+  try {
+    const stats = await fetchLinkStats(link.id, days);
+    if (stats) return void res.json(stats);
+  } catch (e) {
+    if (!(e instanceof AnalyticsNotFound)) throw e;
+  }
+  res.json({ unavailable: true, linkId: link.id, total: link.clickCount });
 });
 
 // รูปแบบ ?format=png|svg&scale=1..20 (PNG: พิกเซลต่อโมดูล)&download=1

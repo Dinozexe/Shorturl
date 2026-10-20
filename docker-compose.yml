@@ -31,9 +31,24 @@ services:
     environment:
       DATABASE_URL: postgresql://shorturl:shorturl@postgres:5432/shorturl
       REDIS_URL: redis://redis:6379
+      ANALYTICS_URL: http://analytics-service:4002
       PORT: "4001"
     ports:
       - "4001:4001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  analytics-service:
+    profiles: ["full"]
+    build: ./services/analytics-service
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://shorturl:shorturl@postgres:5432/shorturl
+      REDIS_URL: redis://redis:6379
+      PORT: "4002"
+    ports:
+      - "4002:4002"
     depends_on:
       postgres:
         condition: service_healthy

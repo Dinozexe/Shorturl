@@ -34,6 +34,8 @@ export const config = {
   refreshTtlSec: 7 * 24 * 60 * 60,
   publicBaseUrl: required('PUBLIC_BASE_URL').replace(/\/+$/, ''),
   shortCodeLength: Math.min(12, Math.max(3, Number(process.env.SHORT_CODE_LENGTH ?? 5) || 5)),
+  analyticsUrl: (process.env.ANALYTICS_URL ?? '').replace(/\/+$/, ''),
+  internalKey: process.env.INTERNAL_API_KEY ?? '',
   frontendOrigin: required('FRONTEND_ORIGIN'),
   apiBaseUrl: required('API_BASE_URL'),
   behindCloudflare: process.env.BEHIND_CLOUDFLARE === 'true',

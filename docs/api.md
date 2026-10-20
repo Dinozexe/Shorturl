@@ -42,6 +42,23 @@
 
 **สัญญา cache กับ redirect-service:** key `link:{code}` = JSON `{i: id, u: url, e: หมดอายุ epoch ms | null}` TTL ≤ 1 ชม. (ไม่เกินเวลาหมดอายุ) เขียนเฉพาะลิงก์ที่ ACTIVE และยังไม่หมดอายุ; ปิด/ลบ/แก้ให้ไม่ ACTIVE = ล้าง key; `0` = negative cache ที่ redirect-service เขียนเอง (ถูกเขียนทับเมื่อสร้าง/เปิดลิงก์)
 
+### สถิติ — `GET /api/links/:id/stats?days=30` (P5)
+
+เจ้าของลิงก์เท่านั้น (คนอื่น = 404) `days` 1–365 (ค่าเริ่มต้น 30) ดึงจาก analytics-service ซึ่ง **flush คิวคลิกก่อนอ่าน** ตัวเลขจึงล่าสุดเสมอ
+ถ้า analytics-service ล่ม/ไม่ได้ตั้งค่า ตอบ **200** `{unavailable: true, linkId, total}` แทน error (รอได้นานถึง 60 วิเพราะ Render free อาจหลับ)
+
+```json
+{ "linkId": 1, "days": 30, "total": 42, "windowClicks": 17, "uniqueVisitors": 9,
+  "daily":     [{"day": "2026-10-20", "clicks": 5}, ...],   // วันตาม UTC เรียงเก่า→ใหม่ เติม 0 ครบ days วัน
+  "referers":  [{"key": "https://facebook.com", "clicks": 8}, {"key": null, "clicks": 5}],   // key null = เข้าตรง/ไม่มี referer
+  "countries": [{"key": "TH", "clicks": 10}],
+  "devices":   [{"key": "mobile", "clicks": 12}, {"key": "bot", "clicks": 1}],
+  "os": [...], "browsers": [...] }                           // แต่ละกลุ่ม top 10 เรียงมาก→น้อย
+```
+- `total` = ยอดสะสมทั้งหมด (`links.click_count`); `windowClicks`/breakdown นับเฉพาะ `days` วันล่าสุด และคลิกดิบเก็บ `CLICK_RETENTION_DAYS` (90) วัน — เกินนั้นเหลือแค่ยอดรายวัน
+- `uniqueVisitors` = จำนวน IP hash ไม่ซ้ำ (ประมาณ ไม่ใช่ตัวตนคน); `devices` นับบอตด้วย (`bot`)
+- วันแบ่งตามเวลา **UTC** (ไม่ใช่เวลาไทย) frontend ควรระบุให้ชัด
+
 ## redirect-service (P4) — ไม่มี prefix `/api`
 
 | Method | Path | อธิบาย |
@@ -70,5 +87,24 @@
 - คิวยาวเกิน `CLICK_QUEUE_MAX` (ค่าเริ่มต้น 50000) = ทิ้งคลิกเก่าสุด (กัน Redis เต็มตอน analytics ล่ม)
 - **Ping flush:** หลังคลิก redirect-service เรียก `POST {ANALYTICS_URL}/internal/flush` พร้อม header `x-internal-key` แบบไม่รอผล ≤ 1 ครั้งต่อ `CLICK_FLUSH_SECONDS` (ข้าม instance ด้วย lock `clicks:flush:ping`) และถ้ามีคลิกในรอบที่ถูกกัน จะตั้ง timer ping ตอนครบรอบ — ไม่มี polling/cron; analytics ล่มไม่กระทบ redirect (คิวค้างใน Redis)
 - **ข้อควรระวังสำหรับ analytics-service (P5):** คอลัมน์เวลาใน DB เป็น `timestamp` (UTC ไม่มี time zone) — ตอน INSERT/อ่านด้วย `pg` ต้องแปลงชัดเจน (`to_timestamp(t/1000.0) AT TIME ZONE 'UTC'`, `... AT TIME ZONE 'UTC'` ตอนอ่าน) ไม่งั้นเพี้ยนตาม timezone ของเครื่อง
+
+## analytics-service (P5) — internal เท่านั้น
+
+ทุก endpoint ใต้ `/internal` ต้องมี header `x-internal-key` = `INTERNAL_API_KEY` (เทียบแบบ constant-time; ไม่ตรง = 401) ไม่เปิดให้ผู้ใช้/เบราว์เซอร์เรียกตรง
+
+| Method | Path | อธิบาย |
+|---|---|---|
+| GET | `/health` | `{status:"ok"}` |
+| POST | `/internal/flush` | ดึง `clicks:queue` เขียนลง DB → `{skipped, inserted, discarded, deadLettered, cleaned}` (`skipped:true` = มี flush อื่นถือ lock อยู่) |
+| GET | `/internal/links/:id/stats?days=` | flush ก่อน แล้วตอบสถิติรูปแบบเดียวกับด้านบน (404 ถ้าไม่มีลิงก์) |
+
+**Flush ทำงานอย่างไร**
+- lock `clicks:flush:lock` (30 วิ, ปล่อยด้วย token) กัน flush ซ้อน → `LPOP` ทีละ `FLUSH_BATCH_SIZE` (1000) สูงสุด 50 ชุด/20 วินาทีต่อครั้ง
+- แต่ละชุดเขียนด้วยคำสั่งเดียว (CTE) = **transaction เดียว**: `INSERT clicks` + `UPSERT link_daily_stats` (+) + `UPDATE links.click_count` (+) — ไม่มีวันที่ยอดรายวัน/ยอดรวม/คลิกดิบไม่ตรงกัน
+- เหตุการณ์ที่รูปแบบผิดหรือลิงก์ถูกลบไปแล้ว → ทิ้ง (นับใน `discarded`) ไม่ขวางรายการอื่น
+- DB ล่ม/หลุด → **คืนคิวไปหัวคิวตามลำดับเดิม** แล้วตอบ 500 (ไม่หาย ไม่ซ้ำ) รอบหน้าลองใหม่
+- DB ปฏิเสธข้อมูลของบางรายการ (class 22/23) → แบ่งครึ่งหาตัวที่พังแล้วย้ายไป Redis list `clicks:dead` (เก็บ ≤ 1000) ส่วนที่เหลือเขียนตามปกติ
+- ลบคลิกดิบที่เก่ากว่า `CLICK_RETENTION_DAYS` ทีละ 5000 แถว **ไม่เกินชั่วโมงละครั้ง** (lock `clicks:cleanup:lock`) พ่วงกับ flush ไม่มี cron/polling; ยอดรายวันเก็บถาวร
+- ข้อจำกัดที่รู้: ถ้า process ตายหลัง `LPOP` แต่ก่อน commit เหตุการณ์ชุดนั้นหาย (หน้าต่างสั้น) — ยอมรับได้สำหรับสถิติ ไม่ใช่ข้อมูลการเงิน
 
 **Middleware:** `requireAuth` (ตรวจ Bearer + blacklist + ban จาก DB) → `requireRole(...roles)` (ระบุบทบาทที่อนุญาตให้ครบ; ปฏิเสธ API key)
