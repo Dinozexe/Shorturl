@@ -1,5 +1,5 @@
 # build context = services/core-api
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 RUN apk add --no-cache openssl
 COPY package*.json ./
@@ -11,7 +11,7 @@ COPY src ./src
 RUN npm run build
 
 # ไม่ prune devDependencies: ต้องใช้ prisma CLI (migrate) และ tsx (seed) ตอนสตาร์ท
-FROM node:20-alpine
+FROM node:26-alpine
 RUN apk add --no-cache openssl
 ENV NODE_ENV=production
 WORKDIR /app
