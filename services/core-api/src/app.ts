@@ -4,6 +4,7 @@ import express from 'express';
 import { adminRouter } from './admin/admin.routes';
 import { authRouter } from './auth/auth.routes';
 import { config } from './common/config';
+import { keysRouter } from './auth/keys.routes';
 import { guestRouter, linksRouter } from './links/links.routes';
 import { errorHandler, notFoundHandler } from './common/http-error';
 
@@ -22,6 +23,7 @@ export function createApp() {
   app.use('/api/admin', adminRouter);
   app.use('/api/guest', guestRouter);
   app.use('/api/links', linksRouter);
+  app.use('/api/keys', keysRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -199,10 +199,10 @@ ER, DFD L0–2, Architecture, PRD นี้
 **เสร็จเมื่อ:** บล็อก `example.org` แล้วลิงก์เก่าของโดเมนนั้นเปิดไม่ได้ทันที + มี log; MODERATOR เข้าแท็บผู้ใช้ไม่ได้ (UI และ API 403)  
 **Commit:** `feat(admin): users, rbac, audit, blocked domains`
 
-### P8 — API key + CLI (~3 ชม.) — *ทำถ้ามีเวลา*
-- [ ] ตาราง `api_keys` (มีใน schema แล้ว) + `POST/GET/DELETE /api/keys` (เฉพาะ session เว็บ), `requireAuth` รับ `surl_…` → `viaKey` (ใช้ `/api/admin/*` ไม่ได้)
-- [ ] หน้าเว็บ `/keys`
-- [ ] `cli/surl.mjs` (Node 18+, ไม่มี dependency): login/shorten/ls/stats/qr/on/off/rm/config/dev
+### P8 — API key + CLI ✅ เสร็จ
+- [x] ตาราง `api_keys` + `POST/GET/DELETE /api/keys` (เฉพาะ session เว็บ), `requireAuth` รับ `surl_…` → `viaKey` (ใช้ `/api/admin/*` ไม่ได้)
+- [x] หน้าเว็บ `/keys`
+- [x] `cli/surl.mjs` (Node 18+, ไม่มี dependency): login/whoami/shorten/ls/stats/qr/on/off/rm/config/logout/dev
 
 **เสร็จเมื่อ:** `surl login --token …` แล้ว `surl shorten …` ได้ลิงก์; เพิกถอน key แล้วใช้ไม่ได้ทันที  
 **Commit:** `feat: api keys + cli`

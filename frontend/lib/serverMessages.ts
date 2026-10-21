@@ -63,6 +63,9 @@ const EXACT: Record<string, string> = {
   'กรุณากรอกโดเมน': 'Please enter a domain.',
   'โดเมนนี้ถูกบล็อกอยู่แล้ว': 'This domain is already blocked.',
   'ไม่พบโดเมน': 'Domain not found.',
+  'API key ไม่ถูกต้องหรือหมดอายุ': 'The API key isn\'t valid or has expired.',
+  'ทำได้เฉพาะจากหน้าเว็บ ไม่รองรับ API key': 'This can only be done from the website, not with an API key.',
+  'ไม่พบ API key': 'API key not found.',
   'วันเริ่มใช้งานไม่ถูกต้อง': 'The start date isn\'t valid.',
   'วันเริ่มใช้งานต้องมาก่อนวันหมดอายุ': 'The start date must be before the expiry date.',
   'รหัสผ่านของลิงก์ไม่ถูกต้อง': 'That link password isn\'t valid.',
@@ -70,6 +73,9 @@ const EXACT: Record<string, string> = {
 };
 
 const PATTERNS: Array<[RegExp, (m: RegExpMatchArray) => string]> = [
+  [/^ชื่อ key ต้องยาว 1–(\d+) ตัวอักษร$/, (m) => `The key name must be 1–${m[1]} characters.`],
+  [/^อายุ key ต้องเป็น 1–(\d+) วัน$/, (m) => `The key lifetime must be 1–${m[1]} days.`],
+  [/^สร้าง API key ได้สูงสุด (\d+) อัน ลบอันที่ไม่ใช้ก่อน$/, (m) => `You can have up to ${m[1]} API keys. Delete one you don't use first.`],
   [/^วันเริ่มใช้งานต้องไม่เกิน (\d+) ปี$/, (m) => `The start date can be at most ${m[1]} years away.`],
   [/^รหัสผ่านของลิงก์ต้องยาว (\d+)–(\d+) ตัวอักษร$/, (m) => `The link password must be ${m[1]}–${m[2]} characters.`],
   [/^จำนวนคลิกสูงสุดต้องเป็นจำนวนเต็ม 1–([\d,]+)$/, (m) => `The open limit must be a whole number from 1 to ${m[1]}.`],

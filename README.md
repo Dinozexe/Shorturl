@@ -16,7 +16,7 @@
 | P5 | analytics-service (flush คิวคลิกลง DB เป็นชุด, สถิติ) + `GET /api/links/:id/stats` | เสร็จ |
 | P6 | Frontend (Next.js): เข้าสู่ระบบ (หน้าต่างเด้ง), ย่อลิงก์ (ไม่ล็อกอินได้แบบลิงก์สั้น 7 วัน), รายการ/ค้นหา, QR ปรับแต่งได้, สถิติ, แก้ไข/ปิด/ลบ, หน้าฟีเจอร์/รูปแบบบัญชี | เสร็จ |
 | P7 | แอดมิน `/admin` (ภาพรวม / ผู้ใช้ / ลิงก์ทั้งหมด / โดเมนที่บล็อก / audit log) — MODERATOR ใช้ภาพรวม/ลิงก์/โดเมน, ADMIN ใช้ได้ทั้งหมด | เสร็จ |
-| P8 | API key + CLI สำหรับจัดการลิงก์ (`surl login/shorten/ls/...`) | ถ้ามีเวลา (CLI สำหรับรันโปรเจกต์ `surl dev` ทำแล้ว) |
+| P8 | API key (หน้า `/keys`) + CLI สำหรับจัดการลิงก์ (`surl login/shorten/ls/stats/qr/on/off/rm`) | เสร็จ |
 | P9–P10 | Deploy, README ฉบับสมบูรณ์ | ยังไม่ทำ |
 
 แผนละเอียดและเกณฑ์ตรวจรับอยู่ที่ [`docs/prd.md`](docs/prd.md)
@@ -102,6 +102,20 @@ surl migrate                  # prisma migrate deploy ด้วยค่าจ�
 ```bash
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
+
+### CLI จัดการลิงก์ (`surl`)
+
+สร้างรหัส API ที่หน้า `/keys` บนเว็บ (เมนูโปรไฟล์ → รหัส API; คัดลอกได้ครั้งเดียว) แล้ว:
+
+```bash
+npm link                                  # ครั้งเดียวที่ root ของโปรเจกต์ → ได้คำสั่ง surl (หรือใช้ node cli/surl.mjs แทน)
+surl login --token surl_… [--api https://api.<โดเมน>]   # ไม่ใส่ --api = http://localhost:4000
+surl shorten https://example.com/long --alias promo --expires 7d --max 100 --password รหัส
+surl ls [-q คำค้น]      surl stats <code>      surl qr <code> -o qr.png
+surl off|on <code>      surl rm <code> -y      surl whoami / logout / config
+```
+
+key เก็บในไฟล์ config ของเครื่อง (สิทธิ์ 600) ใช้ตัวแปร `SURL_TOKEN` / `SURL_API` แทนได้ ทุกคำสั่งใส่ `--json` ได้ · key ใช้ได้กับลิงก์ของเจ้าของเท่านั้น ใช้ `/api/admin/*` และจัดการ key เองไม่ได้ · เพิกถอนที่หน้า `/keys` แล้วใช้ไม่ได้ทันที
 
 ### Frontend
 

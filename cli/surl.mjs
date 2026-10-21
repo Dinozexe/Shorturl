@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // surl — CLI ของโปรเจกต์ (Node 18+, ไม่มี dependency)
-// ตอนนี้มีคำสั่งสำหรับพัฒนา: `surl dev` (เลือก/รันหลาย service พร้อมกัน), `surl status`
-// คำสั่งใช้งานลิงก์ (login/shorten/ls/stats/qr/...) จะเพิ่มใน P8
+// คำสั่งพัฒนา: `surl dev` (เลือก/รันหลาย service พร้อมกัน), `surl status`, `surl migrate`
+// คำสั่งใช้งานลิงก์ผ่าน API key: login / whoami / shorten / ls / stats / qr / on / off / rm / config
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import net from 'node:net';
 import path from 'node:path';
 import readline from 'node:readline';
@@ -376,6 +377,276 @@ async function cmdStatus() {
   }
 }
 
+
+// =====================================================================
+// คำสั่งใช้งานลิงก์ (ผ่าน API key `surl_…` ที่สร้างจากหน้า /keys บนเว็บ)
+// =====================================================================
+const CONFIG_DIR = IS_WIN ? path.join(process.env.APPDATA ?? os.homedir(), 'surl') : path.join(process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), '.config'), 'surl');
+const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
+const DEFAULT_API = 'http://localhost:4000';
+
+function readConfig() {
+  try {
+    return JSON.parse(readFileSync(CONFIG_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function writeConfig(cfg) {
+  mkdirSync(CONFIG_DIR, { recursive: true });
+  writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2) + '\n', { mode: 0o600 });
+  try {
+    chmodSync(CONFIG_FILE, 0o600); // มี key อยู่ในไฟล์ — เจ้าของอ่านได้คนเดียว
+  } catch {
+    /* Windows ไม่รองรับ */
+  }
+}
+
+const apiBase = (cfg = readConfig()) => (process.env.SURL_API || cfg.api || DEFAULT_API).replace(/\/+$/, '');
+const apiToken = (cfg = readConfig()) => process.env.SURL_TOKEN || cfg.token || '';
+
+// แยก argv: --k v / --k=v / -k v; ธง boolean ระบุใน bools; ที่เหลือเป็นอาร์กิวเมนต์ตำแหน่ง
+function parseFlags(argv, { bools = [], short = {} } = {}) {
+  const flags = {};
+  const pos = [];
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    let name = null;
+    let val;
+    if (a.startsWith('--')) [name, val] = a.slice(2).split(/=(.*)/s, 2);
+    else if (/^-[A-Za-z]$/.test(a)) name = short[a[1]] ?? a[1];
+    else {
+      pos.push(a);
+      continue;
+    }
+    if (bools.includes(name)) flags[name] = val === undefined ? true : val !== 'false';
+    else if (val !== undefined) flags[name] = val;
+    else if (i + 1 < argv.length) flags[name] = argv[++i];
+    else fail(`ธง --${name} ต้องมีค่า`);
+  }
+  return { flags, pos };
+}
+
+async function request(method, route, body, { raw = false, token } = {}) {
+  const cfg = readConfig();
+  const tok = token ?? apiToken(cfg);
+  if (!tok) fail('ยังไม่ได้เข้าสู่ระบบ — สร้าง API key ที่หน้า /keys บนเว็บ แล้วรัน: surl login --token surl_…');
+  let res;
+  try {
+    res = await fetch(apiBase(cfg) + route, {
+      method,
+      headers: { authorization: `Bearer ${tok}`, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(60_000),
+    });
+  } catch (e) {
+    fail(`เชื่อมต่อ ${apiBase(cfg)} ไม่ได้ (${e?.cause?.code ?? e?.message}) — ตรวจ API: surl config`);
+  }
+  if (res.status === 204) return null;
+  if (!res.ok) {
+    let msg = `${res.status}`;
+    try {
+      msg = (await res.json()).message ?? msg;
+    } catch {
+      /* ไม่ใช่ JSON */
+    }
+    if (res.status === 401 && token === undefined) msg += ' — key ถูกเพิกถอนหรือหมดอายุ? ลอง surl login ใหม่';
+    fail(msg);
+  }
+  return raw ? Buffer.from(await res.arrayBuffer()) : res.json();
+}
+
+const out = (flags, data, pretty) => (flags.json ? console.log(JSON.stringify(data, null, 2)) : pretty());
+const num = (n) => Number(n).toLocaleString('en-US');
+const shortOf = (u) => String(u).replace(/^https?:\/\//, '');
+
+// รับได้ทั้ง code (abc123) หรือ URL เต็ม (https://s.example.com/abc123)
+async function resolveLink(arg) {
+  if (!arg) fail('ต้องระบุลิงก์ (code หรือ URL สั้น)');
+  const code = decodeURIComponent(String(arg).replace(/[?#].*$/, '').replace(/\/+$/, '').split('/').pop());
+  const page = await request('GET', `/api/links?q=${encodeURIComponent(code)}&pageSize=100`);
+  const hit = page.items.find((l) => l.shortCode === code);
+  if (!hit) fail(`ไม่พบลิงก์ "${code}" ในบัญชีนี้`);
+  return hit;
+}
+
+// "7d" "12h" "30m" = นับจากตอนนี้; ไม่งั้นรับวันที่/เวลา (2026-12-31, 2026-12-31T09:00, ISO)
+function parseWhen(v, label) {
+  const rel = /^(\d+)([dhm])$/.exec(String(v));
+  const d = rel ? new Date(Date.now() + Number(rel[1]) * { d: 86400e3, h: 3600e3, m: 60e3 }[rel[2]]) : new Date(v);
+  if (Number.isNaN(d.getTime())) fail(`${label} ไม่ถูกต้อง: "${v}" (ตัวอย่าง: 7d, 2026-12-31, 2026-12-31T09:00)`);
+  return d.toISOString();
+}
+
+function statusText(l) {
+  if (l.status === 'ADMIN_DISABLED') return red('ผู้ดูแลปิด');
+  if (l.status === 'DISABLED') return dim('ปิดอยู่');
+  if (l.expired) return dim('หมดอายุ');
+  if (l.limitReached) return dim('เปิดครบแล้ว');
+  if (l.notStarted) return yellow('ยังไม่เริ่ม');
+  return green('ใช้งานอยู่');
+}
+
+function prompt(question) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question(question, (a) => {
+      rl.close();
+      resolve(a.trim());
+    });
+  });
+}
+
+async function cmdLogin(argv) {
+  const { flags } = parseFlags(argv, { short: { t: 'token' } });
+  let token = flags.token || process.env.SURL_TOKEN || '';
+  if (!token) {
+    if (!process.stdin.isTTY) fail('ใช้: surl login --token surl_…  (สร้าง key ที่หน้า /keys บนเว็บ)');
+    token = await prompt('วาง API key (surl_…): ');
+  }
+  if (!/^surl_[A-Za-z0-9_-]{20,}$/.test(token)) fail('รูปแบบ API key ไม่ถูกต้อง (ต้องขึ้นต้นด้วย surl_)');
+  const cfg = readConfig();
+  if (flags.api) cfg.api = String(flags.api).replace(/\/+$/, '');
+  const me = await (async () => {
+    const prev = process.env.SURL_API;
+    if (flags.api) process.env.SURL_API = cfg.api;
+    try {
+      return await request('GET', '/api/auth/me', undefined, { token });
+    } finally {
+      if (flags.api) prev === undefined ? delete process.env.SURL_API : (process.env.SURL_API = prev);
+    }
+  })();
+  writeConfig({ ...cfg, token });
+  console.log(`${green('✔')} เข้าสู่ระบบแล้ว: ${bold(me.email)} ${dim(`(${apiBase(cfg)})`)}`);
+  console.log(dim(`  เก็บ key ไว้ที่ ${CONFIG_FILE} (อ่านได้เฉพาะเจ้าของ)`));
+}
+
+function cmdLogout() {
+  const cfg = readConfig();
+  if (!cfg.token) return console.log(dim('ยังไม่ได้เข้าสู่ระบบ'));
+  delete cfg.token;
+  writeConfig(cfg);
+  console.log(`${green('✔')} ลบ key ออกจากเครื่องแล้ว ${dim('(ถ้าต้องการให้ key ใช้ไม่ได้ เพิกถอนที่หน้า /keys บนเว็บ)')}`);
+}
+
+async function cmdWhoami(argv) {
+  const { flags } = parseFlags(argv, { bools: ['json'] });
+  const me = await request('GET', '/api/auth/me');
+  out(flags, me, () => console.log(`${bold(me.email)}${me.name ? ` (${me.name})` : ''}  ${dim(apiBase())}`));
+}
+
+async function cmdShorten(argv) {
+  const { flags, pos } = parseFlags(argv, { bools: ['json'], short: { a: 'alias', e: 'expires', p: 'password', m: 'max' } });
+  if (!pos[0]) fail('ใช้: surl shorten <url> [--alias ชื่อ] [--expires 7d|2026-12-31] [--start …] [--max N] [--password รหัส]');
+  const body = { url: pos[0] };
+  if (flags.alias) body.alias = String(flags.alias);
+  if (flags.expires) body.expiresAt = parseWhen(flags.expires, '--expires');
+  if (flags.start) body.startsAt = parseWhen(flags.start, '--start');
+  if (flags.max !== undefined) {
+    if (!/^\d+$/.test(String(flags.max))) fail('--max ต้องเป็นจำนวนเต็ม');
+    body.maxClicks = Number(flags.max);
+  }
+  if (flags.password) body.password = String(flags.password);
+  const l = await request('POST', '/api/links', body);
+  out(flags, l, () => {
+    console.log(bold(l.shortUrl));
+    console.log(dim(`  → ${l.originalUrl}`));
+    const tags = [l.expiresAt && `หมดอายุ ${l.expiresAt.slice(0, 16).replace('T', ' ')}`, l.startsAt && `เริ่ม ${l.startsAt.slice(0, 16).replace('T', ' ')}`, l.maxClicks !== null && `เปิดได้ ${num(l.maxClicks)} ครั้ง`, l.hasPassword && 'มีรหัสผ่าน'].filter(Boolean);
+    if (tags.length) console.log(dim(`  ${tags.join(' · ')}`));
+  });
+}
+
+async function cmdLs(argv) {
+  const { flags } = parseFlags(argv, { bools: ['json'], short: { q: 'q', n: 'limit' } });
+  const page = Math.max(1, Number(flags.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(flags.limit) || 20));
+  const data = await request('GET', `/api/links?page=${page}&pageSize=${limit}${flags.q ? `&q=${encodeURIComponent(flags.q)}` : ''}`);
+  out(flags, data, () => {
+    if (!data.items.length) return console.log(dim(flags.q ? `ไม่พบลิงก์ที่ตรงกับ "${flags.q}"` : 'ยังไม่มีลิงก์'));
+    const w = Math.max(...data.items.map((l) => shortOf(l.shortUrl).length));
+    for (const l of data.items) {
+      const lock = l.hasPassword ? ' 🔒' : '';
+      console.log(`${bold(shortOf(l.shortUrl).padEnd(w))}  ${String(num(l.clickCount)).padStart(6)} ครั้ง  ${statusText(l)}${lock}  ${dim(l.originalUrl.length > 60 ? l.originalUrl.slice(0, 59) + '…' : l.originalUrl)}`);
+    }
+    const last = Math.max(1, Math.ceil(data.total / limit));
+    console.log(dim(`\nหน้า ${page}/${last} · ทั้งหมด ${num(data.total)} ลิงก์${page < last ? ` · หน้าถัดไป: surl ls --page ${page + 1}` : ''}`));
+  });
+}
+
+async function cmdStats(argv) {
+  const { flags, pos } = parseFlags(argv, { bools: ['json'], short: { d: 'days' } });
+  const link = await resolveLink(pos[0]);
+  const days = Number(flags.days) || 30;
+  const s = await request('GET', `/api/links/${link.id}/stats?days=${days}`);
+  out(flags, s, () => {
+    console.log(`${bold(shortOf(link.shortUrl))}  ${statusText(link)}  ${dim(link.originalUrl)}`);
+    if (s.unavailable) return console.log(yellow(`\nระบบสถิติไม่พร้อม ตอนนี้รู้แค่ยอดรวม ${num(s.total)} ครั้ง`));
+    console.log(`\n  ทั้งหมด ${bold(num(s.total))}   ${days} วันล่าสุด ${bold(num(s.windowClicks))}   ผู้เข้าชมไม่ซ้ำ ${bold(num(s.uniqueVisitors))}\n`);
+    const max = Math.max(1, ...s.daily.map((d) => d.clicks));
+    for (const d of s.daily.slice(-14)) console.log(`  ${d.day.slice(5)}  ${cyan('█'.repeat(Math.round((d.clicks / max) * 24)) || dim('·'))} ${d.clicks}`);
+    const top = (title, items, label) => {
+      if (!items.length) return;
+      const total = items.reduce((a, b) => a + b.clicks, 0) || 1;
+      console.log(`\n  ${bold(title)}`);
+      for (const i of items.slice(0, 5)) console.log(`    ${String(label(i.key)).padEnd(22)} ${String(i.clicks).padStart(5)}  ${dim(`${Math.round((i.clicks / total) * 100)}%`)}`);
+    };
+    top('อุปกรณ์', s.devices, (k) => k ?? 'ไม่ทราบ');
+    top('ระบบปฏิบัติการ', s.os, (k) => k ?? 'ไม่ทราบ');
+    top('เบราว์เซอร์', s.browsers, (k) => k ?? 'ไม่ทราบ');
+    top('ประเทศ', s.countries, (k) => k ?? 'ไม่ทราบ');
+    top('เว็บที่พามา', s.referers, (k) => (k ? k.replace(/^https?:\/\//, '') : 'เข้าตรง'));
+  });
+}
+
+async function cmdQr(argv) {
+  const { flags, pos } = parseFlags(argv, { short: { o: 'out', f: 'format' } });
+  const link = await resolveLink(pos[0]);
+  const format = String(flags.format ?? (flags.out && /\.svg$/i.test(flags.out) ? 'svg' : 'png'));
+  if (format !== 'png' && format !== 'svg') fail('--format ต้องเป็น png หรือ svg');
+  const scale = Number(flags.scale) || 10;
+  const buf = await request('GET', `/api/links/${link.id}/qr?format=${format}&scale=${scale}`, undefined, { raw: true });
+  const file = path.resolve(String(flags.out ?? `qr-${link.shortCode}.${format}`));
+  writeFileSync(file, buf);
+  console.log(`${green('✔')} บันทึก QR แล้ว: ${file} ${dim(`(${shortOf(link.shortUrl)})`)}`);
+}
+
+async function cmdToggle(argv, to) {
+  const { pos } = parseFlags(argv);
+  const link = await resolveLink(pos[0]);
+  await request('PATCH', `/api/links/${link.id}`, { status: to });
+  console.log(`${green('✔')} ${to === 'ACTIVE' ? 'เปิด' : 'ปิด'}ลิงก์ ${bold(shortOf(link.shortUrl))} แล้ว`);
+}
+
+async function cmdRm(argv) {
+  const { flags, pos } = parseFlags(argv, { bools: ['yes'], short: { y: 'yes' } });
+  const link = await resolveLink(pos[0]);
+  if (!flags.yes) {
+    if (!process.stdin.isTTY) fail('ลบลิงก์ต้องยืนยัน: ใส่ -y');
+    const a = await prompt(`ลบ ${shortOf(link.shortUrl)} (${num(link.clickCount)} ครั้ง) ถาวร? พิมพ์ y เพื่อยืนยัน: `);
+    if (!/^y(es)?$/i.test(a)) return console.log(dim('ยกเลิก'));
+  }
+  await request('DELETE', `/api/links/${link.id}`);
+  console.log(`${green('✔')} ลบ ${bold(shortOf(link.shortUrl))} แล้ว`);
+}
+
+function cmdConfig(argv) {
+  const [sub, key, value] = argv;
+  const cfg = readConfig();
+  if (sub === 'set') {
+    if (key !== 'api' || !value) fail('ใช้: surl config set api <URL ของ core-api>');
+    if (!/^https?:\/\//.test(value)) fail('URL ต้องขึ้นต้นด้วย http:// หรือ https://');
+    writeConfig({ ...cfg, api: value.replace(/\/+$/, '') });
+    return console.log(`${green('✔')} ตั้ง API เป็น ${bold(value.replace(/\/+$/, ''))}`);
+  }
+  if (sub === 'path') return console.log(CONFIG_FILE);
+  if (sub && sub !== 'get') fail('ใช้: surl config [set api <URL> | path]');
+  console.log(`${bold('API')}    ${apiBase(cfg)}${process.env.SURL_API ? dim('  (จาก SURL_API)') : cfg.api ? '' : dim('  (ค่าเริ่มต้น)')}`);
+  const t = apiToken(cfg);
+  console.log(`${bold('Key')}    ${t ? `${t.slice(0, 11)}…${process.env.SURL_TOKEN ? dim('  (จาก SURL_TOKEN)') : ''}` : dim('ยังไม่ได้เข้าสู่ระบบ')}`);
+  console.log(`${bold('ไฟล์')}   ${dim(CONFIG_FILE)}`);
+}
+
 function printHelp() {
   console.log(`${bold('surl')} — CLI ของโปรเจกต์ Short URL
 
@@ -388,6 +659,20 @@ ${bold('ใช้งาน')}
   surl migrate                  รัน prisma migrate deploy (ใช้ค่าจาก .env)
   surl help
 
+${bold('ใช้งานลิงก์')} ${dim('(ต้องมี API key จากหน้า /keys บนเว็บ)')}
+  surl login --token surl_…     เก็บ key ไว้ในเครื่อง (เพิ่ม --api <URL> ถ้าไม่ใช่ localhost:4000)
+  surl whoami                   ดูว่าล็อกอินเป็นใคร
+  surl shorten <url>            ย่อลิงก์  [--alias ชื่อ] [--expires 7d|2026-12-31] [--start …] [--max N] [--password รหัส]
+  surl ls [-q คำค้น]            รายการลิงก์  [--page N] [--limit N]
+  surl stats <code>             สถิติ  [--days 30]
+  surl qr <code>                บันทึก QR เป็นไฟล์  [-o ไฟล์] [--format png|svg] [--scale 10]
+  surl on|off <code>            เปิด/ปิดลิงก์
+  surl rm <code> [-y]           ลบลิงก์ถาวร
+  surl logout                   ลบ key ออกจากเครื่อง
+  surl config                   ดู/ตั้งค่า  (surl config set api <URL>)
+  ทุกคำสั่งใส่ --json ได้เพื่อได้ผลลัพธ์เป็น JSON · <code> ใช้ URL สั้นเต็มก็ได้
+  ตัวแปร: SURL_TOKEN, SURL_API (ทับค่าในไฟล์)
+
 ${bold('ชื่อ service')}
 ${SERVICES.map((s) => `  ${s.id.padEnd(18)} ${s.label}${s.aliases.length ? dim(`  (ย่อ: ${s.aliases.join(', ')})`) : ''}${isAvailable(s) ? '' : dim('  — ยังไม่มีโค้ด')}`).join('\n')}
 
@@ -395,8 +680,7 @@ ${bold('คำท้ายของ dev')} (พิมพ์ต่อท้าย
   all               รันทั้งหมด ไม่ถามเมนู
   nomigrate         ไม่รัน prisma migrate deploy ก่อนเริ่ม core-api
   down              ตอนกด Ctrl+C ให้หยุด docker (postgres/redis) ด้วย (ค่าเริ่มต้น: ปล่อยรันต่อ)
-
-${dim('คำสั่งใช้งานลิงก์ (login / shorten / ls / stats / qr ...) จะเพิ่มใน P8')}`);
+`);
 }
 
 // ---------- main ----------
@@ -405,6 +689,17 @@ try {
   if (cmd === 'dev') await cmdDev(rest);
   else if (cmd === 'status') await cmdStatus();
   else if (cmd === 'migrate') cmdMigrate();
+  else if (cmd === 'login') await cmdLogin(rest);
+  else if (cmd === 'logout') cmdLogout();
+  else if (cmd === 'whoami') await cmdWhoami(rest);
+  else if (cmd === 'shorten') await cmdShorten(rest);
+  else if (cmd === 'ls' || cmd === 'list') await cmdLs(rest);
+  else if (cmd === 'stats') await cmdStats(rest);
+  else if (cmd === 'qr') await cmdQr(rest);
+  else if (cmd === 'on') await cmdToggle(rest, 'ACTIVE');
+  else if (cmd === 'off') await cmdToggle(rest, 'DISABLED');
+  else if (cmd === 'rm') await cmdRm(rest);
+  else if (cmd === 'config') cmdConfig(rest);
   else if (cmd === 'help' || cmd === '-h' || cmd === '--help') printHelp();
   else fail(`ไม่รู้จักคำสั่ง "${cmd}" (ดู: surl help)`);
 } catch (e) {

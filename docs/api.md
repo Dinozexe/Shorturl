@@ -45,6 +45,18 @@
 | DELETE | `/api/admin/blocked-domains/:id` | MOD, ADMIN | 204; **ไม่เปิดลิงก์ที่เคยถูกปิดคืนอัตโนมัติ** (ผู้ดูแลเปิดเองทีละลิงก์) |
 | GET | `/api/admin/audit?action=&page=` | ADMIN | บันทึกกิจกรรมใหม่สุดก่อน + `actorEmail` |
 
+## API keys — `/api/keys` (P8)
+
+จัดการได้เฉพาะด้วย session เว็บ (Bearer JWT) — เรียกด้วย API key ได้ 403
+
+| Method | Path | อธิบาย |
+|---|---|---|
+| GET | `/api/keys` | `{items: [{id, name, prefix, lastUsedAt, expiresAt, expired, createdAt}], max: 10}` (ไม่มี key เต็ม/hash) |
+| POST | `/api/keys` | body `{name (1–40), expiresInDays? (1–365, null = ไม่หมดอายุ)}` → 201 รวม `key` เต็ม (`surl_` + 32 ตัว) **ส่งครั้งเดียว**; สูงสุด 10 อัน/คน; rate limit 10/นาที/IP |
+| DELETE | `/api/keys/:id` | เพิกถอน (ลบแถว) → 204; ใช้ key นั้นไม่ได้ทันที |
+
+key เก็บเป็น sha256 อย่างเดียว · ใช้เป็น `Authorization: Bearer surl_…` กับ `/api/links/*` และ `/api/auth/me` ได้เหมือน JWT (ลิงก์ของเจ้าของ key) แต่ `/api/admin/*` และ `/api/keys` ปฏิเสธ (403) · key หมดอายุ/ไม่ถูกต้อง = 401, เจ้าของถูกระงับ = 403 · บันทึก audit `API_KEY_CREATE` / `API_KEY_REVOKE`
+
 ## Links — `/api/links` (P3)
 
 ทุก endpoint ต้องมี `Authorization: Bearer` และทำได้เฉพาะลิงก์ของตัวเอง (ลิงก์คนอื่น = **404** ไม่ใช่ 403 เพื่อไม่เปิดเผยว่ามีอยู่)
