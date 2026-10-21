@@ -25,7 +25,8 @@ describe('flush: คิว Redis → Postgres (transaction เดียว)', ()
     assert.equal(await redis.llen(CLICK_QUEUE), 0);
     const row = (await pool.query('SELECT click_count FROM links WHERE id = $1', [id])).rows[0];
     assert.equal(row.click_count, 3);
-    const c = (await pool.query('SELECT device::text d, os, browser, country, referer FROM clicks WHERE link_id = $1 ORDER BY id LIMIT 1', [id])).rows[0];
+    // ค้นหาด้วยเงื่อนไข ไม่พึ่งลำดับแถว: INSERT…SELECT หลายแถวไม่รับประกันลำดับ id (ต่างกันตามแผนของ Postgres บนแต่ละเครื่อง)
+    const c = (await pool.query("SELECT device::text d, os, browser, country, referer FROM clicks WHERE link_id = $1 AND device = 'mobile'", [id])).rows[0];
     assert.deepEqual(c, { d: 'mobile', os: 'iOS', browser: 'Safari', country: 'TH', referer: 'https://t.co' });
     assert.equal((await pool.query('SELECT clicks FROM link_daily_stats WHERE link_id = $1 AND day = $2::date', [id, today()])).rows[0].clicks, 3);
   });
