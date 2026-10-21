@@ -140,9 +140,9 @@ export function UsersPanel() {
                     ),
                 },
                 { half: true, icon: 'info', label: t('admin.col.status'), value: view.isBanned ? <Chip tone="danger">{t('admin.u.banned')}</Chip> : <Chip tone="ok">{t('admin.u.normal')}</Chip> },
-                { half: true, icon: 'links', label: t('admin.col.links'), value: fmt.number(view.linkCount) },
-                { half: true, icon: 'calendar', label: t('admin.col.joined'), value: when.format(new Date(view.createdAt)) },
+                { icon: 'links', label: t('admin.col.links'), value: fmt.number(view.linkCount) },
                 { half: true, icon: 'clock', label: t('admin.col.lastLogin'), value: view.lastLoginAt ? when.format(new Date(view.lastLoginAt)) : t('admin.u.never') },
+                { half: true, icon: 'calendar', label: t('admin.col.joined'), value: when.format(new Date(view.createdAt)) },
               ]
             : []
         }
