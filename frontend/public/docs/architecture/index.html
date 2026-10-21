@@ -20,8 +20,15 @@ main{max-width:1200px;margin:0 auto;padding:32px 20px 72px}
 h1{font-size:clamp(26px,4vw,34px);line-height:1.25;margin:0 0 8px;letter-spacing:-.01em}
 h2{font-size:22px;margin:0 0 4px;line-height:1.3}h3{font-size:17px;margin:28px 0 8px}
 .lead{color:var(--muted);margin:0 0 20px;max-width:70ch}
-.toc{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:0;list-style:none}
-.toc a{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;font-size:14px;color:var(--ink)}.toc a:hover{border-color:var(--blue);color:var(--blue)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:0 40px}
+.toc{margin:0 0 8px;padding:0;list-style:none;display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.toc::-webkit-scrollbar{display:none}
+.toc a{display:block;white-space:nowrap;padding:10px 14px;text-decoration:none;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.toc a:hover{color:var(--ink)}.toc a.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+@media(min-width:1040px){.layout{grid-template-columns:200px minmax(0,1fr)}
+.toc{position:sticky;top:84px;align-self:start;flex-direction:column;border:0;border-left:1px solid var(--line);margin:44px 0 0;overflow:visible}
+.toc a{border:0;margin:0 0 0 -1px;padding:6px 14px;border-left:2px solid transparent}.toc a.on{border-left-color:var(--blue)}
+.toc::before{content:'ในหน้านี้';display:block;padding:0 14px 8px;font-size:12px;font-weight:600;color:var(--muted)}}
 section.d{margin-top:44px}
 figure{margin:14px 0 0}.sv{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
 .sv svg{display:block;width:100%;height:auto;min-width:820px}
@@ -52,7 +59,7 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <a class="back" href="/">เปิดเว็บ</a></div></header>
 <main id="main"><h1>Architecture</h1>
 <p class="lead">Micro-service 3 ตัวแยกหน้าที่ชัดเจน คุยกันผ่าน HTTP ภายในและ Redis</p>
-<ul class="toc" aria-label="ในหน้านี้"><li><a href="#diagram">แผนภาพ</a></li><li><a href="#services">บริการ</a></li><li><a href="#flows">การไหลสำคัญ</a></li></ul>
+<div class="layout"><ul class="toc" aria-label="ในหน้านี้"><li><a href="#diagram">แผนภาพ</a></li><li><a href="#services">บริการ</a></li><li><a href="#flows">การไหลสำคัญ</a></li></ul><div class="content">
 <section class="d" id="diagram"><h2>ภาพรวมสถาปัตยกรรม</h2><p class="lead">ลูกศรประ = การเข้าถึงรอง (cache miss, OIDC)</p>
 <figure><div class="sv" role="img" aria-label="Architecture" tabindex="0"><svg viewBox="0 0 1360 740" width="1360" height="740" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
 <defs>
@@ -98,18 +105,18 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <path d="M890.1 400.7 L1034.9 559.3" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
 <path d="M1160.7 401 L1114.3 559" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
 <path d="M1042.4 400.4 L707.6 559.6" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="247.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="247.5" y="193.2">โหลดหน้าเว็บ</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="290" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="290" y="303.2">fetch /api/*</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="450" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="450" y="196.2">เปิดลิงก์สั้น  s.kittametdev.com/:code</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="870" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="870" y="252.2">ขอสถิติ (x-internal-key)</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="866.6" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="866.6" y="184.9">OIDC code exchange</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1005" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1005" y="325.2">ping /internal/flush</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="495" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="495" y="484.2">Prisma</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="800" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="800" y="446.4">session · rate limit · ลบ cache</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="632.9" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="632.9" y="492.1">cache miss: SELECT</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1032.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1032.5" y="484.2">cache · นับสิทธิ์ · เข้าคิว</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1182.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1182.5" y="484.2">ดึงคิวคลิก</tspan></text></g>
-<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="831.1" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="831.1" y="561.9">INSERT clicks · UPSERT daily · click_count</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="247.5" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="247.5" y="193.6">โหลดหน้าเว็บ</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="290" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="290" y="303.6">fetch /api/*</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="450" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="450" y="196.6">เปิดลิงก์สั้น  s.kittametdev.com/:code</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="870" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="870" y="252.6">ขอสถิติ (x-internal-key)</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="866.6" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="866.6" y="185.3">OIDC code exchange</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1005" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1005" y="325.6">ping /internal/flush</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="495" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="495" y="484.6">Prisma</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="800" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="800" y="446.8">session · rate limit · ลบ cache</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="632.9" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="632.9" y="492.4">cache miss: SELECT</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1032.5" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1032.5" y="484.6">cache · นับสิทธิ์ · เข้าคิว</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1182.5" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1182.5" y="484.6">ดึงคิวคลิก</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1088.7" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1088.7" y="445.9">INSERT clicks · UPSERT daily · click_count</tspan></text></g>
 </svg></div>
 <figcaption><span>เลื่อนซ้าย-ขวาถ้าภาพกว้างกว่าจอ</span><span><a href="architecture.svg" target="_blank" rel="noopener">เปิดภาพเต็ม</a> · <a href="architecture.svg" download>ดาวน์โหลด SVG</a></span></figcaption></figure></section>
 <section class="d" id="services"><h2>บริการ</h2>
@@ -117,6 +124,6 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <section class="d" id="flows"><h2>การไหลสำคัญ</h2>
 <ul class="flows"><li><b>ย่อลิงก์</b> — เบราว์เซอร์ → core-api ตรวจ URL/โดเมนต้องห้าม → บันทึก <code>links</code> → ลบ cache เก่า</li>
 <li><b>เปิดลิงก์</b> — redirect-service อ่าน Redis (ไม่มีค่อยอ่าน DB แล้ว cache 1 ชั่วโมง) → ตรวจเงื่อนไข → 302 → เข้าคิวคลิกแล้วแจ้ง analytics ให้ flush</li>
-<li><b>สถิติ</b> — analytics ดึงคิวเป็น batch เขียนลง DB หน้า stats เรียก core-api → analytics (ถ้าล่ม แสดงยอดรวมจาก <code>click_count</code>)</li></ul></section><div class="pn"><a href="/docs/er/" rel="prev">← ER Diagram</a><span></span></div></main>
+<li><b>สถิติ</b> — analytics ดึงคิวเป็น batch เขียนลง DB หน้า stats เรียก core-api → analytics (ถ้าล่ม แสดงยอดรวมจาก <code>click_count</code>)</li></ul></section></div></div><div class="pn"><a href="/docs/er/" rel="prev">← ER Diagram</a><span></span></div></main>
 <footer>วาดจากโค้ดจริงของระบบ · <a href="https://github.com/Dinozexe/Shorturl">ซอร์สโค้ดบน GitHub</a></footer>
-</body></html>
+<script>(function(){var l=[].slice.call(document.querySelectorAll('.toc a'));if(!l.length||!('IntersectionObserver' in window))return;var m={};l.forEach(function(a){m[a.getAttribute('href').slice(1)]=a});var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){l.forEach(function(a){a.classList.remove('on')});m[e.target.id].classList.add('on')}})},{rootMargin:'-20% 0px -70% 0px'});Object.keys(m).forEach(function(id){var n=document.getElementById(id);if(n)o.observe(n)});l[0].classList.add('on')})();</script></body></html>

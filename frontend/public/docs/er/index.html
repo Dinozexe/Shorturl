@@ -20,8 +20,15 @@ main{max-width:1200px;margin:0 auto;padding:32px 20px 72px}
 h1{font-size:clamp(26px,4vw,34px);line-height:1.25;margin:0 0 8px;letter-spacing:-.01em}
 h2{font-size:22px;margin:0 0 4px;line-height:1.3}h3{font-size:17px;margin:28px 0 8px}
 .lead{color:var(--muted);margin:0 0 20px;max-width:70ch}
-.toc{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:0;list-style:none}
-.toc a{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;font-size:14px;color:var(--ink)}.toc a:hover{border-color:var(--blue);color:var(--blue)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:0 40px}
+.toc{margin:0 0 8px;padding:0;list-style:none;display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.toc::-webkit-scrollbar{display:none}
+.toc a{display:block;white-space:nowrap;padding:10px 14px;text-decoration:none;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.toc a:hover{color:var(--ink)}.toc a.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+@media(min-width:1040px){.layout{grid-template-columns:200px minmax(0,1fr)}
+.toc{position:sticky;top:84px;align-self:start;flex-direction:column;border:0;border-left:1px solid var(--line);margin:44px 0 0;overflow:visible}
+.toc a{border:0;margin:0 0 0 -1px;padding:6px 14px;border-left:2px solid transparent}.toc a.on{border-left-color:var(--blue)}
+.toc::before{content:'ในหน้านี้';display:block;padding:0 14px 8px;font-size:12px;font-weight:600;color:var(--muted)}}
 section.d{margin-top:44px}
 figure{margin:14px 0 0}.sv{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
 .sv svg{display:block;width:100%;height:auto;min-width:820px}
@@ -52,7 +59,7 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <a class="back" href="/">เปิดเว็บ</a></div></header>
 <main id="main"><h1>ER Diagram</h1>
 <p class="lead">ตรงกับ <code>services/core-api/prisma/schema.prisma</code> · 7 ตาราง · ไม่เก็บรหัสผ่านผู้ใช้ (ใช้ SSO) · ไม่เก็บ IP ดิบ (เก็บ hash)</p>
-<ul class="toc" aria-label="ในหน้านี้"><li><a href="#erd">แผนภาพ</a></li><li><a href="#notes">เหตุผลการออกแบบ</a></li></ul>
+<div class="layout"><ul class="toc" aria-label="ในหน้านี้"><li><a href="#erd">แผนภาพ</a></li><li><a href="#notes">เหตุผลการออกแบบ</a></li></ul><div class="content">
 <section class="d" id="erd"><h2>ความสัมพันธ์ระหว่างตาราง</h2><p class="lead">PK = primary key · FK = foreign key · UK = unique · ? = ว่างได้</p>
 <figure><div class="sv" role="img" aria-label="ER Diagram" tabindex="0"><svg viewBox="0 0 1290 1060" width="1290" height="1060" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
 <defs>
@@ -307,6 +314,6 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <figcaption><span>เลื่อนซ้าย-ขวาถ้าภาพกว้างกว่าจอ</span><span><a href="er-diagram.svg" target="_blank" rel="noopener">เปิดภาพเต็ม</a> · <a href="er-diagram.svg" download>ดาวน์โหลด SVG</a></span></figcaption></figure></section>
 <section class="d" id="notes"><h2>เหตุผลการออกแบบ</h2>
 <div class="tw"><table><thead><tr><th scope="col">ประเด็น</th><th scope="col">การตัดสินใจ</th></tr></thead><tbody><tr><td><code>sso_identities</code> แยกจาก <code>users</code></td><td>1 คนผูกได้หลาย provider ระบุตัวตนด้วย <code>sub</code> ไม่ใช่อีเมล</td></tr><tr><td><code>links.user_id</code> เป็น NULL ได้</td><td>ลิงก์ guest ไม่มีเจ้าของ (หมดอายุ 7 วัน) และเมื่อลบผู้ใช้ ลิงก์/QR ที่แจกไปแล้วยังใช้ได้</td></tr><tr><td><code>password_hash</code></td><td>scrypt + salt ต่อลิงก์ ไม่ส่งออกทาง API</td></tr><tr><td><code>max_clicks</code></td><td>ตัวนับจริงอยู่ใน Redis (<code>lim:{id}</code>) เพื่อนับแบบ atomic</td></tr><tr><td><code>click_count</code></td><td>เก็บซ้ำใน links เพื่ออ่านเร็ว อัปเดตเป็น batch จากคิว</td></tr><tr><td><code>clicks</code> + <code>link_daily_stats</code></td><td>คลิกดิบเก็บ 90 วัน ยอดรายวันเก็บถาวรเพื่อกราฟย้อนหลัง</td></tr><tr><td><code>qr_style</code></td><td>JSONB บันทึกสไตล์ QR (ไม่เก็บรูปที่อัปโหลด)</td></tr><tr><td><code>ip_hash</code></td><td>sha256(ip + salt) เพื่อ PDPA</td></tr></tbody></table></div>
-<p>รายละเอียดเต็ม (CHECK constraint, index, key ใน Redis) อยู่ที่ <a href="https://github.com/Dinozexe/Shorturl/blob/main/docs/er-diagram.md">docs/er-diagram.md</a></p></section><div class="pn"><a href="/docs/dfd/" rel="prev">← Data Flow Diagram</a><a href="/docs/architecture/" rel="next">Architecture →</a></div></main>
+<p>รายละเอียดเต็ม (CHECK constraint, index, key ใน Redis) อยู่ที่ <a href="https://github.com/Dinozexe/Shorturl/blob/main/docs/er-diagram.md">docs/er-diagram.md</a></p></section></div></div><div class="pn"><a href="/docs/dfd/" rel="prev">← Data Flow Diagram</a><a href="/docs/architecture/" rel="next">Architecture →</a></div></main>
 <footer>วาดจากโค้ดจริงของระบบ · <a href="https://github.com/Dinozexe/Shorturl">ซอร์สโค้ดบน GitHub</a></footer>
-</body></html>
+<script>(function(){var l=[].slice.call(document.querySelectorAll('.toc a'));if(!l.length||!('IntersectionObserver' in window))return;var m={};l.forEach(function(a){m[a.getAttribute('href').slice(1)]=a});var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){l.forEach(function(a){a.classList.remove('on')});m[e.target.id].classList.add('on')}})},{rootMargin:'-20% 0px -70% 0px'});Object.keys(m).forEach(function(id){var n=document.getElementById(id);if(n)o.observe(n)});l[0].classList.add('on')})();</script></body></html>
