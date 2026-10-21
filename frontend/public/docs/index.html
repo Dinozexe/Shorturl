@@ -1,26 +1,502 @@
 <!doctype html>
 <html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>เอกสารระบบ · Short URL By Kittamet</title>
+<meta name="description" content="เอกสารระบบ Short URL: DFD, ER Diagram และ Architecture"><link rel="icon" href="/logo-128.png"><meta name="theme-color" content="#1d4ed8">
 <style>
-:root{--ink:#0f172a;--muted:#475569;--line:#e2e8f0;--blue:#1d4ed8;--soft:#eff6ff}
-*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:15px/1.65 'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif}
-header{border-bottom:1px solid var(--line);background:#fff}
-.bar{max-width:1280px;margin:0 auto;padding:10px 20px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.bar b{margin-right:14px;font-size:15px}.bar a{color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:999px;font-size:14px;font-weight:500}
-.bar a:hover{background:var(--soft);color:var(--blue)}.bar a.on{background:var(--blue);color:#fff}
-main{max-width:1280px;margin:0 auto;padding:28px 20px 80px}
-h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em}h2{font-size:20px;margin:40px 0 4px}p.lead{color:var(--muted);margin:0 0 18px;max-width:80ch}
-.sv{overflow:auto;border:1px solid var(--line);border-radius:14px;padding:6px;background:#fff;margin:12px 0}
-.sv svg{display:block;height:auto;min-width:900px;width:100%}
-table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0}th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
-th{background:var(--soft);font-weight:600}code{font:13px ui-monospace,Menlo,Consolas,monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:20px}
-.card{display:block;border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:inherit}.card:hover{border-color:var(--blue);box-shadow:0 4px 18px #1d4ed81a}
-.card b{display:block;font-size:17px;color:var(--blue)}.card span{color:var(--muted);font-size:14px}
-ul{padding-left:20px}li{margin:3px 0}
+:root{--ink:#0f172a;--muted:#475569;--line:#e2e8f0;--blue:#1d4ed8;--soft:#eff6ff;--r:14px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:#fff;color:var(--ink);font:16px/1.7 'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif;-webkit-text-size-adjust:100%}
+a{color:var(--blue)}a:focus-visible,summary:focus-visible{outline:3px solid #93c5fd;outline-offset:2px;border-radius:6px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--blue);color:#fff;padding:8px 14px;border-radius:8px;z-index:10}.skip:focus{left:8px}
+header{position:sticky;top:0;z-index:5;background:#fffffff0;backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{max-width:1200px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;text-decoration:none;color:var(--ink);font-weight:700}
+.brand img{width:32px;height:32px;border-radius:50%}.brand small{display:block;font-weight:400;color:var(--muted);font-size:12px;line-height:1.1}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{padding:7px 14px;border-radius:999px;text-decoration:none;color:var(--muted);font-size:14px;font-weight:500}
+nav.tabs a:hover{background:var(--soft);color:var(--blue)}nav.tabs a[aria-current=page]{background:var(--blue);color:#fff}
+.back{font-size:14px;text-decoration:none;padding:7px 12px;border:1px solid var(--line);border-radius:999px;color:var(--ink)}.back:hover{border-color:var(--blue);color:var(--blue)}
+main{max-width:1200px;margin:0 auto;padding:32px 20px 72px}
+h1{font-size:clamp(26px,4vw,34px);line-height:1.25;margin:0 0 8px;letter-spacing:-.01em}
+h2{font-size:22px;margin:0 0 4px;line-height:1.3}h3{font-size:17px;margin:28px 0 8px}
+.lead{color:var(--muted);margin:0 0 20px;max-width:70ch}
+.toc{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:0;list-style:none}
+.toc a{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;font-size:14px;color:var(--ink)}.toc a:hover{border-color:var(--blue);color:var(--blue)}
+section.d{margin-top:44px}
+figure{margin:14px 0 0}.sv{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+.sv svg{display:block;width:100%;height:auto;min-width:820px}
+figcaption{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between;color:var(--muted);font-size:14px;margin-top:8px}
+figcaption a{font-weight:500}
+.tw{overflow-x:auto;margin:16px 0}table{border-collapse:collapse;width:100%;font-size:15px;min-width:560px}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}th{background:var(--soft);font-weight:600;white-space:nowrap}
+code{font:13px ui-monospace,Menlo,Consolas,monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin:24px 0 8px}
+.card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);text-decoration:none;color:inherit;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.card:hover{border-color:var(--blue);box-shadow:0 6px 24px #1d4ed81f}
+.thumb{height:190px;overflow:hidden;background:#f8fafc;border-bottom:1px solid var(--line);position:relative}
+.thumb svg{position:absolute;left:0;top:0;width:100%;height:auto;pointer-events:none}
+.card .t{padding:16px 18px 18px}.card b{display:block;font-size:18px;color:var(--blue)}.card span{color:var(--muted);font-size:15px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
+.fact{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}.fact b{display:block;margin-bottom:2px}.fact span{color:var(--muted);font-size:15px}
+ul.flows{padding-left:20px;margin:8px 0}ul.flows li{margin:6px 0}
+.pn{display:flex;justify-content:space-between;gap:12px;margin-top:56px;padding-top:20px;border-top:1px solid var(--line);flex-wrap:wrap}
+.pn a{text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:500}.pn a:hover{border-color:var(--blue)}
+footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:14px}
+@media(max-width:640px){main{padding-top:22px}.bar{gap:6px}.brand small{display:none}.thumb{height:150px}}
+@media print{header,.pn,.toc,.back{display:none}.sv{overflow:visible;border:0}.sv svg{min-width:0}}
 </style></head><body>
-<header><nav class="bar"><b>Short URL By Kittamet</b><a href="/docs/" class="on">ภาพรวม</a><a href="/docs/dfd/">DFD</a><a href="/docs/er/">ER Diagram</a><a href="/docs/architecture/">Architecture</a><a href="/">กลับหน้าเว็บ</a></nav></header>
-<main><h1>เอกสารระบบ</h1><p class="lead">ไดอะแกรมทั้งหมดวาดให้ตรงกับระบบที่ deploy อยู่ (ตาราง/โฟลว์ตามโค้ดจริง) — เปิดดูได้ทันทีโดยไม่ต้องล็อกอิน</p><div class="cards">
-<a class="card" href="/docs/dfd/"><b>Data Flow Diagram</b><span>Level 0 · Level 1 · Level 2 (Redirect) พร้อมตารางอธิบายกระบวนการและที่เก็บข้อมูล</span></a>
-<a class="card" href="/docs/er/"><b>ER Diagram</b><span>8 ตาราง คีย์ ความสัมพันธ์ และเหตุผลการออกแบบ</span></a>
-<a class="card" href="/docs/architecture/"><b>Architecture</b><span>Micro-service 3 ตัว · Postgres · Redis · โดเมนและการ deploy</span></a></div></main></body></html>
+<a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header><div class="bar">
+<a class="brand" href="/docs/"><img src="/logo-128.png" alt="" width="32" height="32"><span>Short URL<small>เอกสารระบบ</small></span></a>
+<nav class="tabs" aria-label="เอกสาร"><a href="/docs/" aria-current="page">ภาพรวม</a><a href="/docs/dfd/">DFD</a><a href="/docs/er/">ER Diagram</a><a href="/docs/architecture/">Architecture</a></nav>
+<a class="back" href="/">เปิดเว็บ</a></div></header>
+<main id="main"><h1>เอกสารระบบ</h1>
+<p class="lead">ระบบย่อลิงก์ที่ทำงานจริง: ย่อลิงก์ สร้าง QR ดูประวัติและสถิติการคลิก ไดอะแกรมด้านล่างวาดจากโค้ดที่ deploy อยู่ เปิดดูได้โดยไม่ต้องล็อกอิน</p>
+<div class="cards">
+<a class="card" href="/docs/dfd/"><div class="thumb" aria-hidden="true"><svg viewBox="0 0 1340 800" width="1340" height="800" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#334155"/></marker>
+<marker id="ahs" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M10 0L0 5L10 10z" fill="#334155"/></marker>
+</defs>
+<rect width="1340" height="800" fill="#fff"/>
+<rect x="20" y="30" width="200" height="70" rx="6" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="120" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="120" y="62.3">ผู้ดูแล</tspan></text>
+<text x="120" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="120" y="81.2">ADMIN / MODERATOR</tspan></text>
+<rect x="235" y="30" width="200" height="70" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="2"/>
+<text x="335" text-anchor="middle" font-size="15" font-weight="700" fill="#047857"><tspan x="335" y="62.3">Google</tspan></text>
+<text x="335" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="335" y="81.2">SSO (OIDC)</tspan></text>
+<rect x="560" y="30" width="200" height="70" rx="6" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="660" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="660" y="62.3">ผู้ใช้ (USER)</tspan></text>
+<text x="660" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="660" y="81.2">ล็อกอินแล้ว</tspan></text>
+<rect x="1095" y="30" width="200" height="70" rx="6" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="1195" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="1195" y="62.3">ผู้เข้าชมลิงก์</tspan></text>
+<text x="1195" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="1195" y="81.2">Guest / ไม่ล็อกอิน</tspan></text>
+<circle cx="120" cy="330" r="66" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="120" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="120" y="300.2">6.0</tspan></text>
+<line x1="73.80000000000001" x2="166.2" y1="307.56" y2="307.56" stroke="#93c5fd" stroke-width="1"/>
+<text x="120" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="120" y="342.8">จัดการระบบ</tspan></text>
+<text x="120" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="120" y="370.2">RBAC · Audit</tspan></text>
+<circle cx="335" cy="330" r="66" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="335" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="335" y="300.2">1.0</tspan></text>
+<line x1="288.8" x2="381.2" y1="307.56" y2="307.56" stroke="#93c5fd" stroke-width="1"/>
+<text x="335" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="335" y="342.8">ยืนยันตัวตน</tspan></text>
+<text x="335" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="335" y="370.2">SSO · JWT</tspan></text>
+<circle cx="550" cy="330" r="66" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="550" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="550" y="300.2">2.0</tspan></text>
+<line x1="503.8" x2="596.2" y1="307.56" y2="307.56" stroke="#93c5fd" stroke-width="1"/>
+<text x="550" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="550" y="342.8">จัดการลิงก์</tspan></text>
+<text x="550" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="550" y="370.2">ย่อ · ป้องกัน</tspan></text>
+<circle cx="765" cy="330" r="66" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="765" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="765" y="300.2">4.0</tspan></text>
+<line x1="718.8" x2="811.2" y1="307.56" y2="307.56" stroke="#93c5fd" stroke-width="1"/>
+<text x="765" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="765" y="342.8">สร้าง QR</tspan></text>
+<text x="765" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="765" y="370.2">สไตล์ · PNG/SVG</tspan></text>
+<circle cx="980" cy="330" r="66" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="980" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="980" y="300.2">5.0</tspan></text>
+<line x1="933.8" x2="1026.2" y1="307.56" y2="307.56" stroke="#93c5fd" stroke-width="1"/>
+<text x="980" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="980" y="342.8">สถิติคลิก</tspan></text>
+<text x="980" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="980" y="370.2">queue → DB</tspan></text>
+<circle cx="1195" cy="330" r="66" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="1195" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="1195" y="300.2">3.0</tspan></text>
+<line x1="1148.8" x2="1241.2" y1="307.56" y2="307.56" stroke="#93c5fd" stroke-width="1"/>
+<text x="1195" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="1195" y="342.8">Redirect</tspan></text>
+<text x="1195" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="1195" y="370.2">ตรวจสิทธิ์ · 302</tspan></text>
+<rect x="20" y="660" width="204" height="66" fill="#f1f5f9" stroke="none"/>
+<line x1="20" x2="224" y1="660" y2="660" stroke="#334155" stroke-width="2"/><line x1="20" x2="224" y1="726" y2="726" stroke="#334155" stroke-width="2"/>
+<line x1="66" x2="66" y1="660" y2="726" stroke="#334155" stroke-width="1.5"/>
+<text x="43" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="43" y="697.9">D5</tspan></text>
+<text x="145" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="145" y="697.9">audit_logs</tspan></text>
+<rect x="238" y="660" width="204" height="66" fill="#f1f5f9" stroke="none"/>
+<line x1="238" x2="442" y1="660" y2="660" stroke="#334155" stroke-width="2"/><line x1="238" x2="442" y1="726" y2="726" stroke="#334155" stroke-width="2"/>
+<line x1="284" x2="284" y1="660" y2="726" stroke="#334155" stroke-width="1.5"/>
+<text x="261" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="261" y="697.9">D1</tspan></text>
+<text x="363" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="363" y="689.9">users</tspan></text>
+<text x="363" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="363" y="707.9">sso_identities</tspan></text>
+<rect x="456" y="660" width="204" height="66" fill="#f1f5f9" stroke="none"/>
+<line x1="456" x2="660" y1="660" y2="660" stroke="#334155" stroke-width="2"/><line x1="456" x2="660" y1="726" y2="726" stroke="#334155" stroke-width="2"/>
+<line x1="502" x2="502" y1="660" y2="726" stroke="#334155" stroke-width="1.5"/>
+<text x="479" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="479" y="697.9">D4</tspan></text>
+<text x="581" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="581" y="697.9">blocked_domains</tspan></text>
+<rect x="674" y="660" width="204" height="66" fill="#f1f5f9" stroke="none"/>
+<line x1="674" x2="878" y1="660" y2="660" stroke="#334155" stroke-width="2"/><line x1="674" x2="878" y1="726" y2="726" stroke="#334155" stroke-width="2"/>
+<line x1="720" x2="720" y1="660" y2="726" stroke="#334155" stroke-width="1.5"/>
+<text x="697" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="697" y="697.9">D2</tspan></text>
+<text x="799" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="799" y="689.9">links</tspan></text>
+<text x="799" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="799" y="707.9">รหัสสั้น · การป้องกัน · qr_style</tspan></text>
+<rect x="892" y="660" width="204" height="66" fill="#f1f5f9" stroke="none"/>
+<line x1="892" x2="1096" y1="660" y2="660" stroke="#334155" stroke-width="2"/><line x1="892" x2="1096" y1="726" y2="726" stroke="#334155" stroke-width="2"/>
+<line x1="938" x2="938" y1="660" y2="726" stroke="#334155" stroke-width="1.5"/>
+<text x="915" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="915" y="697.9">D6</tspan></text>
+<text x="1017" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="1017" y="689.9">Redis</tspan></text>
+<text x="1017" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="1017" y="707.9">cache · session · คิวคลิก</tspan></text>
+<rect x="1110" y="660" width="204" height="66" fill="#f1f5f9" stroke="none"/>
+<line x1="1110" x2="1314" y1="660" y2="660" stroke="#334155" stroke-width="2"/><line x1="1110" x2="1314" y1="726" y2="726" stroke="#334155" stroke-width="2"/>
+<line x1="1156" x2="1156" y1="660" y2="726" stroke="#334155" stroke-width="1.5"/>
+<text x="1133" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="1133" y="697.9">D3</tspan></text>
+<text x="1235" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="1235" y="689.9">clicks</tspan></text>
+<text x="1235" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="1235" y="707.9">link_daily_stats</tspan></text>
+<path d="M120 101 L120 263" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M335 101 L335 263" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M616.3 100.6 L386.9 287.7" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M645.1 100.9 L575.7 268.1" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M674.2 100.9 L740.3 267.7" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M703 100.6 L928.4 287.3" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M1195 101 L1195 263" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M1108.9 100.4 L612 304.5" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M120.4 397 L121.8 659" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M154.7 387.3 L319.5 659.1" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M171.6 372.8 L517.4 659.4" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M178.6 362.4 L715.5 659.5" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M335.9 397 L339.5 659" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M393.7 362.3 L933.2 659.5" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M557.3 659 L551.5 397" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M585.4 386.9 L754.9 659.2" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M601.9 372.4 L952.9 659.4" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M767 397 L775 659" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M982.6 397 L992.7 659" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M1016.1 386.5 L1190.4 659.2" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M947.2 388.4 L795 659.1" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+<path d="M1162.5 388.6 L1012.8 659.1" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M814.8 659.3 L1144.4 373.9" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+<text x="670" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="670" y="784.2">เส้นประ = การเข้าถึงรอง · 2.0/4.0/5.0/6.0 ต้องผ่าน 1.0 (JWT) ก่อน · 6.0 เฉพาะ ADMIN/MODERATOR</tspan></text>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="198" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="198" y="178.7">คำสั่ง ban/ปิดลิงก์/บล็อกโดเมน</tspan><tspan x="198" y="193.7">ภาพรวม · รายชื่อ · audit</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="425" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="425" y="186.2">คำขอ OIDC ↔ id_token</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="396.1" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="396.1" y="208.8">ล็อกอิน / ออกจากระบบ</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="556.7" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="556.7" y="149.7">URL · alias · วันหมดอายุ</tspan><tspan x="556.7" y="164.7">รหัสผ่าน · จำกัดคลิก · วันเริ่ม</tspan><tspan x="556.7" y="179.7">↔ ลิงก์สั้น · รายการ</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="792.3" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="792.3" y="196.5">ขอ QR · สไตล์ ↔ QR</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="908.3" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="908.3" y="206.8">ขอสถิติ ↔ สถิติ</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1267" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1267" y="178.7">เปิด /code · รหัสผ่านลิงก์</tspan><tspan x="1267" y="193.7">↔ 302 / หน้าสถานะ</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1089.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1089.5" y="151.4">ย่อลิงก์แบบ guest → ลิงก์สั้น</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="73.1" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="73.1" y="532.2">บันทึก audit</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="308.9" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="308.9" y="560.0">ban / เปลี่ยนสิทธิ์</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="401" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="401" y="591.9">บล็อก/ปลดโดเมน</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="576.9" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="576.9" y="610.2">ปิด/เปิดลิงก์</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="259.7" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="259.7" y="532.2">ผู้ใช้ · identity · key</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="811.4" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="811.4" y="574.6">session (rt/bl)</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="478.4" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="478.4" y="532.2">ตรวจโดเมนต้องห้าม</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="746.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="746.5" y="559.9">บันทึก/อ่านลิงก์</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="921.6" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="921.6" y="600.4">ลบ cache</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="849" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="849" y="532.2">shortCode ↔ qr_style</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1017.6" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1017.6" y="532.2">ดึงคิวคลิก</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1172.7" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1172.7" y="560.3">บันทึกคลิก + ยอดรายวัน</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="768.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="768.5" y="603.8">click_count</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1140.2" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1140.2" y="534.1">cache · นับสิทธิ์</tspan><tspan x="1140.2" y="549.1">เข้าคิวคลิก</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="992.1" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="992.1" y="555.1">cache miss</tspan></text></g>
+</svg></div><div class="t"><b>Data Flow Diagram</b><span>การไหลของข้อมูล 3 ระดับ: ภาพรวม → 6 กระบวนการ → ขั้นตอน Redirect</span></div></a>
+<a class="card" href="/docs/er/"><div class="thumb" aria-hidden="true"><svg viewBox="0 0 1290 1060" width="1290" height="1060" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#334155"/></marker>
+<marker id="ahs" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M10 0L0 5L10 10z" fill="#334155"/></marker>
+</defs>
+<rect width="1290" height="1060" fill="#fff"/>
+<rect x="470" y="40" width="340" height="202" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M470 74V48a8 8 0 0 1 8-8H802a8 8 0 0 1 8 8V74z" fill="#2563eb"/>
+<text x="484" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="484" y="62.3">users</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="482" y="89.5">PK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="90.5">id</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="89.8">uuid</tspan></text>
+<rect x="471" y="98" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="482" y="113.5">UK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="114.5">email</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="113.8">text</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="137.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="138.6">name</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="137.8">text?</tspan></text>
+<rect x="471" y="146" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="161.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="162.6">role</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="161.8">USER|MODERATOR|ADMIN</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="185.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="186.6">is_banned</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="185.8">bool</tspan></text>
+<rect x="471" y="194" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="209.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="210.6">last_login_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="209.8">timestamp?</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="233.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="234.6">created_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="233.8">timestamp</tspan></text>
+<rect x="10" y="40" width="340" height="226" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M10 74V48a8 8 0 0 1 8-8H342a8 8 0 0 1 8 8V74z" fill="#2563eb"/>
+<text x="24" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="24" y="62.3">sso_identities</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="22" y="89.5">PK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="90.5">id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="89.8">uuid</tspan></text>
+<rect x="11" y="98" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="22" y="113.5">FK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="114.5">user_id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="113.8">uuid</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="22" y="137.5">UK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="138.6">provider</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="137.8">google|microsoft</tspan></text>
+<rect x="11" y="146" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="22" y="161.5">UK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="162.6">subject</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="161.8">text (sub)</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="185.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="186.6">email</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="185.8">text</tspan></text>
+<rect x="11" y="194" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="209.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="210.6">email_verified</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="209.8">bool</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="233.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="234.6">created_at</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="233.8">timestamp</tspan></text>
+<rect x="11" y="242" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="257.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="258.6">last_login_at</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="257.9">timestamp</tspan></text>
+<rect x="470" y="380" width="340" height="346" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M470 414V388a8 8 0 0 1 8-8H802a8 8 0 0 1 8 8V414z" fill="#2563eb"/>
+<text x="484" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="484" y="402.3">links</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="482" y="429.5">PK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="430.6">id</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="429.9">int</tspan></text>
+<rect x="471" y="438" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="482" y="453.5">FK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="454.6">user_id</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="453.9">uuid?</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="482" y="477.5">UK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="478.6">short_code</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="477.9">text</tspan></text>
+<rect x="471" y="486" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="501.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="502.6">original_url</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="501.9">text</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#64748b"><tspan x="482" y="525.5">IDX</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="526.5">original_host</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="525.9">text</tspan></text>
+<rect x="471" y="534" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="549.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="550.5">status</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="549.9">ACTIVE|DISABLED|ADMIN_DISABLED</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="573.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="574.5">expires_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="573.9">timestamp?</tspan></text>
+<rect x="471" y="582" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="597.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="598.5">starts_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="597.9">timestamp?</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="621.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="622.5">max_clicks</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="621.9">int?</tspan></text>
+<rect x="471" y="630" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="645.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="646.5">password_hash</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="645.9">text? (scrypt)</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="669.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="670.5">qr_style</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="669.9">jsonb?</tspan></text>
+<rect x="471" y="678" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="693.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="694.5">click_count</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="693.9">int</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="717.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="718.5">created_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="717.9">timestamp</tspan></text>
+<rect x="10" y="400" width="340" height="202" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M10 434V408a8 8 0 0 1 8-8H342a8 8 0 0 1 8 8V434z" fill="#2563eb"/>
+<text x="24" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="24" y="422.3">audit_logs</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="22" y="449.5">PK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="450.6">id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="449.9">int</tspan></text>
+<rect x="11" y="458" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="22" y="473.5">FK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="474.6">actor_id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="473.9">uuid?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="497.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="498.6">action</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="497.9">enum</tspan></text>
+<rect x="11" y="506" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="521.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="522.5">target_type</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="521.9">USER|LINK|DOMAIN|API_KEY</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="545.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="546.5">target_id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="545.9">text</tspan></text>
+<rect x="11" y="554" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="569.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="570.5">detail</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="569.9">text?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="593.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="594.5">created_at</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="593.9">timestamp</tspan></text>
+<rect x="930" y="400" width="340" height="154" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M930 434V408a8 8 0 0 1 8-8H1262a8 8 0 0 1 8 8V434z" fill="#2563eb"/>
+<text x="944" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="944" y="422.3">blocked_domains</tspan></text>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="942" y="449.5">PK</tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="450.6">id</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="449.9">int</tspan></text>
+<rect x="931" y="458" width="338" height="24" fill="#f8fafc"/>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="942" y="473.5">UK</tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="474.6">domain</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="473.9">text</tspan></text>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="942" y="497.5"></tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="498.6">reason</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="497.9">text</tspan></text>
+<rect x="931" y="506" width="338" height="24" fill="#f8fafc"/>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="942" y="521.5">FK</tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="522.5">created_by_id</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="521.9">uuid?</tspan></text>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="942" y="545.5"></tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="546.5">created_at</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="545.9">timestamp</tspan></text>
+<rect x="10" y="770" width="340" height="274" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M10 804V778a8 8 0 0 1 8-8H342a8 8 0 0 1 8 8V804z" fill="#2563eb"/>
+<text x="24" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="24" y="792.3">clicks</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="22" y="819.5">PK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="820.5">id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="819.9">bigint</tspan></text>
+<rect x="11" y="828" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="22" y="843.5">FK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="844.5">link_id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="843.9">int</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="867.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="868.5">ip_hash</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="867.9">sha256+salt</tspan></text>
+<rect x="11" y="876" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="891.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="892.5">user_agent</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="891.9">text?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="915.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="916.5">referer</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="915.9">text?</tspan></text>
+<rect x="11" y="924" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="939.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="940.5">country</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="939.9">char(2)?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="963.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="964.5">device</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="963.9">desktop|mobile|tablet|bot|unknown</tspan></text>
+<rect x="11" y="972" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="987.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="988.5">os</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="987.9">text?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="1011.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="1012.5">browser</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="1011.9">text?</tspan></text>
+<rect x="11" y="1020" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#64748b"><tspan x="22" y="1035.5">IDX</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="1036.5">clicked_at</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="1035.8">timestamp</tspan></text>
+<rect x="470" y="850" width="340" height="106" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M470 884V858a8 8 0 0 1 8-8H802a8 8 0 0 1 8 8V884z" fill="#2563eb"/>
+<text x="484" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="484" y="872.3">link_daily_stats</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="482" y="899.5">PK FK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="900.5">link_id</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="899.9">int</tspan></text>
+<rect x="471" y="908" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="482" y="923.5">PK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="924.5">day</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="923.9">date (UTC)</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="947.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="948.5">clicks</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="947.9">int</tspan></text>
+<path d="M470 100 L350 100" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M640 242 L640 380" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M520 242 L520 310 L180 310 L180 400" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M760 242 L760 310 L1100 310 L1100 400" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M470 686 L180 686 L180 770" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M640 726 L640 850" fill="none" stroke="#334155" stroke-width="1.8"/>
+<rect x="900" y="800" width="360" height="236" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="916" text-anchor="start" font-size="14" font-weight="700" fill="#0f172a"><tspan x="916" y="828.9">สัญลักษณ์</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="916" y="856.2">PK</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="856.2">Primary key</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#7c3aed"><tspan x="916" y="878.2">FK</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="878.2">Foreign key</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#047857"><tspan x="916" y="900.2">UK</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="900.2">Unique</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#64748b"><tspan x="916" y="922.2">IDX</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="922.2">มี index ค้นหา</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="916" y="944.2">?</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="944.2">ว่างได้ (nullable)</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="916" y="966.2">1 / N / 0..1</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="966.2">ความสัมพันธ์ (cardinality)</tspan></text>
+<text x="916" text-anchor="start" font-size="11" font-weight="400" fill="#475569"><tspan x="916" y="984.9">ON DELETE: users → sso_identities = CASCADE</tspan><tspan x="916" y="999.9">users → links/audit_logs/blocked_domains = SET NULL</tspan><tspan x="916" y="1014.9">links → clicks/link_daily_stats = CASCADE</tspan></text>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="435" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="435" y="84.2">ตัวตน SSO</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="458" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="458" y="98.2">1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="362" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="362" y="98.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="652" y="339.2">สร้าง (guest: user_id = NULL)</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="654" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="654" y="260.2">0..1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="652" y="376.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="300" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="300" y="302.2">ผู้กระทำ</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="532" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="532" y="260.2">0..1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="192" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="192" y="396.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="880" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="880" y="302.2">ผู้บล็อก</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="772" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="772" y="260.2">0..1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="1112" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="1112" y="396.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="300" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="300" y="678.2">คลิกดิบ (เก็บ 90 วัน)</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="458" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="458" y="684.2">1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="192" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="192" y="766.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="652" y="760.2">สรุปรายวัน (เก็บถาวร)</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="652" y="744.2">1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="652" y="846.2">N</tspan></text></g>
+</svg></div><div class="t"><b>ER Diagram</b><span>7 ตาราง คีย์ ความสัมพันธ์ และเหตุผลการออกแบบ</span></div></a>
+<a class="card" href="/docs/architecture/"><div class="thumb" aria-hidden="true"><svg viewBox="0 0 1360 740" width="1360" height="740" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#334155"/></marker>
+<marker id="ahs" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M10 0L0 5L10 10z" fill="#334155"/></marker>
+</defs>
+<rect width="1360" height="740" fill="#fff"/>
+<rect x="20" y="250" width="230" height="90" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="135" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="135" y="281.3">เบราว์เซอร์</tspan></text>
+<text x="135" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="135" y="308.2">ผู้ใช้ · ผู้เข้าชมลิงก์</tspan></text>
+<rect x="330" y="20" width="300" height="120" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="480" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="480" y="51.3">Frontend (Next.js static)</tspan></text>
+<text x="480" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="480" y="78.2">Cloudflare Workers assets</tspan><tspan x="480" y="94.2">shorturl.kittametdev.com</tspan><tspan x="480" y="110.2">หน้าเว็บ · /docs</tspan></text>
+<rect x="1030" y="20" width="300" height="100" rx="12" fill="#ecfdf5" stroke="#047857" stroke-width="2"/>
+<text x="1180" text-anchor="middle" font-size="15" font-weight="700" fill="#047857"><tspan x="1180" y="51.3">Google</tspan></text>
+<text x="1180" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="1180" y="78.2">OpenID Connect + PKCE</tspan></text>
+<rect x="330" y="270" width="300" height="130" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="480" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="480" y="301.3">core-api  :4000</tspan></text>
+<text x="480" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="480" y="328.2">api.kittametdev.com</tspan><tspan x="480" y="344.2">Auth (SSO/JWT) · Links · QR</tspan><tspan x="480" y="360.2">Admin · Guest</tspan></text>
+<rect x="680" y="270" width="300" height="130" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="830" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="830" y="301.3">redirect-service  :4001</tspan></text>
+<text x="830" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="830" y="328.2">s.kittametdev.com</tspan><tspan x="830" y="344.2">GET /:code → 302</tspan><tspan x="830" y="360.2">รหัสผ่าน · จำกัดคลิก · วันเริ่ม</tspan></text>
+<rect x="1030" y="270" width="300" height="130" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="1180" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="1180" y="301.3">analytics-service  :4002</tspan></text>
+<text x="1180" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="1180" y="328.2">ดึงคิวคลิก → เขียน DB</tspan><tspan x="1180" y="344.2">ให้สถิติ (x-internal-key)</tspan><tspan x="1180" y="360.2">ไม่เปิดสู่สาธารณะ</tspan></text>
+<rect x="320" y="520" width="1020" height="200" rx="16" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="6 4"/>
+<text x="335" text-anchor="start" font-size="12" font-weight="700" fill="#475569"><tspan x="335" y="544.2">Data layer</tspan></text>
+<rect x="350" y="560" width="440" height="130" rx="12" fill="#f1f5f9" stroke="#334155" stroke-width="2"/>
+<text x="570" text-anchor="middle" font-size="15" font-weight="700" fill="#334155"><tspan x="570" y="591.3">PostgreSQL 16 (Neon)</tspan></text>
+<text x="570" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="570" y="618.2">users · sso_identities · links</tspan><tspan x="570" y="634.2">clicks · link_daily_stats</tspan><tspan x="570" y="650.2">audit_logs · blocked_domains</tspan></text>
+<rect x="880" y="560" width="430" height="130" rx="12" fill="#f1f5f9" stroke="#334155" stroke-width="2"/>
+<text x="1095" text-anchor="middle" font-size="15" font-weight="700" fill="#334155"><tspan x="1095" y="591.3">Redis 7 (Upstash)</tspan></text>
+<text x="1095" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="1095" y="618.2">cache link:{code} · session rt:/bl:</tspan><tspan x="1095" y="634.2">rate limit · ตัวนับ lim:{id}</tspan><tspan x="1095" y="650.2">คิว clicks:queue</tspan></text>
+<path d="M208.1 249.5 L382.9 140.5" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M251 308.4 L329 317.5" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M135 250 L135 205 L780 205 L780 270" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M560 270 L560 235 L1130 235 L1130 270" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M630.9 277.9 L1047 120.4" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+<path d="M981 335 L1029 335" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M500.5 401 L549.5 559" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M618.7 400.4 L956.3 559.6" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M771.1 400.7 L628.9 559.3" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+<path d="M890.1 400.7 L1034.9 559.3" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M1160.7 401 L1114.3 559" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M1042.4 400.4 L707.6 559.6" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="247.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="247.5" y="193.2">โหลดหน้าเว็บ</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="290" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="290" y="303.2">fetch /api/*</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="450" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="450" y="196.2">เปิดลิงก์สั้น  s.kittametdev.com/:code</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="870" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="870" y="252.2">ขอสถิติ (x-internal-key)</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="866.6" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="866.6" y="184.9">OIDC code exchange</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1005" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1005" y="325.2">ping /internal/flush</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="495" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="495" y="484.2">Prisma</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="800" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="800" y="446.4">session · rate limit · ลบ cache</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="632.9" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="632.9" y="492.1">cache miss: SELECT</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1032.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1032.5" y="484.2">cache · นับสิทธิ์ · เข้าคิว</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1182.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1182.5" y="484.2">ดึงคิวคลิก</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="831.1" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="831.1" y="561.9">INSERT clicks · UPSERT daily · click_count</tspan></text></g>
+</svg></div><div class="t"><b>Architecture</b><span>Micro-service 3 ตัว ฐานข้อมูล Redis และการ deploy</span></div></a>
+</div>
+<h2 style="margin-top:40px">ระบบโดยย่อ</h2>
+<div class="facts">
+<div class="fact"><b>3 service แยกหน้าที่</b><span>core-api (ลิงก์/บัญชี) · redirect-service (เปิดลิงก์เร็ว) · analytics-service (สถิติ)</span></div>
+<div class="fact"><b>เปิดลิงก์ไม่รอฐานข้อมูล</b><span>อ่านจาก Redis cache และเก็บคลิกผ่านคิว ไม่เขียน DB ระหว่าง redirect</span></div>
+<div class="fact"><b>เข้าสู่ระบบด้วย Google</b><span>ไม่เก็บรหัสผ่านผู้ใช้ · ย่อลิงก์แบบไม่ล็อกอินได้ (ใช้ได้ 7 วัน)</span></div>
+<div class="fact"><b>ป้องกันลิงก์ได้</b><span>รหัสผ่าน · จำกัดจำนวนครั้ง · วันเริ่มใช้ · วันหมดอายุ</span></div>
+</div><div class="pn"><span></span><a href="/docs/dfd/" rel="next">Data Flow Diagram →</a></div></main>
+<footer>วาดจากโค้ดจริงของระบบ · <a href="https://github.com/Dinozexe/Shorturl">ซอร์สโค้ดบน GitHub</a></footer>
+</body></html>

@@ -1,0 +1,250 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1290 1060" width="1290" height="1060" role="img" aria-label="ER Diagram" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#334155"/></marker>
+<marker id="ahs" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M10 0L0 5L10 10z" fill="#334155"/></marker>
+</defs>
+<rect width="1290" height="1060" fill="#fff"/>
+<rect x="470" y="40" width="340" height="202" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M470 74V48a8 8 0 0 1 8-8H802a8 8 0 0 1 8 8V74z" fill="#2563eb"/>
+<text x="484" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="484" y="62.3">users</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="482" y="89.5">PK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="90.5">id</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="89.8">uuid</tspan></text>
+<rect x="471" y="98" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="482" y="113.5">UK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="114.5">email</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="113.8">text</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="137.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="138.6">name</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="137.8">text?</tspan></text>
+<rect x="471" y="146" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="161.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="162.6">role</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="161.8">USER|MODERATOR|ADMIN</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="185.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="186.6">is_banned</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="185.8">bool</tspan></text>
+<rect x="471" y="194" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="209.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="210.6">last_login_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="209.8">timestamp?</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="233.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="234.6">created_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="233.8">timestamp</tspan></text>
+<rect x="10" y="40" width="340" height="226" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M10 74V48a8 8 0 0 1 8-8H342a8 8 0 0 1 8 8V74z" fill="#2563eb"/>
+<text x="24" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="24" y="62.3">sso_identities</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="22" y="89.5">PK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="90.5">id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="89.8">uuid</tspan></text>
+<rect x="11" y="98" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="22" y="113.5">FK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="114.5">user_id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="113.8">uuid</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="22" y="137.5">UK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="138.6">provider</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="137.8">google|microsoft</tspan></text>
+<rect x="11" y="146" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="22" y="161.5">UK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="162.6">subject</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="161.8">text (sub)</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="185.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="186.6">email</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="185.8">text</tspan></text>
+<rect x="11" y="194" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="209.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="210.6">email_verified</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="209.8">bool</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="233.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="234.6">created_at</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="233.8">timestamp</tspan></text>
+<rect x="11" y="242" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="257.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="258.6">last_login_at</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="257.9">timestamp</tspan></text>
+<rect x="470" y="380" width="340" height="346" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M470 414V388a8 8 0 0 1 8-8H802a8 8 0 0 1 8 8V414z" fill="#2563eb"/>
+<text x="484" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="484" y="402.3">links</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="482" y="429.5">PK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="430.6">id</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="429.9">int</tspan></text>
+<rect x="471" y="438" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="482" y="453.5">FK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="454.6">user_id</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="453.9">uuid?</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="482" y="477.5">UK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="478.6">short_code</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="477.9">text</tspan></text>
+<rect x="471" y="486" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="501.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="502.6">original_url</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="501.9">text</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#64748b"><tspan x="482" y="525.5">IDX</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="526.5">original_host</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="525.9">text</tspan></text>
+<rect x="471" y="534" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="549.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="550.5">status</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="549.9">ACTIVE|DISABLED|ADMIN_DISABLED</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="573.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="574.5">expires_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="573.9">timestamp?</tspan></text>
+<rect x="471" y="582" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="597.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="598.5">starts_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="597.9">timestamp?</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="621.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="622.5">max_clicks</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="621.9">int?</tspan></text>
+<rect x="471" y="630" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="645.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="646.5">password_hash</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="645.9">text? (scrypt)</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="669.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="670.5">qr_style</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="669.9">jsonb?</tspan></text>
+<rect x="471" y="678" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="693.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="694.5">click_count</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="693.9">int</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="717.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="718.5">created_at</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="717.9">timestamp</tspan></text>
+<rect x="10" y="400" width="340" height="202" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M10 434V408a8 8 0 0 1 8-8H342a8 8 0 0 1 8 8V434z" fill="#2563eb"/>
+<text x="24" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="24" y="422.3">audit_logs</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="22" y="449.5">PK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="450.6">id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="449.9">int</tspan></text>
+<rect x="11" y="458" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="22" y="473.5">FK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="474.6">actor_id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="473.9">uuid?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="497.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="498.6">action</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="497.9">enum</tspan></text>
+<rect x="11" y="506" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="521.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="522.5">target_type</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="521.9">USER|LINK|DOMAIN|API_KEY</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="545.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="546.5">target_id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="545.9">text</tspan></text>
+<rect x="11" y="554" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="569.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="570.5">detail</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="569.9">text?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="593.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="594.5">created_at</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="593.9">timestamp</tspan></text>
+<rect x="930" y="400" width="340" height="154" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M930 434V408a8 8 0 0 1 8-8H1262a8 8 0 0 1 8 8V434z" fill="#2563eb"/>
+<text x="944" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="944" y="422.3">blocked_domains</tspan></text>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="942" y="449.5">PK</tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="450.6">id</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="449.9">int</tspan></text>
+<rect x="931" y="458" width="338" height="24" fill="#f8fafc"/>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#047857"><tspan x="942" y="473.5">UK</tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="474.6">domain</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="473.9">text</tspan></text>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="942" y="497.5"></tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="498.6">reason</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="497.9">text</tspan></text>
+<rect x="931" y="506" width="338" height="24" fill="#f8fafc"/>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="942" y="521.5">FK</tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="522.5">created_by_id</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="521.9">uuid?</tspan></text>
+<text x="942" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="942" y="545.5"></tspan></text>
+<text x="982" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="982" y="546.5">created_at</tspan></text>
+<text x="1260" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="1260" y="545.9">timestamp</tspan></text>
+<rect x="10" y="770" width="340" height="274" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M10 804V778a8 8 0 0 1 8-8H342a8 8 0 0 1 8 8V804z" fill="#2563eb"/>
+<text x="24" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="24" y="792.3">clicks</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="22" y="819.5">PK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="820.5">id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="819.9">bigint</tspan></text>
+<rect x="11" y="828" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#7c3aed"><tspan x="22" y="843.5">FK</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="844.5">link_id</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="843.9">int</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="867.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="868.5">ip_hash</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="867.9">sha256+salt</tspan></text>
+<rect x="11" y="876" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="891.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="892.5">user_agent</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="891.9">text?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="915.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="916.5">referer</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="915.9">text?</tspan></text>
+<rect x="11" y="924" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="939.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="940.5">country</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="939.9">char(2)?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="963.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="964.5">device</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="963.9">desktop|mobile|tablet|bot|unknown</tspan></text>
+<rect x="11" y="972" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="987.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="988.5">os</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="987.9">text?</tspan></text>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="1011.5"></tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="1012.5">browser</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="1011.9">text?</tspan></text>
+<rect x="11" y="1020" width="338" height="24" fill="#f8fafc"/>
+<text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#64748b"><tspan x="22" y="1035.5">IDX</tspan></text>
+<text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="1036.5">clicked_at</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="1035.8">timestamp</tspan></text>
+<rect x="470" y="850" width="340" height="106" rx="8" fill="#fff" stroke="#1e40af" stroke-width="2"/>
+<path d="M470 884V858a8 8 0 0 1 8-8H802a8 8 0 0 1 8 8V884z" fill="#2563eb"/>
+<text x="484" text-anchor="start" font-size="15" font-weight="700" fill="#fff" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="484" y="872.3">link_daily_stats</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="482" y="899.5">PK FK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="900.5">link_id</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="899.9">int</tspan></text>
+<rect x="471" y="908" width="338" height="24" fill="#f8fafc"/>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#1d4ed8"><tspan x="482" y="923.5">PK</tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="700" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="924.5">day</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="923.9">date (UTC)</tspan></text>
+<text x="482" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="482" y="947.5"></tspan></text>
+<text x="522" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="522" y="948.5">clicks</tspan></text>
+<text x="800" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="800" y="947.9">int</tspan></text>
+<path d="M470 100 L350 100" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M640 242 L640 380" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M520 242 L520 310 L180 310 L180 400" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M760 242 L760 310 L1100 310 L1100 400" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M470 686 L180 686 L180 770" fill="none" stroke="#334155" stroke-width="1.8"/>
+<path d="M640 726 L640 850" fill="none" stroke="#334155" stroke-width="1.8"/>
+<rect x="900" y="800" width="360" height="236" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="916" text-anchor="start" font-size="14" font-weight="700" fill="#0f172a"><tspan x="916" y="828.9">สัญลักษณ์</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="916" y="856.2">PK</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="856.2">Primary key</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#7c3aed"><tspan x="916" y="878.2">FK</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="878.2">Foreign key</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#047857"><tspan x="916" y="900.2">UK</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="900.2">Unique</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#64748b"><tspan x="916" y="922.2">IDX</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="922.2">มี index ค้นหา</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="916" y="944.2">?</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="944.2">ว่างได้ (nullable)</tspan></text>
+<text x="916" text-anchor="start" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="916" y="966.2">1 / N / 0..1</tspan></text>
+<text x="1010" text-anchor="start" font-size="12" font-weight="400" fill="#475569"><tspan x="1010" y="966.2">ความสัมพันธ์ (cardinality)</tspan></text>
+<text x="916" text-anchor="start" font-size="11" font-weight="400" fill="#475569"><tspan x="916" y="984.9">ON DELETE: users → sso_identities = CASCADE</tspan><tspan x="916" y="999.9">users → links/audit_logs/blocked_domains = SET NULL</tspan><tspan x="916" y="1014.9">links → clicks/link_daily_stats = CASCADE</tspan></text>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="435" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="435" y="84.2">ตัวตน SSO</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="458" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="458" y="98.2">1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="362" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="362" y="98.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="652" y="339.2">สร้าง (guest: user_id = NULL)</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="654" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="654" y="260.2">0..1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="652" y="376.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="300" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="300" y="302.2">ผู้กระทำ</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="532" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="532" y="260.2">0..1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="192" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="192" y="396.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="880" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="880" y="302.2">ผู้บล็อก</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="772" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="772" y="260.2">0..1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="1112" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="1112" y="396.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="300" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="300" y="678.2">คลิกดิบ (เก็บ 90 วัน)</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="458" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="458" y="684.2">1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="192" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="192" y="766.2">N</tspan></text></g>
+<g stroke="#fff" stroke-width="5" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="652" y="760.2">สรุปรายวัน (เก็บถาวร)</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="652" y="744.2">1</tspan></text></g>
+<g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="652" y="846.2">N</tspan></text></g>
+</svg>

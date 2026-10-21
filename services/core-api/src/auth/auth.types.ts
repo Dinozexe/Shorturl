@@ -8,7 +8,6 @@ export interface AuthUser {
   role: Role;
   jti: string;
   exp: number;
-  viaKey: boolean; // true เมื่อมาจาก API key (P8) — ใช้ /api/admin/* ไม่ได้
 }
 
 declare global {

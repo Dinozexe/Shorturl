@@ -1,0 +1,41 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1180 680" width="1180" height="680" role="img" aria-label="DFD Level 0" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#334155"/></marker>
+<marker id="ahs" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M10 0L0 5L10 10z" fill="#334155"/></marker>
+</defs>
+<rect width="1180" height="680" fill="#fff"/>
+<circle cx="590" cy="340" r="125" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="590" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="590" y="279.6">0</tspan></text>
+<line x1="502.5" x2="677.5" y1="297.5" y2="297.5" stroke="#93c5fd" stroke-width="1"/>
+<text x="590" text-anchor="middle" font-size="17" font-weight="700" fill="#fff"><tspan x="590" y="360.9">Short URL</tspan></text>
+<text x="590" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="590" y="412.6">ระบบย่อลิงก์</tspan></text>
+<rect x="40" y="60" width="210" height="76" rx="6" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="145" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="145" y="95.3">ผู้เข้าชมลิงก์ / Guest</tspan></text>
+<text x="145" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="145" y="114.2">ไม่ต้องล็อกอิน</tspan></text>
+<rect x="40" y="500" width="210" height="76" rx="6" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="145" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="145" y="535.3">ผู้ใช้ (USER)</tspan></text>
+<text x="145" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="145" y="554.2">ล็อกอินด้วย Google</tspan></text>
+<rect x="930" y="500" width="210" height="76" rx="6" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="1035" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="1035" y="535.3">ผู้ดูแล</tspan></text>
+<text x="1035" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="1035" y="554.2">ADMIN / MODERATOR</tspan></text>
+<rect x="930" y="60" width="210" height="76" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="2"/>
+<text x="1035" text-anchor="middle" font-size="15" font-weight="700" fill="#047857"><tspan x="1035" y="95.3">Google</tspan></text>
+<text x="1035" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="1035" y="114.2">ผู้ให้บริการ SSO (OIDC)</tspan></text>
+<path d="M225.3 118.9 L488.9 262.2" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M469.8 297.4 L206.2 154" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M223.2 481.3 L466.8 372.9" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M483 409.5 L239.4 517.9" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M940.6 517.9 L697 409.5" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M713.2 372.9 L956.8 481.3" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M973.8 154 L710.2 297.4" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M691.1 262.2 L954.7 118.9" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="590" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="590" y="654.2">ลูกศร = ทิศทางข้อมูล · วงกลม = กระบวนการ · ฟ้า = ผู้ใช้งาน · เขียว = ระบบภายนอก</tspan></text>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="345.1" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="345.1" y="146.6">ลิงก์ต้นฉบับ (ย่อแบบ guest)</tspan><tspan x="345.1" y="161.6">คำขอเปิดลิงก์สั้น · รหัสผ่านลิงก์</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="297.3" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="297.3" y="234.4">ลิงก์สั้น (หมดอายุ 7 วัน)</tspan><tspan x="297.3" y="249.4">302 ไปปลายทาง / หน้าแจ้งสถานะ</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="308.4" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="308.4" y="407.3">คำขอเข้าสู่ระบบ · ข้อมูลลิงก์ + การป้องกัน</tspan><tspan x="308.4" y="422.3">สไตล์ QR · คำขอดูสถิติ</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="349.1" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="349.1" y="498.6">รายการลิงก์ · QR</tspan><tspan x="349.1" y="513.6">สถิติการคลิก</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="830.9" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="830.9" y="498.6">คำสั่งจัดการผู้ใช้ / ลิงก์</tspan><tspan x="830.9" y="513.6">บล็อกโดเมน</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="871.6" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="871.6" y="407.3">ภาพรวมระบบ · รายชื่อ</tspan><tspan x="871.6" y="422.3">Audit log</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="882.7" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="882.7" y="234.4">id_token</tspan><tspan x="882.7" y="249.4">(sub, email)</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="834.9" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="834.9" y="146.6">คำขอยืนยันตัวตน</tspan><tspan x="834.9" y="161.6">(OIDC + PKCE)</tspan></text></g>
+</svg>

@@ -29,7 +29,7 @@
 | P5 | analytics-service (flush คิวคลิกลง DB เป็นชุด, สถิติ) + `GET /api/links/:id/stats` | เสร็จ |
 | P6 | Frontend (Next.js): เข้าสู่ระบบ (หน้าต่างเด้ง), ย่อลิงก์ (ไม่ล็อกอินได้แบบลิงก์สั้น 7 วัน), รายการ/ค้นหา, QR ปรับแต่งได้, สถิติ, แก้ไข/ปิด/ลบ, หน้าฟีเจอร์/รูปแบบบัญชี | เสร็จ |
 | P7 | แอดมิน `/admin` (ภาพรวม / ผู้ใช้ / ลิงก์ทั้งหมด / โดเมนที่บล็อก / audit log) — MODERATOR ใช้ภาพรวม/ลิงก์/โดเมน, ADMIN ใช้ได้ทั้งหมด | เสร็จ |
-| P8 | API key + CLI สำหรับจัดการลิงก์ (`surl login/shorten/ls/...`) | โค้ดฝั่ง API/CLI มีอยู่ แต่ **ปิดหน้าเว็บสร้างรหัสไว้** (ถอนหน้า `/keys` และเมนูออกตามที่เลือก) |
+| P8 | ~~API key + CLI จัดการลิงก์~~ | ยกเลิก — ถอดออกทั้งตาราง `api_keys`, `/api/keys` และคำสั่ง CLI ที่ใช้ key (CLI เหลือเฉพาะ `surl dev/status/migrate`) |
 | P9 | Deploy: Render (3 service) + Neon (Postgres) + Upstash (Redis) + Cloudflare (เว็บและโดเมน) — คู่มือ `docs/deploy-render.md` | เสร็จ (ออนไลน์แล้ว) |
 | P10 | README + DFD/ER/Architecture บนเว็บ (`/docs/`) + ซ้อมเดโม | เอกสารเสร็จ — เหลือซ้อมเดโม |
 
@@ -48,7 +48,7 @@
 - สถิติการคลิก: กราฟรายวัน 30 วัน, อุปกรณ์ (มือถือ/คอมพิวเตอร์/แท็บเล็ต/บอท) / ระบบปฏิบัติการ / เบราว์เซอร์ / ประเทศ (เก็บ IP แบบ hash เท่านั้น; ระบบยังเก็บ referer ไว้ แต่ไม่แสดงในหน้าสถิติ) — **ประเทศแสดงได้เมื่อรันหลัง Cloudflare** (`BEHIND_CLOUDFLARE=true`, อ่านจาก `CF-IPCountry`) ตอนรันในเครื่องจะเป็น "ไม่ทราบ"
 - แอดมิน `/admin` (sidebar พับได้, ตารางข้อมูลพร้อม **ตัวกรอง/เรียง/ช่วงเวลา** และ **แบ่งหน้า** (เลขหน้า, ต่อหน้า 10–100), กดแถวดูรายละเอียดเต็ม (ลิงก์มีแท็บสถิติ), action เป็นไอคอน + modal ยืนยัน): ภาพรวม, ผู้ใช้และบทบาท (USER / MODERATOR / ADMIN), ลิงก์ทั้งหมด (+ ดูสถิติของลิงก์ใดก็ได้), **โดเมนที่บล็อก** (แสดงผลกระทบก่อนบล็อก และปิดลิงก์เดิมที่ชี้โดเมนนั้นอัตโนมัติ), audit log — MODERATOR ใช้ได้เฉพาะภาพรวม/ลิงก์/โดเมน
 - ล็อกอินแล้วผู้ดูแลถูกพาเข้า `/admin` ส่วนผู้ใช้ทั่วไปเข้า `/dashboard`; หน้าเว็บรองรับไทย/อังกฤษ และธีมสว่าง/มืด
-- CLI `surl` + API key (`surl login/shorten/ls/stats/qr/...`) ใช้ได้กับ API — หน้าเว็บสร้างรหัสถูกถอดออกแล้ว
+- CLI `surl` สำหรับรันโปรเจกต์ตอนพัฒนา (`surl dev/status/migrate`)
 
 ## สถาปัตยกรรม
 
@@ -118,22 +118,6 @@ surl migrate                  # prisma migrate deploy ด้วยค่าจ�
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
-### CLI จัดการลิงก์ (`surl`)
-
-> ตอนนี้ **ไม่มีหน้าเว็บสร้างรหัส API** (ถอนออกแล้ว; กู้หน้า `/keys` ได้จาก git) CLI ด้านล่างจึงใช้ได้เมื่อมีรหัสที่สร้างผ่าน `POST /api/keys` (ต้องใช้ session ล็อกอิน) เท่านั้น
-
-รหัส API ใช้กับ CLI ดังนี้:
-
-```bash
-npm link                                  # ครั้งเดียวที่ root ของโปรเจกต์ → ได้คำสั่ง surl (หรือใช้ node cli/surl.mjs แทน)
-surl login --token surl_… [--api https://api.<โดเมน>]   # ไม่ใส่ --api = http://localhost:4000
-surl shorten https://example.com/long --alias promo --expires 7d --max 100 --password รหัส
-surl ls [-q คำค้น]      surl stats <code>      surl qr <code> -o qr.png
-surl off|on <code>      surl rm <code> -y      surl whoami / logout / config
-```
-
-key เก็บในไฟล์ config ของเครื่อง (สิทธิ์ 600) ใช้ตัวแปร `SURL_TOKEN` / `SURL_API` แทนได้ ทุกคำสั่งใส่ `--json` ได้ · key ใช้ได้กับลิงก์ของเจ้าของเท่านั้น ใช้ `/api/admin/*` และจัดการ key เองไม่ได้ · เพิกถอนที่หน้า `/keys` แล้วใช้ไม่ได้ทันที
-
 ### Frontend
 
 ```bash
@@ -195,7 +179,7 @@ Prisma เป็นตัวจัดการ schema (`services/core-api/prisma
 - แก้ `schema.prisma` ต้องสร้าง migration ใหม่ทุกครั้ง: `npx prisma migrate dev --name <ชื่อ>` และห้ามแก้ migration ที่ apply แล้ว
 - Prisma เขียน CHECK constraint ไม่ได้ จึงเขียนไว้ใน `migration.sql` เอง (อีเมล/โดเมนต้องเป็นตัวพิมพ์เล็ก ฯลฯ) ดูรายการใน [`docs/er-diagram.md`](docs/er-diagram.md)
 - Production ใช้ `npx prisma migrate deploy`
-- ตอนนี้มี 8 ตาราง: `users`, `sso_identities`, `api_keys`, `links`, `clicks`, `link_daily_stats`, `blocked_domains`, `audit_logs`
+- ตอนนี้มี 7 ตาราง: `users`, `sso_identities`, `links`, `clicks`, `link_daily_stats`, `blocked_domains`, `audit_logs`
 
 ## Deploy (ฟรี ไม่ผูกบัตร)
 
@@ -246,7 +230,7 @@ frontend/                 Next.js 14 (static export) + Tailwind
   app/                    หน้า: / (ย่อลิงก์), /features, /plans, /login (เปิดหน้าต่างล็อกอิน), /dashboard, /admin
   components/             ฟอร์มย่อลิงก์, แถบผลลัพธ์, แถวลิงก์, dialog (QR / สถิติ / แก้ไข / ลบ), กราฟ
   lib/                    api.ts (access token ใน memory + refresh แบบ single-flight), auth.tsx, format.ts
-cli/surl.mjs             CLI (`surl dev/status/migrate` สำหรับพัฒนา · `surl login/shorten/ls/stats/qr/on/off/rm` ใช้กับ API key)
+cli/surl.mjs             CLI สำหรับรันโปรเจกต์ (`surl dev/status/migrate`)
 render.yaml              Render Blueprint (3 service) — ดู docs/deploy-render.md
 package.json              (root) ลงทะเบียนคำสั่ง `surl` + `npm run dev`
 docs/                     prd, er-diagram, dfd, architecture, api, deploy-render, ci

@@ -43,15 +43,12 @@ enum AuditAction {
   LINK_ENABLE
   DOMAIN_BLOCK
   DOMAIN_UNBLOCK
-  API_KEY_CREATE
-  API_KEY_REVOKE
 }
 
 enum AuditTarget {
   USER
   LINK
   DOMAIN
-  API_KEY
 }
 
 model User {
@@ -64,7 +61,6 @@ model User {
   createdAt   DateTime  @default(now()) @map("created_at")
 
   identities     SsoIdentity[]
-  apiKeys        ApiKey[]
   links          Link[]
   auditLogs      AuditLog[]
   blockedDomains BlockedDomain[]
@@ -87,22 +83,6 @@ model SsoIdentity {
   @@unique([provider, subject])
   @@unique([userId, provider])
   @@map("sso_identities")
-}
-
-model ApiKey {
-  id         Int       @id @default(autoincrement())
-  userId     String    @map("user_id") @db.Uuid
-  name       String
-  prefix     String
-  keyHash    String    @unique @map("key_hash")
-  lastUsedAt DateTime? @map("last_used_at")
-  expiresAt  DateTime? @map("expires_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("api_keys")
 }
 
 model Link {

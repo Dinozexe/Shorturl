@@ -132,7 +132,7 @@ function dfd1() {
   const SY = 660, SW = 204, SH = 66;
   const st = (i, id, n, sub) => s.store(20 + 218 * i, SY, SW, SH, id, n, sub);
   const d5 = st(0, 'D5', 'audit_logs');
-  const d1 = st(1, 'D1', 'users', 'sso_identities · api_keys');
+  const d1 = st(1, 'D1', 'users', 'sso_identities');
   const d4 = st(2, 'D4', 'blocked_domains');
   const d2 = st(3, 'D2', 'links', 'รหัสสั้น · การป้องกัน · qr_style');
   const d6 = st(4, 'D6', 'Redis', 'cache · session · คิวคลิก');
@@ -209,9 +209,6 @@ const T = {
   sso_identities: { x: 10, y: 40, cols: [
     ['id', 'uuid', 'PK'], ['user_id', 'uuid', 'FK'], ['provider', 'google|microsoft', 'UK'], ['subject', 'text (sub)', 'UK'], ['email', 'text', ''], ['email_verified', 'bool', ''], ['created_at', 'timestamp', ''], ['last_login_at', 'timestamp', ''],
   ] },
-  api_keys: { x: 930, y: 40, cols: [
-    ['id', 'int', 'PK'], ['user_id', 'uuid', 'FK'], ['name', 'text', ''], ['prefix', 'text', ''], ['key_hash', 'sha256', 'UK'], ['last_used_at', 'timestamp?', ''], ['expires_at', 'timestamp?', ''], ['created_at', 'timestamp', ''],
-  ] },
   links: { x: 470, y: 380, cols: [
     ['id', 'int', 'PK'], ['user_id', 'uuid?', 'FK'], ['short_code', 'text', 'UK'], ['original_url', 'text', ''], ['original_host', 'text', 'IDX'], ['status', 'ACTIVE|DISABLED|ADMIN_DISABLED', ''],
     ['expires_at', 'timestamp?', ''], ['starts_at', 'timestamp?', ''], ['max_clicks', 'int?', ''], ['password_hash', 'text? (scrypt)', ''], ['qr_style', 'jsonb?', ''], ['click_count', 'int', ''], ['created_at', 'timestamp', ''],
@@ -254,10 +251,9 @@ function erd() {
     card(...a); card(...b);
   };
   const U = T.users, L = T.links;
-  const SSO = T.sso_identities, API = T.api_keys, AUD = T.audit_logs, BLK = T.blocked_domains, CLK = T.clicks, DAY = T.link_daily_stats;
+  const SSO = T.sso_identities, AUD = T.audit_logs, BLK = T.blocked_domains, CLK = T.clicks, DAY = T.link_daily_stats;
   const ub = U.y + th('users'), lb = L.y + th('links');
   line([[U.x, 100], [SSO.x + TW, 100]], 'ตัวตน SSO', 435, 80, [U.x - 12, 94, '1'], [SSO.x + TW + 12, 94, 'N']);
-  line([[U.x + TW, 100], [API.x, 100]], 'ออก key', 895, 80, [U.x + TW + 12, 94, '1'], [API.x - 12, 94, 'N']);
   line([[U.x + TW / 2, ub], [L.x + TW / 2, L.y]], 'สร้าง (guest: user_id = NULL)', U.x + TW / 2 + 12, 335, [U.x + TW / 2 + 14, ub + 14, '0..1'], [L.x + TW / 2 + 12, L.y - 8, 'N'], 'start');
   line([[U.x + 50, ub], [U.x + 50, 310], [AUD.x + TW / 2, 310], [AUD.x + TW / 2, AUD.y]], 'ผู้กระทำ', 300, 298, [U.x + 62, ub + 14, '0..1'], [AUD.x + TW / 2 + 12, AUD.y - 8, 'N']);
   line([[U.x + TW - 50, ub], [U.x + TW - 50, 310], [BLK.x + TW / 2, 310], [BLK.x + TW / 2, BLK.y]], 'ผู้บล็อก', 880, 298, [U.x + TW - 38, ub + 14, '0..1'], [BLK.x + TW / 2 + 12, BLK.y - 8, 'N']);
@@ -271,7 +267,7 @@ function erd() {
     s.add(s.text(lx + 16, ly + 52 + i * 22, k, { size: 12, weight: 700, anchor: 'start', fill: colSet[k] ?? C.blue }));
     s.add(s.text(lx + 110, ly + 52 + i * 22, d, { size: 12, anchor: 'start', fill: C.muted }));
   });
-  s.add(s.text(lx + 16, ly + 196, ['ON DELETE: users → sso_identities/api_keys = CASCADE', 'users → links/audit_logs/blocked_domains = SET NULL', 'links → clicks/link_daily_stats = CASCADE'], { size: 11, anchor: 'start', fill: C.muted, lh: 15 }));
+  s.add(s.text(lx + 16, ly + 196, ['ON DELETE: users → sso_identities = CASCADE', 'users → links/audit_logs/blocked_domains = SET NULL', 'links → clicks/link_daily_stats = CASCADE'], { size: 11, anchor: 'start', fill: C.muted, lh: 15 }));
   return s.render('ER Diagram');
 }
 
@@ -285,19 +281,17 @@ function arch() {
     return { t: 'r', x, y, w, h };
   };
   const BR = box(20, 250, 230, 90, 'เบราว์เซอร์', ['ผู้ใช้ · ผู้เข้าชมลิงก์']);
-  const CLI = box(20, 420, 230, 90, 'CLI  surl', ['API key  surl_…']);
   const FE = box(330, 20, 300, 120, 'Frontend (Next.js static)', ['Cloudflare Workers assets', 'shorturl.kittametdev.com', 'หน้าเว็บ · /docs']);
   const GG = box(1030, 20, 300, 100, 'Google', ['OpenID Connect + PKCE'], C.ext, C.extLine);
-  const CORE = box(330, 270, 300, 130, 'core-api  :4000', ['api.kittametdev.com', 'Auth (SSO/JWT) · Links · QR', 'Admin · API keys · Guest']);
+  const CORE = box(330, 270, 300, 130, 'core-api  :4000', ['api.kittametdev.com', 'Auth (SSO/JWT) · Links · QR', 'Admin · Guest']);
   const RED = box(680, 270, 300, 130, 'redirect-service  :4001', ['s.kittametdev.com', 'GET /:code → 302', 'รหัสผ่าน · จำกัดคลิก · วันเริ่ม']);
   const ANA = box(1030, 270, 300, 130, 'analytics-service  :4002', ['ดึงคิวคลิก → เขียน DB', 'ให้สถิติ (x-internal-key)', 'ไม่เปิดสู่สาธารณะ']);
   s.add(`<rect x="320" y="520" width="1020" height="200" rx="16" fill="#f8fafc" stroke="${C.line}" stroke-dasharray="6 4"/>`);
   s.add(s.text(335, 540, 'Data layer', { size: 12, weight: 700, fill: C.muted, anchor: 'start' }));
-  const PG = box(350, 560, 440, 130, 'PostgreSQL 16 (Neon)', ['users · sso_identities · api_keys · links', 'clicks · link_daily_stats', 'audit_logs · blocked_domains'], C.store, C.storeLine);
+  const PG = box(350, 560, 440, 130, 'PostgreSQL 16 (Neon)', ['users · sso_identities · links', 'clicks · link_daily_stats', 'audit_logs · blocked_domains'], C.store, C.storeLine);
   const RDS = box(880, 560, 430, 130, 'Redis 7 (Upstash)', ['cache link:{code} · session rt:/bl:', 'rate limit · ตัวนับ lim:{id}', 'คิว clicks:queue'], C.store, C.storeLine);
   s.link(BR, FE, 'โหลดหน้าเว็บ', { lt: 0.5, ldx: -48, ldy: -6 });
   s.link(BR, CORE, 'fetch /api/*', { lt: 0.5, ldy: -14 });
-  s.link(CLI, CORE, 'x-api-key', { lt: 0.5, ldx: -22, ldy: 14 });
   s.flow([[135, 250], [135, 205], [780, 205], [780, 270]], 'เปิดลิงก์สั้น  s.kittametdev.com/:code', 450, 192);
   s.flow([[560, 270], [560, 235], [1130, 235], [1130, 270]], 'ขอสถิติ (x-internal-key)', 870, 248);
   s.link(CORE, GG, 'OIDC code exchange', { dash: true, lt: 0.35, ldx: 90, ldy: -42 });
@@ -311,92 +305,173 @@ function arch() {
   return s.render('System architecture');
 }
 
-/* ---------- ตาราง + หน้า HTML ---------- */
-const page = (title, lead, body, extraNav = '') => `<!doctype html>
+/* ---------- หน้า HTML ---------- */
+const REPO = 'https://github.com/Dinozexe/Shorturl';
+const NAV = [['/docs/', 'ภาพรวม', ''], ['/docs/dfd/', 'DFD', 'dfd'], ['/docs/er/', 'ER Diagram', 'er'], ['/docs/architecture/', 'Architecture', 'architecture']];
+const ORDER = ['', 'dfd', 'er', 'architecture'];
+const TITLES = { '': 'เอกสารระบบ', dfd: 'Data Flow Diagram', er: 'ER Diagram', architecture: 'Architecture' };
+const href = (k) => (k ? `/docs/${k}/` : '/docs/');
+
+const CSS = `
+:root{--ink:#0f172a;--muted:#475569;--line:#e2e8f0;--blue:#1d4ed8;--soft:#eff6ff;--r:14px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:#fff;color:var(--ink);font:16px/1.7 ${FONT};-webkit-text-size-adjust:100%}
+a{color:var(--blue)}a:focus-visible,summary:focus-visible{outline:3px solid #93c5fd;outline-offset:2px;border-radius:6px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--blue);color:#fff;padding:8px 14px;border-radius:8px;z-index:10}.skip:focus{left:8px}
+header{position:sticky;top:0;z-index:5;background:#fffffff0;backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{max-width:1200px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;text-decoration:none;color:var(--ink);font-weight:700}
+.brand img{width:32px;height:32px;border-radius:50%}.brand small{display:block;font-weight:400;color:var(--muted);font-size:12px;line-height:1.1}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{padding:7px 14px;border-radius:999px;text-decoration:none;color:var(--muted);font-size:14px;font-weight:500}
+nav.tabs a:hover{background:var(--soft);color:var(--blue)}nav.tabs a[aria-current=page]{background:var(--blue);color:#fff}
+.back{font-size:14px;text-decoration:none;padding:7px 12px;border:1px solid var(--line);border-radius:999px;color:var(--ink)}.back:hover{border-color:var(--blue);color:var(--blue)}
+main{max-width:1200px;margin:0 auto;padding:32px 20px 72px}
+h1{font-size:clamp(26px,4vw,34px);line-height:1.25;margin:0 0 8px;letter-spacing:-.01em}
+h2{font-size:22px;margin:0 0 4px;line-height:1.3}h3{font-size:17px;margin:28px 0 8px}
+.lead{color:var(--muted);margin:0 0 20px;max-width:70ch}
+.toc{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:0;list-style:none}
+.toc a{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;font-size:14px;color:var(--ink)}.toc a:hover{border-color:var(--blue);color:var(--blue)}
+section.d{margin-top:44px}
+figure{margin:14px 0 0}.sv{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+.sv svg{display:block;width:100%;height:auto;min-width:820px}
+figcaption{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between;color:var(--muted);font-size:14px;margin-top:8px}
+figcaption a{font-weight:500}
+.tw{overflow-x:auto;margin:16px 0}table{border-collapse:collapse;width:100%;font-size:15px;min-width:560px}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}th{background:var(--soft);font-weight:600;white-space:nowrap}
+code{font:13px ui-monospace,Menlo,Consolas,monospace;background:#f1f5f9;padding:1px 6px;border-radius:5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin:24px 0 8px}
+.card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);text-decoration:none;color:inherit;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.card:hover{border-color:var(--blue);box-shadow:0 6px 24px #1d4ed81f}
+.thumb{height:190px;overflow:hidden;background:#f8fafc;border-bottom:1px solid var(--line);position:relative}
+.thumb svg{position:absolute;left:0;top:0;width:100%;height:auto;pointer-events:none}
+.card .t{padding:16px 18px 18px}.card b{display:block;font-size:18px;color:var(--blue)}.card span{color:var(--muted);font-size:15px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
+.fact{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}.fact b{display:block;margin-bottom:2px}.fact span{color:var(--muted);font-size:15px}
+ul.flows{padding-left:20px;margin:8px 0}ul.flows li{margin:6px 0}
+.pn{display:flex;justify-content:space-between;gap:12px;margin-top:56px;padding-top:20px;border-top:1px solid var(--line);flex-wrap:wrap}
+.pn a{text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:500}.pn a:hover{border-color:var(--blue)}
+footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:14px}
+@media(max-width:640px){main{padding-top:22px}.bar{gap:6px}.brand small{display:none}.thumb{height:150px}}
+@media print{header,.pn,.toc,.back{display:none}.sv{overflow:visible;border:0}.sv svg{min-width:0}}
+`;
+
+function shell(key, body) {
+  const title = TITLES[key];
+  const i = ORDER.indexOf(key);
+  const prev = ORDER[i - 1], next = ORDER[i + 1];
+  const pn = `<div class="pn">${prev !== undefined ? `<a href="${href(prev)}" rel="prev">← ${TITLES[prev]}</a>` : '<span></span>'}${next !== undefined ? `<a href="${href(next)}" rel="next">${TITLES[next]} →</a>` : '<span></span>'}</div>`;
+  return `<!doctype html>
 <html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)} · Short URL By Kittamet</title>
-<style>
-:root{--ink:#0f172a;--muted:#475569;--line:#e2e8f0;--blue:#1d4ed8;--soft:#eff6ff}
-*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:15px/1.65 ${FONT}}
-header{border-bottom:1px solid var(--line);background:#fff}
-.bar{max-width:1280px;margin:0 auto;padding:10px 20px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.bar b{margin-right:14px;font-size:15px}.bar a{color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:999px;font-size:14px;font-weight:500}
-.bar a:hover{background:var(--soft);color:var(--blue)}.bar a.on{background:var(--blue);color:#fff}
-main{max-width:1280px;margin:0 auto;padding:28px 20px 80px}
-h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em}h2{font-size:20px;margin:40px 0 4px}p.lead{color:var(--muted);margin:0 0 18px;max-width:80ch}
-.sv{overflow:auto;border:1px solid var(--line);border-radius:14px;padding:6px;background:#fff;margin:12px 0}
-.sv svg{display:block;height:auto;min-width:900px;width:100%}
-table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0}th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
-th{background:var(--soft);font-weight:600}code{font:13px ui-monospace,Menlo,Consolas,monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:20px}
-.card{display:block;border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:inherit}.card:hover{border-color:var(--blue);box-shadow:0 4px 18px #1d4ed81a}
-.card b{display:block;font-size:17px;color:var(--blue)}.card span{color:var(--muted);font-size:14px}
-ul{padding-left:20px}li{margin:3px 0}
-</style></head><body>
-<header><nav class="bar"><b>Short URL By Kittamet</b>${nav(extraNav)}</nav></header>
-<main><h1>${esc(title)}</h1><p class="lead">${lead}</p>${body}</main></body></html>`;
-const NAV = [['/docs/', 'ภาพรวม', ''], ['/docs/dfd/', 'DFD', 'dfd'], ['/docs/er/', 'ER Diagram', 'er'], ['/docs/architecture/', 'Architecture', 'architecture'], ['/', 'กลับหน้าเว็บ', 'x']];
-function nav(cur) { return NAV.map(([h, l, k]) => `<a href="${h}"${k === cur ? ' class="on"' : ''}>${l}</a>`).join(''); }
-const tbl = (head, rows) => `<table><thead><tr>${head.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-const sv = (svg) => `<div class="sv">${svg}</div>`;
+<meta name="description" content="${esc(DESC[key])}"><link rel="icon" href="/logo-128.png"><meta name="theme-color" content="#1d4ed8">
+<style>${CSS}</style></head><body>
+<a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header><div class="bar">
+<a class="brand" href="/docs/"><img src="/logo-128.png" alt="" width="32" height="32"><span>Short URL<small>เอกสารระบบ</small></span></a>
+<nav class="tabs" aria-label="เอกสาร">${NAV.map(([h, l, k]) => `<a href="${h}"${k === key ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</nav>
+<a class="back" href="/">เปิดเว็บ</a></div></header>
+<main id="main">${body}${pn}</main>
+<footer>วาดจากโค้ดจริงของระบบ · <a href="${REPO}">ซอร์สโค้ดบน GitHub</a></footer>
+</body></html>`;
+}
+const DESC = {
+  '': 'เอกสารระบบ Short URL: DFD, ER Diagram และ Architecture',
+  dfd: 'Data Flow Diagram ระดับ 0, 1 และ 2 ของระบบย่อลิงก์ Short URL',
+  er: 'ER Diagram 7 ตารางของระบบย่อลิงก์ Short URL',
+  architecture: 'สถาปัตยกรรม micro-service ของระบบย่อลิงก์ Short URL',
+};
+
+const tbl = (head, rows) => `<div class="tw"><table><thead><tr>${head.map((h) => `<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+// รูปแต่ละภาพ: ฝังในหน้า + มีไฟล์ .svg แยกให้เปิดเต็มจอ/ดาวน์โหลด
+const files = {};
+function fig(id, h2, lead, svg, file, alt) {
+  files[file] = svg;
+  return `<section class="d" id="${id}"><h2>${h2}</h2><p class="lead">${lead}</p>
+<figure><div class="sv" role="img" aria-label="${esc(alt)}" tabindex="0">${svg.replace(/ role="img" aria-label="[^"]*"/, '')}</div>
+<figcaption><span>เลื่อนซ้าย-ขวาถ้าภาพกว้างกว่าจอ</span><span><a href="${file}" target="_blank" rel="noopener">เปิดภาพเต็ม</a> · <a href="${file}" download>ดาวน์โหลด SVG</a></span></figcaption></figure></section>`;
+}
+const toc = (items) => `<ul class="toc" aria-label="ในหน้านี้">${items.map(([id, l]) => `<li><a href="#${id}">${l}</a></li>`).join('')}</ul>`;
+const thumb = (svg) => `<div class="thumb" aria-hidden="true">${svg.replace(/ role="img" aria-label="[^"]*"/, '')}</div>`;
+
+const D0 = dfd0(), D1 = dfd1(), D2 = dfd2(), ER = erd(), AR = arch();
 
 const pages = {
-  '': page('เอกสารระบบ', 'ไดอะแกรมทั้งหมดวาดให้ตรงกับระบบที่ deploy อยู่ (ตาราง/โฟลว์ตามโค้ดจริง) — เปิดดูได้ทันทีโดยไม่ต้องล็อกอิน',
-    `<div class="cards">
-<a class="card" href="/docs/dfd/"><b>Data Flow Diagram</b><span>Level 0 · Level 1 · Level 2 (Redirect) พร้อมตารางอธิบายกระบวนการและที่เก็บข้อมูล</span></a>
-<a class="card" href="/docs/er/"><b>ER Diagram</b><span>8 ตาราง คีย์ ความสัมพันธ์ และเหตุผลการออกแบบ</span></a>
-<a class="card" href="/docs/architecture/"><b>Architecture</b><span>Micro-service 3 ตัว · Postgres · Redis · โดเมนและการ deploy</span></a></div>`),
+  '': shell('', `<h1>เอกสารระบบ</h1>
+<p class="lead">ระบบย่อลิงก์ที่ทำงานจริง: ย่อลิงก์ สร้าง QR ดูประวัติและสถิติการคลิก ไดอะแกรมด้านล่างวาดจากโค้ดที่ deploy อยู่ เปิดดูได้โดยไม่ต้องล็อกอิน</p>
+<div class="cards">
+<a class="card" href="/docs/dfd/">${thumb(D1)}<div class="t"><b>Data Flow Diagram</b><span>การไหลของข้อมูล 3 ระดับ: ภาพรวม → 6 กระบวนการ → ขั้นตอน Redirect</span></div></a>
+<a class="card" href="/docs/er/">${thumb(ER)}<div class="t"><b>ER Diagram</b><span>7 ตาราง คีย์ ความสัมพันธ์ และเหตุผลการออกแบบ</span></div></a>
+<a class="card" href="/docs/architecture/">${thumb(AR)}<div class="t"><b>Architecture</b><span>Micro-service 3 ตัว ฐานข้อมูล Redis และการ deploy</span></div></a>
+</div>
+<h2 style="margin-top:40px">ระบบโดยย่อ</h2>
+<div class="facts">
+<div class="fact"><b>3 service แยกหน้าที่</b><span>core-api (ลิงก์/บัญชี) · redirect-service (เปิดลิงก์เร็ว) · analytics-service (สถิติ)</span></div>
+<div class="fact"><b>เปิดลิงก์ไม่รอฐานข้อมูล</b><span>อ่านจาก Redis cache และเก็บคลิกผ่านคิว ไม่เขียน DB ระหว่าง redirect</span></div>
+<div class="fact"><b>เข้าสู่ระบบด้วย Google</b><span>ไม่เก็บรหัสผ่านผู้ใช้ · ย่อลิงก์แบบไม่ล็อกอินได้ (ใช้ได้ 7 วัน)</span></div>
+<div class="fact"><b>ป้องกันลิงก์ได้</b><span>รหัสผ่าน · จำกัดจำนวนครั้ง · วันเริ่มใช้ · วันหมดอายุ</span></div>
+</div>`),
 
-  dfd: page('Data Flow Diagram', 'แสดงการไหลของข้อมูลของระบบย่อลิงก์ แบ่ง 3 ระดับ: ภาพรวม (L0) → กระบวนการหลัก (L1) → ขยายส่วน Redirect (L2) · สัญลักษณ์แบบ Yourdon/DeMarco',
-    `<h2>Level 0 — Context Diagram</h2><p class="lead">ระบบทั้งหมดเป็นกระบวนการเดียว คุยกับผู้ใช้ 3 กลุ่ม และ Google (SSO)</p>${sv(dfd0())}
-<h2>Level 1 — กระบวนการหลัก 6 ตัว</h2><p class="lead">แตกกระบวนการ 0 ออกเป็น 6 ตัว พร้อมที่เก็บข้อมูล D1–D6</p>${sv(dfd1())}
-${tbl(['รหัส', 'กระบวนการ', 'หน้าที่', 'บริการที่ทำงานจริง'], [
-  ['1.0', 'ยืนยันตัวตน', 'ล็อกอิน Google (OIDC+PKCE) / บัญชีทดสอบ · ออก JWT (15 นาที) + refresh cookie (7 วัน, หมุนทุกครั้ง, ตรวจจับการใช้ซ้ำ)', 'core-api'],
-  ['2.0', 'จัดการลิงก์', 'ย่อลิงก์ (ผู้ใช้/guest), ตั้งชื่อเอง, วันหมดอายุ, รหัสผ่าน, จำกัดจำนวนคลิก, วันเริ่มใช้, ปิด/เปิด/ลบ, ตรวจโดเมนที่บล็อก', 'core-api'],
-  ['3.0', 'Redirect', 'หาลิงก์จาก cache → DB, ตรวจเงื่อนไขและรหัสผ่าน, ตอบ 302 และเข้าคิวคลิก', 'redirect-service'],
-  ['4.0', 'สร้าง QR', 'สร้าง QR จากลิงก์สั้น (PNG/SVG/matrix) และบันทึกสไตล์ (ลายจุด สี โลโก้ ข้อความ)', 'core-api'],
-  ['5.0', 'สถิติคลิก', 'ดึงคิวคลิกเป็น batch → บันทึก clicks + สรุปรายวัน + click_count, ให้ข้อมูลกราฟ (ประเทศ อุปกรณ์ OS เบราว์เซอร์)', 'analytics-service'],
-  ['6.0', 'จัดการระบบ', 'ผู้ดูแล: ดู/แบน/เปลี่ยนสิทธิ์ผู้ใช้, ปิดลิงก์, บล็อกโดเมน, ดู audit log (MODERATOR ทำได้บางส่วน)', 'core-api'],
+  dfd: shell('dfd', `<h1>Data Flow Diagram</h1>
+<p class="lead">แสดงว่าข้อมูลไหลระหว่างผู้ใช้ ระบบ และที่เก็บข้อมูลอย่างไร แบ่ง 3 ระดับ ใช้สัญลักษณ์ Yourdon/DeMarco: วงกลม = กระบวนการ, สี่เหลี่ยม = ผู้ใช้งาน/ระบบภายนอก, เส้นคู่ขนาน = ที่เก็บข้อมูล</p>
+${toc([['l0', 'Level 0'], ['l1', 'Level 1'], ['procs', 'กระบวนการและที่เก็บข้อมูล'], ['l2', 'Level 2 · Redirect']])}
+${fig('l0', 'Level 0 — ภาพรวมระบบ', 'ระบบทั้งหมดเป็นกระบวนการเดียว คุยกับผู้ใช้ 3 กลุ่มและ Google', D0, 'dfd-level0.svg', 'DFD Level 0')}
+${fig('l1', 'Level 1 — 6 กระบวนการหลัก', 'แตกกระบวนการ 0 ออกเป็น 6 ตัว พร้อมที่เก็บข้อมูล D1–D6', D1, 'dfd-level1.svg', 'DFD Level 1')}
+<section class="d" id="procs"><h2>กระบวนการและที่เก็บข้อมูล</h2>
+${tbl(['รหัส', 'กระบวนการ', 'หน้าที่', 'ทำงานที่'], [
+  ['1.0', 'ยืนยันตัวตน', 'ล็อกอิน Google (OIDC + PKCE) หรือบัญชีทดสอบ ออก JWT อายุ 15 นาทีและ refresh cookie 7 วัน (หมุนทุกครั้ง ตรวจจับการใช้ซ้ำ)', 'core-api'],
+  ['2.0', 'จัดการลิงก์', 'ย่อลิงก์ (ผู้ใช้/guest) ตั้งชื่อเอง วันหมดอายุ รหัสผ่าน จำกัดคลิก วันเริ่มใช้ ปิด/เปิด/ลบ และตรวจโดเมนที่บล็อก', 'core-api'],
+  ['3.0', 'Redirect', 'หาลิงก์จาก cache → DB ตรวจเงื่อนไขและรหัสผ่าน ตอบ 302 แล้วเข้าคิวคลิก', 'redirect-service'],
+  ['4.0', 'สร้าง QR', 'สร้าง QR จากลิงก์สั้น (PNG/SVG/matrix) และบันทึกสไตล์ที่ตั้ง', 'core-api'],
+  ['5.0', 'สถิติคลิก', 'ดึงคิวคลิกเป็น batch → บันทึก clicks + สรุปรายวัน + click_count และให้ข้อมูลกราฟ', 'analytics-service'],
+  ['6.0', 'จัดการระบบ', 'ดู/แบน/เปลี่ยนสิทธิ์ผู้ใช้ ปิดลิงก์ บล็อกโดเมน ดู audit log (MODERATOR ทำได้บางส่วน)', 'core-api'],
 ])}
 ${tbl(['ที่เก็บ', 'เนื้อหา'], [
-  ['D1', '<code>users</code>, <code>sso_identities</code>, <code>api_keys</code>'], ['D2', '<code>links</code>'], ['D3', '<code>clicks</code>, <code>link_daily_stats</code>'],
+  ['D1', '<code>users</code>, <code>sso_identities</code>'], ['D2', '<code>links</code>'], ['D3', '<code>clicks</code>, <code>link_daily_stats</code>'],
   ['D4', '<code>blocked_domains</code>'], ['D5', '<code>audit_logs</code>'], ['D6', 'Redis: cache ลิงก์, session/blacklist, rate limit, ตัวนับคลิก, คิวคลิก'],
-])}
-<h2>Level 2 — กระบวนการ 3.0 Redirect</h2><p class="lead">ขั้นตอนตอนมีคนเปิดลิงก์สั้น: หาลิงก์ → ตรวจเงื่อนไข → ตรวจรหัสผ่าน → นับสิทธิ์ → ตอบ 302</p>${sv(dfd2())}`, 'dfd'),
+])}</section>
+${fig('l2', 'Level 2 — กระบวนการ 3.0 Redirect', 'ตอนมีคนเปิดลิงก์สั้น: หาลิงก์ → ตรวจเงื่อนไข → ตรวจรหัสผ่าน → นับสิทธิ์ → ตอบ 302', D2, 'dfd-level2-redirect.svg', 'DFD Level 2 กระบวนการ Redirect')}`),
 
-  er: page('ER Diagram', 'ตรงกับ <code>services/core-api/prisma/schema.prisma</code> · 8 ตาราง · ไม่เก็บรหัสผ่านผู้ใช้ (ใช้ SSO) · ไม่เก็บ IP ดิบ (เก็บ hash)',
-    `${sv(erd())}
+  er: shell('er', `<h1>ER Diagram</h1>
+<p class="lead">ตรงกับ <code>services/core-api/prisma/schema.prisma</code> · 7 ตาราง · ไม่เก็บรหัสผ่านผู้ใช้ (ใช้ SSO) · ไม่เก็บ IP ดิบ (เก็บ hash)</p>
+${toc([['erd', 'แผนภาพ'], ['notes', 'เหตุผลการออกแบบ']])}
+${fig('erd', 'ความสัมพันธ์ระหว่างตาราง', 'PK = primary key · FK = foreign key · UK = unique · ? = ว่างได้', ER, 'er-diagram.svg', 'ER Diagram')}
+<section class="d" id="notes"><h2>เหตุผลการออกแบบ</h2>
 ${tbl(['ประเด็น', 'การตัดสินใจ'], [
-  ['<code>sso_identities</code> แยกจาก <code>users</code>', '1 คนผูกได้หลาย provider; ระบุตัวตนด้วย <code>sub</code> ไม่ใช่อีเมล'],
+  ['<code>sso_identities</code> แยกจาก <code>users</code>', '1 คนผูกได้หลาย provider ระบุตัวตนด้วย <code>sub</code> ไม่ใช่อีเมล'],
   ['<code>links.user_id</code> เป็น NULL ได้', 'ลิงก์ guest ไม่มีเจ้าของ (หมดอายุ 7 วัน) และเมื่อลบผู้ใช้ ลิงก์/QR ที่แจกไปแล้วยังใช้ได้'],
   ['<code>password_hash</code>', 'scrypt + salt ต่อลิงก์ ไม่ส่งออกทาง API'],
   ['<code>max_clicks</code>', 'ตัวนับจริงอยู่ใน Redis (<code>lim:{id}</code>) เพื่อนับแบบ atomic'],
   ['<code>click_count</code>', 'เก็บซ้ำใน links เพื่ออ่านเร็ว อัปเดตเป็น batch จากคิว'],
-  ['<code>clicks</code> + <code>link_daily_stats</code>', 'คลิกดิบเก็บ 90 วัน; ยอดรายวันเก็บถาวรเพื่อกราฟย้อนหลัง'],
+  ['<code>clicks</code> + <code>link_daily_stats</code>', 'คลิกดิบเก็บ 90 วัน ยอดรายวันเก็บถาวรเพื่อกราฟย้อนหลัง'],
   ['<code>qr_style</code>', 'JSONB บันทึกสไตล์ QR (ไม่เก็บรูปที่อัปโหลด)'],
   ['<code>ip_hash</code>', 'sha256(ip + salt) เพื่อ PDPA'],
 ])}
-<p class="lead">รายละเอียดเต็ม (CHECK constraint, index, key ใน Redis): <code>docs/er-diagram.md</code> ใน repository</p>`, 'er'),
+<p>รายละเอียดเต็ม (CHECK constraint, index, key ใน Redis) อยู่ที่ <a href="${REPO}/blob/main/docs/er-diagram.md">docs/er-diagram.md</a></p></section>`),
 
-  architecture: page('Architecture', 'Micro-service 3 ตัว แยกหน้าที่ชัดเจน สื่อสารกันผ่าน HTTP ภายใน และ Redis',
-    `${sv(arch())}
+  architecture: shell('architecture', `<h1>Architecture</h1>
+<p class="lead">Micro-service 3 ตัวแยกหน้าที่ชัดเจน คุยกันผ่าน HTTP ภายในและ Redis</p>
+${toc([['diagram', 'แผนภาพ'], ['services', 'บริการ'], ['flows', 'การไหลสำคัญ']])}
+${fig('diagram', 'ภาพรวมสถาปัตยกรรม', 'ลูกศรประ = การเข้าถึงรอง (cache miss, OIDC)', AR, 'architecture.svg', 'Architecture')}
+<section class="d" id="services"><h2>บริการ</h2>
 ${tbl(['บริการ', 'หน้าที่', 'ที่รัน'], [
-  ['frontend', 'หน้าเว็บ (Next.js export เป็น static) + หน้าเอกสารนี้', 'Cloudflare Workers (static assets) · shorturl.kittametdev.com'],
-  ['core-api', 'Auth, ลิงก์, QR, admin, API key, guest', 'Render · api.kittametdev.com'],
-  ['redirect-service', 'เปิดลิงก์สั้น → 302 ให้เร็ว (cache Redis) และเข้าคิวคลิก', 'Render · s.kittametdev.com'],
-  ['analytics-service', 'ประมวลผลคิวคลิก, ให้สถิติแก่ core-api', 'Render (ภายใน, ป้องกันด้วย x-internal-key)'],
+  ['frontend', 'หน้าเว็บ (Next.js export เป็น static) และหน้าเอกสารนี้', 'Cloudflare Workers · shorturl.kittametdev.com'],
+  ['core-api', 'Auth, ลิงก์, QR, admin, guest', 'Render · api.kittametdev.com'],
+  ['redirect-service', 'เปิดลิงก์สั้น → 302 เร็ว (cache Redis) และเข้าคิวคลิก', 'Render · s.kittametdev.com'],
+  ['analytics-service', 'ประมวลผลคิวคลิก ให้สถิติแก่ core-api', 'Render (ภายใน ป้องกันด้วย x-internal-key)'],
   ['PostgreSQL 16', 'ข้อมูลหลักทั้งหมด', 'Neon'],
   ['Redis 7', 'cache, session, rate limit, ตัวนับ, คิว', 'Upstash'],
-])}
-<h2>การไหลสำคัญ</h2>
-<ul><li><b>ย่อลิงก์</b> — เบราว์เซอร์ → core-api ตรวจ URL/โดเมนต้องห้าม → บันทึก <code>links</code> → ลบ cache เก่า</li>
-<li><b>เปิดลิงก์</b> — redirect-service อ่าน Redis (ไม่มีค่อยอ่าน DB แล้ว cache 1 ชม.) → ตรวจเงื่อนไข → 302 → เข้าคิวคลิกแล้วแจ้ง analytics ให้ flush</li>
-<li><b>สถิติ</b> — analytics ดึงคิวเป็น batch เขียนลง DB; หน้า stats เรียก core-api → analytics (ถ้าล่ม แสดงยอดรวมจาก <code>click_count</code>)</li></ul>`, 'architecture'),
+])}</section>
+<section class="d" id="flows"><h2>การไหลสำคัญ</h2>
+<ul class="flows"><li><b>ย่อลิงก์</b> — เบราว์เซอร์ → core-api ตรวจ URL/โดเมนต้องห้าม → บันทึก <code>links</code> → ลบ cache เก่า</li>
+<li><b>เปิดลิงก์</b> — redirect-service อ่าน Redis (ไม่มีค่อยอ่าน DB แล้ว cache 1 ชั่วโมง) → ตรวจเงื่อนไข → 302 → เข้าคิวคลิกแล้วแจ้ง analytics ให้ flush</li>
+<li><b>สถิติ</b> — analytics ดึงคิวเป็น batch เขียนลง DB หน้า stats เรียก core-api → analytics (ถ้าล่ม แสดงยอดรวมจาก <code>click_count</code>)</li></ul></section>`),
 };
 
 for (const [dir, html] of Object.entries(pages)) {
   const p = join(OUT, dir);
   mkdirSync(p, { recursive: true });
   writeFileSync(join(p, 'index.html'), html);
+  for (const [f, svg] of Object.entries(files)) if (html.includes(`href="${f}"`)) writeFileSync(join(p, f), svg.replace('<svg ', '<svg xmlns:xlink="http://www.w3.org/1999/xlink" '));
 }
 console.log('สร้างเสร็จ →', OUT);

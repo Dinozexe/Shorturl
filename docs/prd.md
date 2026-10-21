@@ -25,7 +25,7 @@
 
 | บทบาท | ทำอะไรได้ |
 |---|---|
-| **USER** | ล็อกอินด้วย Google/Microsoft, สร้าง/แก้/ปิด/ลบลิงก์ของตัวเอง, ดู QR และสถิติ, สร้าง API key ให้ CLI |
+| **USER** | ล็อกอินด้วย Google/Microsoft, สร้าง/แก้/ปิด/ลบลิงก์ของตัวเอง, ดู QR และสถิติ |
 | **MODERATOR** | + ดูภาพรวมระบบ, ปิด/เปิดลิงก์ทุกคน, จัดการโดเมนต้องห้าม |
 | **ADMIN** | + จัดการผู้ใช้ (ระงับ/เปลี่ยนบทบาท), ดู audit log |
 | **ผู้เยี่ยมชมลิงก์สั้น** | เปิด `/:code` แล้วถูกพาไปปลายทาง (ไม่ต้องล็อกอิน) |
@@ -79,13 +79,12 @@
 | ADM-1 | ภาพรวม: จำนวนผู้ใช้/ลิงก์/คลิก/ใหม่ 24 ชม. | S |
 | ADM-2 | ลิงก์ทั้งระบบ ค้นหา ปิด/เปิด | M |
 | ADM-3 | โดเมนต้องห้าม: เพิ่ม/ลบ (รวม subdomain) และ **ปิดลิงก์เดิมที่ชี้โดเมนนั้นอัตโนมัติ** | M |
-| ADM-4 | audit log: login, สมัคร, ban/unban, เปลี่ยนบทบาท, ปิด/เปิดลิงก์, บล็อกโดเมน, API key; กรองตามชนิด | M |
+| ADM-4 | audit log: login, สมัคร, ban/unban, เปลี่ยนบทบาท, ปิด/เปิดลิงก์, บล็อกโดเมน; กรองตามชนิด | M |
 
-### 3.5 CLI และ API key
+### 3.5 CLI
 | ID | ความต้องการ | P |
 |---|---|---|
-| KEY-1 | สร้าง/ดู/เพิกถอน API key (`surl_…`, เก็บ sha256, แสดงเต็มครั้งเดียว, สูงสุด 10) จากหน้าเว็บเท่านั้น | C |
-| CLI-1 | `surl login/shorten/ls/stats/qr/on/off/rm/config/dev` | C |
+| CLI-1 | `surl dev/status/migrate` (รันโปรเจกต์ตอนพัฒนา) | C |
 
 ## 4. Non-functional Requirements
 
@@ -139,7 +138,7 @@ ER, DFD L0–2, Architecture, PRD นี้
 - [ ] seed: จองอีเมลแอดมินจาก `ADMIN_EMAIL`
 - [ ] `.env` ที่ root (ไม่ commit; รายการตัวแปรอยู่ใน `README.md`)
 
-**เสร็จเมื่อ:** `prisma migrate dev` ผ่านบน DB เปล่า, ตารางครบ 8 ตาราง (ตาม ER), seed ทำงาน  
+**เสร็จเมื่อ:** `prisma migrate dev` ผ่านบน DB เปล่า, ตารางครบ (ปัจจุบัน 7 ตาราง) (ตาม ER), seed ทำงาน  
 **Commit:** `chore: scaffold + db schema`
 
 ### P2 — core-api: SSO, JWT, RBAC (~4 ชม.)
@@ -199,13 +198,8 @@ ER, DFD L0–2, Architecture, PRD นี้
 **เสร็จเมื่อ:** บล็อก `example.org` แล้วลิงก์เก่าของโดเมนนั้นเปิดไม่ได้ทันที + มี log; MODERATOR เข้าแท็บผู้ใช้ไม่ได้ (UI และ API 403)  
 **Commit:** `feat(admin): users, rbac, audit, blocked domains`
 
-### P8 — API key + CLI ✅ เสร็จ
-- [x] ตาราง `api_keys` + `POST/GET/DELETE /api/keys` (เฉพาะ session เว็บ), `requireAuth` รับ `surl_…` → `viaKey` (ใช้ `/api/admin/*` ไม่ได้)
-- [ ] ~~หน้าเว็บ `/keys`~~ — ถอนออกแล้ว (เลือกไม่ให้มีหน้าจัดการรหัสบนเว็บ; กู้ได้จาก git)
-- [x] `cli/surl.mjs` (Node 18+, ไม่มี dependency): login/whoami/shorten/ls/stats/qr/on/off/rm/config/logout/dev
-
-**เสร็จเมื่อ:** `surl login --token …` แล้ว `surl shorten …` ได้ลิงก์; เพิกถอน key แล้วใช้ไม่ได้ทันที  
-**Commit:** `feat: api keys + cli`
+### P8 — ยกเลิก
+ตัดฟีเจอร์ API key ออก (ตาราง `api_keys`, `/api/keys`, การล็อกอินด้วย `surl_…`, คำสั่ง CLI ที่ใช้ key) — เหลือ CLI เฉพาะ `surl dev/status/migrate` สำหรับรันโปรเจกต์ (migration `remove_api_keys`)
 
 ### P9 — Deploy ฟรี (~3 ชม.)
 - [ ] สร้างบัญชี Neon / Upstash / Render (Cloudflare ใช้บัญชีเดิม); DNS `s.` `api.` บน Cloudflare (DNS-only ชี้ Render), `shorturl.` ผูกเป็น custom domain ของ Cloudflare Pages

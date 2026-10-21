@@ -17,7 +17,7 @@
 
 | ส่วน | Unit | Integration | ครอบคลุม |
 |---|---|---|---|
-| core-api | 90 | 192 | ตรวจ URL/alias (SSRF, IP ภายใน, โดเมนต้องห้าม), สไตล์ QR, รหัสผ่านลิงก์ (scrypt) · ล็อกอิน/refresh token หมุน+ตรวจจับใช้ซ้ำ/logout/ban, SSO redirect · CRUD ลิงก์ + ความเป็นเจ้าของ + แบ่งหน้า/ค้นหา · ป้องกันลิงก์ (รหัสผ่าน/จำกัดครั้ง/วันเริ่ม) + สัญญา cache · guest + rate limit · QR · RBAC แอดมิน, บล็อกโดเมน, audit · API key |
+| core-api | 90 | 192 | ตรวจ URL/alias (SSRF, IP ภายใน, โดเมนต้องห้าม), สไตล์ QR, รหัสผ่านลิงก์ (scrypt) · ล็อกอิน/refresh token หมุน+ตรวจจับใช้ซ้ำ/logout/ban, SSO redirect · CRUD ลิงก์ + ความเป็นเจ้าของ + แบ่งหน้า/ค้นหา · ป้องกันลิงก์ (รหัสผ่าน/จำกัดครั้ง/วันเริ่ม) + สัญญา cache · guest + rate limit · QR · RBAC แอดมิน, บล็อกโดเมน, audit |
 | redirect-service | 29 | 34 | แยก User-Agent, หน้าข้อความ, **hash รหัสผ่านเข้ากันได้ข้ามบริการ** · 302/404, สัญญา cache, คิวคลิก (IP ถูก hash), หมดอายุ/ปิด, วันเริ่ม, **จำกัดครั้งแบบ atomic (เปิดพร้อมกัน 25 ครั้ง ผ่านได้เท่าเพดานพอดี)**, รหัสผ่าน + กันเดา |
 | analytics-service | 27 | 23 | ตรวจเหตุการณ์คลิก, ช่วงวันที่ · flush ลง DB แบบ transaction เดียว, ข้อมูลพิษ → dead letter, flush พร้อมกัน, ลบคลิกเก่า, สถิติ + สิทธิ์ internal key |
 | frontend | 31 | — | i18n ไทย/อังกฤษครบตรงกัน + ตัวแปร `{n}` ตรงกัน, แปล error จาก backend, ตัววาด QR (ทุกลาย/สี/โลโก้/ข้อความ), format, pending URL |

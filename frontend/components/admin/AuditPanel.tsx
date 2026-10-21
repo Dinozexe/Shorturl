@@ -12,7 +12,7 @@ import { ActionIcon } from '@/components/ui/ActionIcon';
 import { DetailModal } from '@/components/ui/DetailModal';
 import { useAdminList } from './useAdminList';
 
-const ACTIONS: AuditActionName[] = ['USER_BAN', 'USER_UNBAN', 'USER_ROLE_CHANGE', 'LINK_DISABLE', 'LINK_ENABLE', 'DOMAIN_BLOCK', 'DOMAIN_UNBLOCK', 'USER_LOGIN', 'USER_LOGIN_BLOCKED', 'USER_REGISTER', 'API_KEY_CREATE', 'API_KEY_REVOKE'];
+const ACTIONS: AuditActionName[] = ['USER_BAN', 'USER_UNBAN', 'USER_ROLE_CHANGE', 'LINK_DISABLE', 'LINK_ENABLE', 'DOMAIN_BLOCK', 'DOMAIN_UNBLOCK', 'USER_LOGIN', 'USER_LOGIN_BLOCKED', 'USER_REGISTER'];
 const tone = (a: AuditActionName) => (a.endsWith('BAN') || a === 'LINK_DISABLE' || a === 'DOMAIN_BLOCK' || a === 'USER_LOGIN_BLOCKED' ? 'danger' : a === 'USER_ROLE_CHANGE' ? 'accent' : 'muted');
 
 export function AuditPanel() {

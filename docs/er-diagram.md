@@ -7,7 +7,6 @@
 ```mermaid
 erDiagram
     USERS ||--o{ SSO_IDENTITIES : "ตัวตนจาก provider"
-    USERS ||--o{ API_KEYS : "ออก key ให้ CLI"
     USERS |o--o{ LINKS : "สร้าง"
     USERS |o--o{ AUDIT_LOGS : "ผู้กระทำ"
     USERS |o--o{ BLOCKED_DOMAINS : "ผู้บล็อก"
@@ -32,16 +31,6 @@ erDiagram
         boolean email_verified
         datetime created_at
         datetime last_login_at
-    }
-    API_KEYS {
-        int id PK
-        uuid user_id FK "CASCADE"
-        string name
-        string prefix "ส่วนหน้า key ไว้แสดง"
-        string key_hash UK "sha256"
-        datetime last_used_at
-        datetime expires_at "nullable"
-        datetime created_at
     }
     LINKS {
         int id PK
@@ -86,7 +75,7 @@ erDiagram
         int id PK
         uuid actor_id FK "SET NULL"
         enum action "USER_LOGIN, USER_BAN, DOMAIN_BLOCK ..."
-        enum target_type "USER | LINK | DOMAIN | API_KEY"
+        enum target_type "USER | LINK | DOMAIN"
         string target_id
         string detail "nullable"
         datetime created_at
@@ -100,7 +89,6 @@ erDiagram
 | ไม่เก็บรหัสผ่านใน DB | ผู้ใช้ทั่วไปเข้าด้วย SSO; บัญชีเดโมของกรรมการล็อกอินด้วยรหัสที่ตั้งใน env (`DEMO_ADMIN_PASSWORD`) เทียบตรงๆ ตอนล็อกอิน → ตาราง `users` ไม่มีคอลัมน์รหัสผ่าน/hash ไม่มีตารางรีเซ็ตรหัส/ยืนยันอีเมล และไม่มี API ตั้ง/เปลี่ยนรหัส |
 | `sso_identities` แยกจาก `users` | 1 คนผูกได้หลาย provider (unique `(provider, subject)` และ `(user_id, provider)`); ระบุตัวตนด้วย `sub` ไม่ใช่อีเมล (อีเมลเปลี่ยนได้); `email_verified` ใช้กันการยึดบัญชีข้าม provider (Microsoft ไม่รับรองอีเมล) |
 | แอดมินคนแรก | seed สร้าง `users` (role ADMIN) ที่ยังไม่มี identity — เจ้าของอีเมลล็อกอินด้วย Google ครั้งแรกแล้วถูกผูกเข้าบัญชีนี้ |
-| `api_keys` | CLI ไม่ใช้รหัสผ่าน (ผู้ใช้ทั่วไปไม่มี) → ใช้ personal access token; เก็บเฉพาะ sha256 (key เต็มแสดงครั้งเดียว), ลบแถว = เพิกถอน |
 | `links.status` 3 สถานะ | `ADMIN_DISABLED` แยกจาก `DISABLED` (เจ้าของปิดเอง) — เดิมใช้ `status` + flag ซึ่งเกิดสถานะขัดแย้งได้ |
 | `links.original_host` | เก็บ hostname แยก (มี index) → บล็อกโดเมน/ปิดลิงก์เดิมด้วย `WHERE original_host = d OR LIKE '%.d'` ไม่ต้อง parse URL ทุกแถว |
 | `links.user_id` SET NULL | ลบผู้ใช้แล้วลิงก์/QR ที่แจกไปแล้วยังใช้ได้ |
@@ -143,4 +131,4 @@ ALTER TABLE "link_daily_stats" ADD CONSTRAINT link_daily_stats_clicks_chk       
 ALTER TABLE "links"            ADD CONSTRAINT links_click_count_chk             CHECK ("click_count" >= 0);
 ```
 
-Index ที่ต้องมี: `links(user_id, created_at DESC)`, `links(original_host)`, `clicks(link_id, clicked_at)`, `clicks(clicked_at)`, `audit_logs(action, created_at DESC)`, `audit_logs(created_at DESC)`, `api_keys(user_id)`; unique: `sso_identities(provider, subject)`, `sso_identities(user_id, provider)`, `api_keys(key_hash)`, `links(short_code)`, `users(email)`, `blocked_domains(domain)`
+Index ที่ต้องมี: `links(user_id, created_at DESC)`, `links(original_host)`, `clicks(link_id, clicked_at)`, `clicks(clicked_at)`, `audit_logs(action, created_at DESC)`, `audit_logs(created_at DESC)`; unique: `sso_identities(provider, subject)`, `sso_identities(user_id, provider)`, `links(short_code)`, `users(email)`, `blocked_domains(domain)`

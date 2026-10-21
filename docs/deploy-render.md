@@ -63,7 +63,6 @@ curl -sI https://s.kittametdev.com/zzzzz | head -1         # HTTP/2 404 (ไม�
 - [ ] ย่อลิงก์ → เปิด `https://s.kittametdev.com/<code>` เด้งไปปลายทาง
 - [ ] ผ่าน ~1–2 นาที ดูสถิติของลิงก์: ยอดเปิดเพิ่ม
 - [ ] refresh หน้า dashboard แล้วยังล็อกอินอยู่ (ถ้าหลุด: ตรวจ `COOKIE_DOMAIN=.kittametdev.com`, `COOKIE_SECURE=true`, และ `FRONTEND_ORIGIN` ตรงกับ URL หน้าเว็บเป๊ะ ไม่มี `/` ท้าย)
-- [ ] `surl login --token … --api https://api.kittametdev.com` แล้ว `surl shorten …` ได้
 - [ ] ลบข้อมูลตัวอย่าง (ถ้าเคยใส่): `npx tsx prisma/demo-clicks.ts <อีเมล> --remove`
 
 ## ปัญหาที่พบบ่อย

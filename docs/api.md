@@ -29,7 +29,7 @@
 
 **ตัวกรองรายการ (ทุก GET ที่เป็นรายการรับ `page`, `pageSize` 1–100):** `q` ค้นหา · `days=1|7|30|90` กรองตามวันที่สร้าง · users: `role`, `banned=0|1`, `sort=login|links` · links: `status`, `owner=guest|member`, `sort=clicks` · audit: `action`, `q` (ค้นในรายละเอียด/อีเมลผู้ทำ)
 
-ต้อง `Authorization: Bearer` ของบัญชี `MODERATOR` หรือ `ADMIN` (API key ใช้ไม่ได้); rate limit 120/นาที/IP · ทุกการเปลี่ยนแปลงบันทึกใน `audit_logs`
+ต้อง `Authorization: Bearer` ของบัญชี `MODERATOR` หรือ `ADMIN`; rate limit 120/นาที/IP · ทุกการเปลี่ยนแปลงบันทึกใน `audit_logs`
 
 | Method | Path | สิทธิ์ | อธิบาย |
 |---|---|---|---|
@@ -45,18 +45,6 @@
 | DELETE | `/api/admin/blocked-domains/:id` | MOD, ADMIN | 204; **ไม่เปิดลิงก์ที่เคยถูกปิดคืนอัตโนมัติ** (ผู้ดูแลเปิดเองทีละลิงก์) |
 | GET | `/api/admin/audit?action=&page=` | ADMIN | บันทึกกิจกรรมใหม่สุดก่อน + `actorEmail` |
 
-## API keys — `/api/keys` (P8)
-
-จัดการได้เฉพาะด้วย session เว็บ (Bearer JWT) — เรียกด้วย API key ได้ 403
-
-| Method | Path | อธิบาย |
-|---|---|---|
-| GET | `/api/keys` | `{items: [{id, name, prefix, lastUsedAt, expiresAt, expired, createdAt}], max: 10}` (ไม่มี key เต็ม/hash) |
-| POST | `/api/keys` | body `{name (1–40), expiresInDays? (1–365, null = ไม่หมดอายุ)}` → 201 รวม `key` เต็ม (`surl_` + 32 ตัว) **ส่งครั้งเดียว**; สูงสุด 10 อัน/คน; rate limit 10/นาที/IP |
-| DELETE | `/api/keys/:id` | เพิกถอน (ลบแถว) → 204; ใช้ key นั้นไม่ได้ทันที |
-
-key เก็บเป็น sha256 อย่างเดียว · ใช้เป็น `Authorization: Bearer surl_…` กับ `/api/links/*` และ `/api/auth/me` ได้เหมือน JWT (ลิงก์ของเจ้าของ key) แต่ `/api/admin/*` และ `/api/keys` ปฏิเสธ (403) · key หมดอายุ/ไม่ถูกต้อง = 401, เจ้าของถูกระงับ = 403 · บันทึก audit `API_KEY_CREATE` / `API_KEY_REVOKE`
-
 ## Links — `/api/links` (P3)
 
 ทุก endpoint ต้องมี `Authorization: Bearer` และทำได้เฉพาะลิงก์ของตัวเอง (ลิงก์คนอื่น = **404** ไม่ใช่ 403 เพื่อไม่เปิดเผยว่ามีอยู่)
@@ -69,7 +57,7 @@ key เก็บเป็น sha256 อย่างเดียว · ใช้�
 | PATCH | `/api/links/:id` | แก้ `{url?, expiresAt? (null = ไม่หมดอายุ), status? ACTIVE\|DISABLED, startsAt?, maxClicks?, password?}` (ฟิลด์ป้องกัน: ไม่ส่ง = ไม่เปลี่ยน, `null` = ยกเลิก); **เปลี่ยน alias ไม่ได้ (400)**; ลิงก์ `ADMIN_DISABLED` เจ้าของเปิดเองไม่ได้ (403) |
 | DELETE | `/api/links/:id` | 204 (ลบคลิกที่เกี่ยวข้องด้วย) |
 | PUT | `/api/links/:id/qr-style` | body `{style}` บันทึกสไตล์ QR ของลิงก์ (`{style:null}` = ล้าง); ฟิลด์: `dots` square/rounded/dots/diamond/classy, `eyes` square/rounded/circle, `fg`/`fg2`/`bg`/`eyeColor` เป็น `#rrggbb` (`fg2`=ไล่เฉด, `bg:null`=โปร่งใส), `angle` 0/45/90/135, `logo` none/link/star/heart/bolt, `logoSize` 10–22, `caption` ≤24 ตัว, `captionStyle` pill/bar/text (ป้าย/แถบ/ตัวอักษร), `margin` 2–8; ฟิลด์ที่ไม่รู้จักถูกทิ้ง ค่าผิด = 400; **ไม่เก็บรูปโลโก้ที่อัปโหลด** (ใช้เฉพาะในเบราว์เซอร์) |
-| GET | `/api/links/:id/qr?format=png\|svg\|matrix&scale=1..20&download=1` | รูป QR ของ short URL (แบบมาตรฐานไม่ใส่สไตล์ — สำหรับสคริปต์/CLI; หน้าเว็บใช้ `format=matrix` แล้ววาดเองตามสไตล์) — ดำบนขาว, ECC ระดับ H, quiet zone 4 โมดูล; PNG ขนาด = (โมดูล+8)×`scale` พิกเซล (จำนวนเต็ม, ค่าเริ่มต้น 10); `download=1` ส่งเป็นไฟล์แนบ |
+| GET | `/api/links/:id/qr?format=png\|svg\|matrix&scale=1..20&download=1` | รูป QR ของ short URL (แบบมาตรฐานไม่ใส่สไตล์ — สำหรับสคริปต์; หน้าเว็บใช้ `format=matrix` แล้ววาดเองตามสไตล์) — ดำบนขาว, ECC ระดับ H, quiet zone 4 โมดูล; PNG ขนาด = (โมดูล+8)×`scale` พิกเซล (จำนวนเต็ม, ค่าเริ่มต้น 10); `download=1` ส่งเป็นไฟล์แนบ |
 
 **ลิงก์ (response):** `{id, shortCode, shortUrl, originalUrl, originalHost, status, expiresAt, expired, clickCount, startsAt, notStarted, maxClicks, limitReached, hasPassword, qrStyle, createdAt}`
 **กติกา**
@@ -149,4 +137,4 @@ key เก็บเป็น sha256 อย่างเดียว · ใช้�
 - ลบคลิกดิบที่เก่ากว่า `CLICK_RETENTION_DAYS` ทีละ 5000 แถว **ไม่เกินชั่วโมงละครั้ง** (lock `clicks:cleanup:lock`) พ่วงกับ flush ไม่มี cron/polling; ยอดรายวันเก็บถาวร
 - ข้อจำกัดที่รู้: ถ้า process ตายหลัง `LPOP` แต่ก่อน commit เหตุการณ์ชุดนั้นหาย (หน้าต่างสั้น) — ยอมรับได้สำหรับสถิติ ไม่ใช่ข้อมูลการเงิน
 
-**Middleware:** `requireAuth` (ตรวจ Bearer + blacklist + ban จาก DB) → `requireRole(...roles)` (ระบุบทบาทที่อนุญาตให้ครบ; ปฏิเสธ API key)
+**Middleware:** `requireAuth` (ตรวจ Bearer + blacklist + ban จาก DB) → `requireRole(...roles)` (ระบุบทบาทที่อนุญาตให้ครบ)

@@ -17,7 +17,7 @@
 
 | รหัส | เนื้อหา |
 |---|---|
-| D1 | `users`, `sso_identities`, `api_keys` |
+| D1 | `users`, `sso_identities` |
 | D2 | `links` |
 | D3 | `clicks`, `link_daily_stats` |
 | D4 | `blocked_domains` |

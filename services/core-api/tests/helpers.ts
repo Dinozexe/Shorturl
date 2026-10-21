@@ -29,7 +29,6 @@ export async function resetState() {
   await redis.flushdb();
   await prisma.auditLog.deleteMany();
   await prisma.link.deleteMany(); // clicks/daily stats ลบตามด้วย cascade
-  await prisma.apiKey.deleteMany();
   await prisma.blockedDomain.deleteMany();
   await prisma.user.deleteMany();
 }

@@ -119,9 +119,7 @@ export type AuditActionName =
   | 'LINK_DISABLE'
   | 'LINK_ENABLE'
   | 'DOMAIN_BLOCK'
-  | 'DOMAIN_UNBLOCK'
-  | 'API_KEY_CREATE'
-  | 'API_KEY_REVOKE';
+  | 'DOMAIN_UNBLOCK';
 
 export interface AuditEntry {
   id: number;
