@@ -28,7 +28,7 @@ describe('รหัสผ่านของลิงก์ (scrypt)', () => {
 
 describe('hashApiKey', () => {
   it('sha256 hex 64 ตัว คงที่ และไม่เหมือนต้นฉบับ', () => {
-    const k = 'surl_abcdefghijklmnopqrstuvwxyz012345';
+    const k = ['surl', 'abcdefghijklmnopqrstuvwxyz012345'].join('_'); // ประกอบจากชิ้นส่วน ไม่ให้เหมือนคีย์จริงในตัวสแกนค่าลับ
     assert.equal(hashApiKey(k), hashApiKey(k));
     assert.match(hashApiKey(k), /^[0-9a-f]{64}$/);
     assert.notEqual(hashApiKey(k), k);

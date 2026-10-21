@@ -21,7 +21,7 @@ patterns=(
   '(postgres(ql)?|rediss?)://[^/:@[:space:]<>]+:[^/@[:space:]<>*.]{8,}@(?!localhost|127\.0\.0\.1|postgres|redis|host\.docker\.internal|example)'
 )
 for p in "${patterns[@]}"; do
-  hits=$(git grep -nIP -e "$p" -- . ':(exclude)package-lock.json' ':(exclude)**/package-lock.json' 2>/dev/null || true)
+  hits=$(git grep --untracked -nIP -e "$p" -- . ':(exclude)package-lock.json' ':(exclude)**/package-lock.json' 2>/dev/null || true)
   [ -n "$hits" ] && bad "พบรูปแบบค่าลับ /$p/:"$'\n'"$(echo "$hits" | sed 's/^/    /' | cut -c1-160)"
 done
 
