@@ -39,7 +39,7 @@ export function Modal({ open, onClose, title, children, wide, bare, flush }: Mod
       className={`m-auto w-[calc(100%-1.5rem)] rounded-3xl bg-surface p-0 text-ink shadow-2xl ${wide ? 'max-w-4xl' : bare ? 'max-w-md' : 'max-w-lg'} ${flush ? 'overflow-hidden' : ''}`}
     >
       {open && (
-        <div className={`max-h-[88vh] overflow-y-auto ${flush ? 'relative' : 'p-5 sm:p-6'} ${bare ? 'relative px-6 pb-6 pt-8 sm:px-8' : ''}`}>
+        <div className={`max-h-[88vh] overflow-y-auto overscroll-contain ${flush ? 'relative' : 'p-5 sm:p-6'} ${bare ? 'relative px-6 pb-6 pt-8 sm:px-8' : ''}`}>
           {(bare || flush) && (
             <button type="button" onClick={onClose} className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-ink/[0.07] hover:text-ink" aria-label={t('common.closeDialog')} title={t('common.close')}>
               <AdminIcon name="x" className="h-5 w-5" />

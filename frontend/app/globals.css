@@ -59,6 +59,16 @@
     background: rgb(var(--ink));
     color: rgb(var(--paper));
   }
+  /* หน้าต่างเด้งเปิดอยู่: ล็อกการเลื่อนของหน้าหลัง เหลือแถบเลื่อนเดียวคือด้านในกล่อง (gutter คงที่ ไม่ให้หน้ากระตุกตอนแถบหาย) */
+  html {
+    scrollbar-gutter: stable;
+  }
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+  dialog {
+    overflow: hidden;
+  }
   dialog::backdrop {
     /* ฉากหลังหน้าต่างเด้ง: ดำโปร่งเสมอ (ไม่ใช้ --ink เพราะโหมดมืด ink เป็นสีอ่อน ทำให้เป็นฝ้าขาวทับหน้า) */
     background: rgb(0 0 0 / 0.55);

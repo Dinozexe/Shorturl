@@ -49,7 +49,7 @@ function Card({ icon, title, children }: { icon: AdminIconName; title: string; c
 }
 
 function SubTitle({ children }: { children: ReactNode }) {
-  return <p className="-mb-2 text-xs font-semibold text-muted">{children}</p>;
+  return <p className="text-sm font-semibold text-ink/80">{children}</p>;
 }
 
 /** แถวตัวเลือกสี: ชื่อซ้าย ตัวเลือกขวา */
@@ -287,7 +287,7 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
             </div>
             <p className="break-all text-center font-mono text-sm font-medium">{link.shortUrl}</p>
 
-            {warnings.length > 0 ? (
+            {warnings.length > 0 && (
               <ul className="w-full space-y-1.5" role="status">
                 {warnings.map((w) => (
                   <li key={w} className="flex gap-2 rounded-xl bg-danger/10 px-3 py-2 text-xs font-medium leading-snug text-danger">
@@ -296,11 +296,6 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
                   </li>
                 ))}
               </ul>
-            ) : (
-              <p className="flex w-full items-center gap-2 rounded-xl bg-ok/10 px-3 py-2 text-xs font-medium text-ok" role="status">
-                <AdminIcon name="check" className="h-3.5 w-3.5" />
-                {t('qr.ok')}
-              </p>
             )}
 
             <div className="flex w-full flex-col gap-2">
@@ -333,26 +328,28 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
           {/* ขวา: ตัวเลือกปรับแต่ง (แยกเป็นการ์ดตามหมวด) */}
           <div className="flex min-w-0 flex-col gap-4">
             <Card icon="palette" title={t('qr.preset.title')}>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {PRESETS.map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => setStyle((s) => ({ ...DEFAULT_STYLE, caption: s.caption, logo: s.logo, logoSize: s.logoSize, margin: s.margin, ...p.style }))}
-                    className="flex items-center gap-2 rounded-full bg-ink/[0.05] py-1.5 pl-2 pr-3.5 text-sm font-medium outline-none transition-colors hover:bg-ink/[0.09] focus-visible:ring-2 focus-visible:ring-accent"
+                    className="flex min-w-0 items-center gap-2.5 rounded-xl bg-ink/[0.05] px-3 py-2.5 text-sm font-medium outline-none transition-colors hover:bg-ink/[0.09] focus-visible:ring-2 focus-visible:ring-accent"
                   >
-                    <span aria-hidden="true" className="h-5 w-5 rounded-full ring-1 ring-line" style={{ background: p.style.fg2 ? `linear-gradient(135deg, ${p.style.fg}, ${p.style.fg2})` : (p.style.fg ?? '#000') }} />
-                    {t(`qr.preset.${p.id}` as MsgKey)}
+                    <span aria-hidden="true" className="h-6 w-6 shrink-0 rounded-full ring-1 ring-line" style={{ background: p.style.fg2 ? `linear-gradient(135deg, ${p.style.fg}, ${p.style.fg2})` : (p.style.fg ?? '#000') }} />
+                    <span className="truncate">{t(`qr.preset.${p.id}` as MsgKey)}</span>
                   </button>
                 ))}
               </div>
             </Card>
 
             <Card icon="qr" title={t('qr.sec.shape')}>
-              <SubTitle>{t('qr.dots')}</SubTitle>
-              <Choice<DotStyle> name="qr-dots" value={style.dots} onChange={(v) => patch({ dots: v })} options={DOT_STYLES.map((id) => ({ id, label: t(`qr.dots.${id}` as MsgKey), icon: dotIcons[id] }))} />
-              <SubTitle>{t('qr.eyes')}</SubTitle>
-              <div className="max-w-sm">
+              <div className="flex flex-col gap-3">
+                <SubTitle>{t('qr.dots')}</SubTitle>
+                <Choice<DotStyle> name="qr-dots" value={style.dots} onChange={(v) => patch({ dots: v })} options={DOT_STYLES.map((id) => ({ id, label: t(`qr.dots.${id}` as MsgKey), icon: dotIcons[id] }))} />
+              </div>
+              <div className="flex flex-col gap-3 border-t border-line pt-5">
+                <SubTitle>{t('qr.eyes')}</SubTitle>
                 <Choice<EyeStyle> name="qr-eyes" value={style.eyes} onChange={(v) => patch({ eyes: v })} options={EYE_STYLES.map((id) => ({ id, label: t(`qr.eyes.${id}` as MsgKey), icon: eyeIcons[id] }))} />
               </div>
             </Card>
