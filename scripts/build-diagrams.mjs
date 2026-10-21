@@ -98,12 +98,18 @@ class Svg {
     this.flow([[xL, y - gap], [xR, y - gap]], right, xm, y - gap - 10 - (n(right) - 1) * 8.5, {});
     this.flow([[xR, y + gap], [xL, y + gap]], left, xm, y + gap + 14 + (n(left) - 1) * 8.5, {});
   }
-  proc(cx, cy, r, id, name, sub) {
+  proc(cx, cy, r, id, name, sub, big = false) {
     this.add(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${C.proc}" stroke="#1e3a8a" stroke-width="2"/>`);
-    this.add(this.text(cx, cy - r * 0.52, id, { size: 13, weight: 700, fill: '#bfdbfe' }));
+    this.add(this.text(cx, cy - r * 0.52, id, { size: big ? 18 : 13, weight: 700, fill: '#bfdbfe' }));
     this.add(`<line x1="${cx - r * 0.7}" x2="${cx + r * 0.7}" y1="${cy - r * 0.34}" y2="${cy - r * 0.34}" stroke="#93c5fd" stroke-width="1"/>`);
-    this.add(this.text(cx, cy + r * 0.12, name, { size: r > 80 ? 17 : 14, weight: 700, fill: '#fff' }));
-    if (sub) this.add(this.text(cx, cy + r * 0.55, sub, { size: 11, fill: '#dbeafe' }));
+    if (big) {
+      // วงกลมระบบ (Level 0): ชื่อระบบใหญ่เด่น ใต้ลงมาเป็น By Kittamet
+      this.add(this.text(cx, cy + r * 0.04, name, { size: 52, weight: 800, fill: '#fff' }));
+      if (sub) this.add(this.text(cx, cy + r * 0.34, sub, { size: 22, weight: 500, fill: '#dbeafe' }));
+    } else {
+      this.add(this.text(cx, cy + r * 0.12, name, { size: r > 80 ? 17 : 14, weight: 700, fill: '#fff' }));
+      if (sub) this.add(this.text(cx, cy + r * 0.55, sub, { size: 11, fill: '#dbeafe' }));
+    }
     return { t: 'c', x: cx, y: cy, r };
   }
   store(x, y, w, h, id, name, sub) {
@@ -184,7 +190,7 @@ ${this.labels.join('\n')}
 function dfd0() {
   const s = new Svg(1260, 640);
   const c = { x: 630, y: 320, r: 205 };
-  s.proc(c.x, c.y, c.r, '0', 'Short URL', 'ระบบย่อลิงก์');
+  s.proc(c.x, c.y, c.r, '0', 'Short URL', 'By Kittamet', true);
   const E = (x, y, t, sub, k) => s.entity(x, y, 210, 90, t, sub, k);
   E(30, 140, 'ผู้เข้าชมลิงก์', 'Guest · ไม่ต้องล็อกอิน');
   E(30, 410, 'ผู้ใช้ (USER)', 'ล็อกอินด้วย Google');
@@ -354,36 +360,50 @@ function erd() {
 }
 
 /* ---------- Architecture ---------- */
+// แบ่งเป็นชั้น (lane): ผู้ใช้/ภายนอก → Application → Data · เส้นตรงหักมุมฉาก ไม่ตัดกัน
+// analytics อยู่ตรงกลางเพราะคุยกับทั้ง core-api (ขอสถิติ) และ redirect-service (ปลุก flush)
 function arch() {
-  const s = new Svg(1360, 740);
-  const box = (x, y, w, h, title, lines, fill = C.ent, stroke = C.entLine) => {
-    s.add(`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`);
-    s.add(s.text(x + w / 2, y + 26, title, { size: 15, weight: 700, fill: stroke }));
-    s.add(s.text(x + w / 2, y + 54 + ((lines.length - 1) * 16) / 2, lines, { size: 12, fill: C.muted, lh: 16 }));
-    return { t: 'r', x, y, w, h };
+  const s = new Svg(1280, 720);
+  const lane = (y, h, title) => {
+    s.add(`<rect x="12" y="${y}" width="1256" height="${h}" rx="18" fill="#f8fafc" stroke="${C.line}"/>`);
+    s.add(s.text(34, y + 24, title, { size: 13, weight: 700, fill: C.muted, anchor: 'start' }));
   };
-  const BR = box(20, 250, 230, 90, 'เบราว์เซอร์', ['ผู้ใช้ · ผู้เข้าชมลิงก์']);
-  const FE = box(330, 20, 300, 120, 'Frontend (Next.js static)', ['Cloudflare Workers assets', 'shorturl.kittametdev.com', 'หน้าเว็บ · /docs']);
-  const GG = box(1030, 20, 300, 100, 'Google', ['OpenID Connect + PKCE'], C.ext, C.extLine);
-  const CORE = box(330, 270, 300, 130, 'core-api  :4000', ['api.kittametdev.com', 'Auth (SSO/JWT) · Links · QR', 'Admin · Guest']);
-  const RED = box(680, 270, 300, 130, 'redirect-service  :4001', ['s.kittametdev.com', 'GET /:code → 302', 'รหัสผ่าน · จำกัดคลิก · วันเริ่ม']);
-  const ANA = box(1030, 270, 300, 130, 'analytics-service  :4002', ['ดึงคิวคลิก → เขียน DB', 'ให้สถิติ (x-internal-key)', 'ไม่เปิดสู่สาธารณะ']);
-  s.add(`<rect x="320" y="520" width="1020" height="200" rx="16" fill="#f8fafc" stroke="${C.line}" stroke-dasharray="6 4"/>`);
-  s.add(s.text(335, 540, 'Data layer', { size: 12, weight: 700, fill: C.muted, anchor: 'start' }));
-  const PG = box(350, 560, 440, 130, 'PostgreSQL 16 (Neon)', ['users · sso_identities · links', 'clicks · link_daily_stats', 'audit_logs · blocked_domains'], C.store, C.storeLine);
-  const RDS = box(880, 560, 430, 130, 'Redis 7 (Upstash)', ['cache link:{code} · session rt:/bl:', 'rate limit · ตัวนับ lim:{id}', 'คิว clicks:queue'], C.store, C.storeLine);
-  s.link(BR, FE, 'โหลดหน้าเว็บ', { lt: 0.5, ldx: -48, ldy: -6 });
-  s.link(BR, CORE, 'fetch /api/*', { lt: 0.5, ldy: -14 });
-  s.flow([[135, 250], [135, 205], [780, 205], [780, 270]], 'เปิดลิงก์สั้น  s.kittametdev.com/:code', 450, 192, { w: 360 });
-  s.flow([[560, 270], [560, 235], [1130, 235], [1130, 270]], 'ขอสถิติ (x-internal-key)', 870, 248);
-  s.link(CORE, GG, 'OIDC code exchange', { dash: true, lt: 0.35, ldx: 90, ldy: -42 });
-  s.link(RED, ANA, 'ping /internal/flush', { lt: 0.5, ldy: -14 });
-  s.link(CORE, PG, 'Prisma', { lt: 0.5, ldx: -30 });
-  s.link(CORE, RDS, 'session · rate limit · ลบ cache', { both: true, lt: 0.3, ldx: 80, ldy: -6 });
-  s.link(RED, PG, 'cache miss: SELECT', { dash: true, lt: 0.55, ldx: -60 });
-  s.link(RED, RDS, 'cache · นับสิทธิ์ · เข้าคิว', { both: true, lt: 0.5, ldx: 70 });
-  s.link(ANA, RDS, 'ดึงคิวคลิก', { lt: 0.5, ldx: 45 });
-  s.link(ANA, PG, 'INSERT clicks · UPSERT daily · click_count', { lt: 0.22, ldx: 120, ldy: 6 });
+  const box = (cx, y, w, h, title, lines, fill = '#fff', stroke = C.entLine) => {
+    s.add(`<rect x="${cx - w / 2}" y="${y}" width="${w}" height="${h}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`);
+    s.add(s.text(cx, y + 26, title, { size: 16, weight: 700, fill: stroke }));
+    s.add(s.text(cx, y + 54 + ((lines.length - 1) * 17) / 2, lines, { size: 12.5, fill: C.muted, lh: 17 }));
+  };
+  const X = { core: 300, ana: 640, red: 980 };
+
+  lane(14, 170, 'ผู้ใช้และระบบภายนอก');
+  lane(204, 230, 'Application — Docker บน Render');
+  lane(454, 250, 'Data');
+
+  box(X.core, 56, 220, 100, 'Google', ['ผู้ให้บริการยืนยันตัวตน', 'OpenID Connect + PKCE'], C.ext, C.extLine);
+  box(X.ana, 56, 220, 100, 'เบราว์เซอร์', ['ผู้ใช้ · ผู้เข้าชมลิงก์']);
+  box(X.red, 56, 240, 100, 'Frontend', ['Next.js (static) บน Cloudflare', 'shorturl.kittametdev.com']);
+
+  const sy = 270, sh = 130;
+  box(X.core, sy, 240, sh, 'core-api  :4000', ['api.kittametdev.com', 'Auth · ลิงก์ · QR · แอดมิน', 'ใช้ PostgreSQL + Redis']);
+  box(X.ana, sy, 240, sh, 'analytics-service  :4002', ['ภายใน (ไม่เปิดสู่สาธารณะ)', 'ดึงคิวคลิก → เขียนฐานข้อมูล', 'ให้สถิติแก่ core-api']);
+  box(X.red, sy, 240, sh, 'redirect-service  :4001', ['s.kittametdev.com', 'GET /:code → 302', 'อ่าน Redis · miss → PostgreSQL']);
+
+  // ผู้ใช้ ↔ ระบบ
+  s.flow([[X.ana + 110, 96], [X.red - 120, 96]], 'โหลดหน้าเว็บ', (X.ana + 110 + X.red - 120) / 2, 84, { w: 90 });
+  s.flow([[X.ana - 50, 156], [X.ana - 50, 232], [X.core + 70, 232], [X.core + 70, sy]], 'เรียก API  /api/*', 470, 220, { w: 170 });
+  s.flow([[X.ana + 50, 156], [X.ana + 50, 232], [X.red - 70, 232], [X.red - 70, sy]], 'เปิดลิงก์สั้น  /:code', 810, 220, { w: 170 });
+  s.vpair(X.core - 50, 156, sy, 'id_token', ['คำขอ + code', '(OIDC)'], { gap: 11 });
+  // บริการ ↔ บริการ
+  s.hpair(sy + 56, X.core + 120, X.ana - 120, 'ขอสถิติ', 'สถิติ', { gap: 12 });
+  s.flow([[X.red - 120, sy + 62], [X.ana + 120, sy + 62]], ['ปลุก', 'flush'], (X.red - 120 + X.ana + 120) / 2, sy + 40, { w: 90 });
+  // บริการ → ที่เก็บข้อมูล
+  const dy = 484, dh = 190;
+  s.add(`<rect x="110" y="${dy}" width="1060" height="${dh}" rx="14" fill="#fff" stroke="${C.line}" stroke-dasharray="6 4"/>`);
+  box(340, dy + 40, 400, 120, 'PostgreSQL 16', ['Neon · ข้อมูลหลักทั้งหมด', 'users · links · clicks', 'link_daily_stats · audit_logs · blocked_domains'], C.store, C.storeLine);
+  box(940, dy + 40, 400, 120, 'Redis 7', ['Upstash · เร็วและชั่วคราว', 'cache ลิงก์ · session · rate limit', 'ตัวนับสิทธิ์คลิก · คิวคลิก'], C.store, C.storeLine);
+  s.vpair(X.core, sy + sh, dy, 'เขียน', 'อ่าน', { gap: 12 });
+  s.vpair(X.ana, sy + sh, dy, 'เขียนคลิก', 'ดึงคิว', { gap: 12 });
+  s.vpair(X.red, sy + sh, dy, 'เข้าคิว', 'อ่าน cache', { gap: 12 });
   return s.render('System architecture');
 }
 
@@ -501,22 +521,10 @@ const pages = {
 
   dfd: shell('dfd', `<h1>Data Flow Diagram</h1>
 <p class="lead">แสดงว่าข้อมูลไหลระหว่างผู้ใช้ ระบบ และที่เก็บข้อมูลอย่างไร แบ่ง 3 ระดับ ใช้สัญลักษณ์ Yourdon-DeMarco ที่รูปทรงบอกความหมาย: สี่เหลี่ยม = ผู้ใช้งาน/ระบบภายนอก, วงกลม = กระบวนการ, แถบเปิดปลายมีรหัส Dn = ที่เก็บข้อมูล, ลูกศรหนึ่งเส้นต่อหนึ่งทิศ</p>
-<div class="layout">${toc([['l0', 'Level 0'], ['l1', 'Level 1'], ['procs', 'กระบวนการและที่เก็บข้อมูล'], ['l2', 'Level 2 · Redirect']])}<div class="content">
+<div class="layout">${toc([['l0', 'Level 0'], ['l1', 'Level 1'], ['l2', 'Level 2 · Redirect']])}<div class="content">
 ${fig('l0', 'Level 0 — ภาพรวมระบบ', 'ระบบทั้งหมดเป็นกระบวนการเดียว คุยกับผู้ใช้ 3 กลุ่มและ Google', D0, 'dfd-level0.svg', 'DFD Level 0')}
 ${fig('l1', 'Level 1 — 6 กระบวนการหลัก', 'แตกกระบวนการ 0 ออกเป็น 6 ตัว พร้อมที่เก็บข้อมูล D1–D6', D1, 'dfd-level1.svg', 'DFD Level 1')}
-<section class="d" id="procs"><h2>กระบวนการและที่เก็บข้อมูล</h2>
-${tbl(['รหัส', 'กระบวนการ', 'หน้าที่', 'ทำงานที่'], [
-  ['1.0', 'ยืนยันตัวตน', 'ล็อกอิน Google (OIDC + PKCE) หรือบัญชีทดสอบ ออก JWT อายุ 15 นาทีและ refresh cookie 7 วัน (หมุนทุกครั้ง ตรวจจับการใช้ซ้ำ)', 'core-api'],
-  ['2.0', 'จัดการลิงก์', 'ย่อลิงก์ (ผู้ใช้/guest) ตั้งชื่อเอง วันหมดอายุ รหัสผ่าน จำกัดคลิก วันเริ่มใช้ ปิด/เปิด/ลบ และตรวจโดเมนที่บล็อก', 'core-api'],
-  ['3.0', 'Redirect', 'หาลิงก์จาก cache → DB ตรวจเงื่อนไขและรหัสผ่าน ตอบ 302 แล้วเข้าคิวคลิก', 'redirect-service'],
-  ['4.0', 'สร้าง QR', 'สร้าง QR จากลิงก์สั้น (PNG/SVG/matrix) และบันทึกสไตล์ที่ตั้ง', 'core-api'],
-  ['5.0', 'สถิติคลิก', 'ดึงคิวคลิกเป็น batch → บันทึก clicks + สรุปรายวัน + click_count และให้ข้อมูลกราฟ', 'analytics-service'],
-  ['6.0', 'จัดการระบบ', 'ดู/แบน/เปลี่ยนสิทธิ์ผู้ใช้ ปิดลิงก์ บล็อกโดเมน ดู audit log (MODERATOR ทำได้บางส่วน)', 'core-api'],
-])}
-${tbl(['ที่เก็บ', 'เนื้อหา'], [
-  ['D1', '<code>users</code>, <code>sso_identities</code>'], ['D2', '<code>links</code>'], ['D3', '<code>clicks</code>, <code>link_daily_stats</code>'],
-  ['D4', '<code>blocked_domains</code>'], ['D5', '<code>audit_logs</code>'], ['D6', 'Redis: cache ลิงก์, session/blacklist, rate limit, ตัวนับคลิก, คิวคลิก'],
-])}</section>
+
 ${fig('l2', 'Level 2 — กระบวนการ 3.0 Redirect', 'ตอนมีคนเปิดลิงก์สั้น: หาลิงก์ → ตรวจเงื่อนไข → ตรวจรหัสผ่าน → นับสิทธิ์ → ตอบ 302', D2, 'dfd-level2-redirect.svg', 'DFD Level 2 กระบวนการ Redirect')}</div></div>`),
 
   er: shell('er', `<h1>ER Diagram</h1>

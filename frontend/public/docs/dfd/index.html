@@ -58,7 +58,7 @@ ul.flows{padding-left:20px;margin:8px 0}ul.flows li{margin:6px 0}
 <a class="back" href="/">เปิดเว็บ</a></div></header>
 <main id="main"><h1>Data Flow Diagram</h1>
 <p class="lead">แสดงว่าข้อมูลไหลระหว่างผู้ใช้ ระบบ และที่เก็บข้อมูลอย่างไร แบ่ง 3 ระดับ ใช้สัญลักษณ์ Yourdon-DeMarco ที่รูปทรงบอกความหมาย: สี่เหลี่ยม = ผู้ใช้งาน/ระบบภายนอก, วงกลม = กระบวนการ, แถบเปิดปลายมีรหัส Dn = ที่เก็บข้อมูล, ลูกศรหนึ่งเส้นต่อหนึ่งทิศ</p>
-<div class="layout"><ul class="toc" aria-label="ในหน้านี้"><li><a href="#l0">Level 0</a></li><li><a href="#l1">Level 1</a></li><li><a href="#procs">กระบวนการและที่เก็บข้อมูล</a></li><li><a href="#l2">Level 2 · Redirect</a></li></ul><div class="content">
+<div class="layout"><ul class="toc" aria-label="ในหน้านี้"><li><a href="#l0">Level 0</a></li><li><a href="#l1">Level 1</a></li><li><a href="#l2">Level 2 · Redirect</a></li></ul><div class="content">
 <section class="d" id="l0"><h2>Level 0 — ภาพรวมระบบ</h2><p class="lead">ระบบทั้งหมดเป็นกระบวนการเดียว คุยกับผู้ใช้ 3 กลุ่มและ Google</p>
 <figure><div class="sv" role="img" aria-label="DFD Level 0" tabindex="0"><svg viewBox="0 0 1260 640" width="1260" height="640" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
 <defs>
@@ -67,10 +67,10 @@ ul.flows{padding-left:20px;margin:8px 0}ul.flows li{margin:6px 0}
 </defs>
 <rect width="1260" height="640" fill="#fff"/>
 <circle cx="630" cy="320" r="205" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
-<text x="630" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="630" y="217.9">0</tspan></text>
+<text x="630" text-anchor="middle" font-size="18" font-weight="700" fill="#bfdbfe"><tspan x="630" y="219.7">0</tspan></text>
 <line x1="486.5" x2="773.5" y1="250.3" y2="250.3" stroke="#93c5fd" stroke-width="1"/>
-<text x="630" text-anchor="middle" font-size="17" font-weight="700" fill="#fff"><tspan x="630" y="350.6">Short URL</tspan></text>
-<text x="630" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="630" y="436.6">ระบบย่อลิงก์</tspan></text>
+<text x="630" text-anchor="middle" font-size="52" font-weight="800" fill="#fff"><tspan x="630" y="346.4">Short URL</tspan></text>
+<text x="630" text-anchor="middle" font-size="22" font-weight="500" fill="#dbeafe"><tspan x="630" y="397.4">By Kittamet</tspan></text>
 <rect x="34" y="144" width="210" height="90" fill="#cbd5e1"/>
 <rect x="30" y="140" width="210" height="90" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
 <text x="135" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="135" y="182.3">ผู้เข้าชมลิงก์</tspan></text>
@@ -315,9 +315,7 @@ ul.flows{padding-left:20px;margin:8px 0}ul.flows li{margin:6px 0}
 <g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1224" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1224" y="461.9">คิวคลิก</tspan></text></g>
 </svg></div>
 <figcaption><span>เลื่อนซ้าย-ขวาถ้าภาพกว้างกว่าจอ</span><span><a href="dfd-level1.svg" target="_blank" rel="noopener">เปิดภาพเต็ม</a> · <a href="dfd-level1.svg" download>ดาวน์โหลด SVG</a></span></figcaption></figure></section>
-<section class="d" id="procs"><h2>กระบวนการและที่เก็บข้อมูล</h2>
-<div class="tw"><table><thead><tr><th scope="col">รหัส</th><th scope="col">กระบวนการ</th><th scope="col">หน้าที่</th><th scope="col">ทำงานที่</th></tr></thead><tbody><tr><td>1.0</td><td>ยืนยันตัวตน</td><td>ล็อกอิน Google (OIDC + PKCE) หรือบัญชีทดสอบ ออก JWT อายุ 15 นาทีและ refresh cookie 7 วัน (หมุนทุกครั้ง ตรวจจับการใช้ซ้ำ)</td><td>core-api</td></tr><tr><td>2.0</td><td>จัดการลิงก์</td><td>ย่อลิงก์ (ผู้ใช้/guest) ตั้งชื่อเอง วันหมดอายุ รหัสผ่าน จำกัดคลิก วันเริ่มใช้ ปิด/เปิด/ลบ และตรวจโดเมนที่บล็อก</td><td>core-api</td></tr><tr><td>3.0</td><td>Redirect</td><td>หาลิงก์จาก cache → DB ตรวจเงื่อนไขและรหัสผ่าน ตอบ 302 แล้วเข้าคิวคลิก</td><td>redirect-service</td></tr><tr><td>4.0</td><td>สร้าง QR</td><td>สร้าง QR จากลิงก์สั้น (PNG/SVG/matrix) และบันทึกสไตล์ที่ตั้ง</td><td>core-api</td></tr><tr><td>5.0</td><td>สถิติคลิก</td><td>ดึงคิวคลิกเป็น batch → บันทึก clicks + สรุปรายวัน + click_count และให้ข้อมูลกราฟ</td><td>analytics-service</td></tr><tr><td>6.0</td><td>จัดการระบบ</td><td>ดู/แบน/เปลี่ยนสิทธิ์ผู้ใช้ ปิดลิงก์ บล็อกโดเมน ดู audit log (MODERATOR ทำได้บางส่วน)</td><td>core-api</td></tr></tbody></table></div>
-<div class="tw"><table><thead><tr><th scope="col">ที่เก็บ</th><th scope="col">เนื้อหา</th></tr></thead><tbody><tr><td>D1</td><td><code>users</code>, <code>sso_identities</code></td></tr><tr><td>D2</td><td><code>links</code></td></tr><tr><td>D3</td><td><code>clicks</code>, <code>link_daily_stats</code></td></tr><tr><td>D4</td><td><code>blocked_domains</code></td></tr><tr><td>D5</td><td><code>audit_logs</code></td></tr><tr><td>D6</td><td>Redis: cache ลิงก์, session/blacklist, rate limit, ตัวนับคลิก, คิวคลิก</td></tr></tbody></table></div></section>
+
 <section class="d" id="l2"><h2>Level 2 — กระบวนการ 3.0 Redirect</h2><p class="lead">ตอนมีคนเปิดลิงก์สั้น: หาลิงก์ → ตรวจเงื่อนไข → ตรวจรหัสผ่าน → นับสิทธิ์ → ตอบ 302</p>
 <figure><div class="sv" role="img" aria-label="DFD Level 2 กระบวนการ Redirect" tabindex="0"><svg viewBox="0 0 1260 780" width="1260" height="780" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
 <defs>
