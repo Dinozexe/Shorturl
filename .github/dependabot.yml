@@ -1,40 +1,67 @@
-# อัปเดต dependency อัตโนมัติ: รวม minor/patch เป็น PR เดียวต่อ ecosystem (ไม่ท่วม) ส่วน major แยก PR ให้ดูเอง
+# อัปเดต dependency อัตโนมัติ — นโยบาย: รับเฉพาะ minor/patch (รวมเป็น PR เดียวต่อ ecosystem ต่อสัปดาห์)
+# เวอร์ชัน major (เช่น Prisma 5→7, TypeScript 5→7, Tailwind 3→4, Node 20→26) มักแก้ API ต้องย้ายโค้ดและทดสอบเอง → ไม่เปิด PR อัตโนมัติ
+# (ทำเป็นงานแยกเมื่อมีเวลา) แต่ **security update ยังมาตามปกติ** เพราะเป็นกลไกแยกจากไฟล์นี้
 version: 2
 updates:
   - package-ecosystem: github-actions # อัปเดต SHA ที่ pin ไว้ใน workflow (SHA ที่ pin ไม่ได้รับ alert เองจึงต้องมีตัวนี้)
     directory: /
     schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 3
     groups:
       actions: { patterns: ['*'] }
+
   - package-ecosystem: npm
     directory: /services/core-api
     schedule: { interval: weekly, day: monday }
-    groups:
-      minor-and-patch: { update-types: [minor, patch] }
-  - package-ecosystem: npm
-    directory: /services/redirect-service
-    schedule: { interval: weekly, day: monday }
-    groups:
-      minor-and-patch: { update-types: [minor, patch] }
-  - package-ecosystem: npm
-    directory: /services/analytics-service
-    schedule: { interval: weekly, day: monday }
-    groups:
-      minor-and-patch: { update-types: [minor, patch] }
-  - package-ecosystem: npm
-    directory: /frontend
-    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 3
     groups:
       minor-and-patch: { update-types: [minor, patch] }
     ignore:
-      - dependency-name: next
-        update-types: [version-update:semver-major] # Next 14→16 ต้องวางแผนย้ายเอง (static export + Tailwind) ไม่อัปอัตโนมัติ
+      - { dependency-name: '*', update-types: ['version-update:semver-major'] }
+
+  - package-ecosystem: npm
+    directory: /services/redirect-service
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 3
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }
+    ignore:
+      - { dependency-name: '*', update-types: ['version-update:semver-major'] }
+
+  - package-ecosystem: npm
+    directory: /services/analytics-service
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 3
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }
+    ignore:
+      - { dependency-name: '*', update-types: ['version-update:semver-major'] }
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 3
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }
+    ignore:
+      - { dependency-name: '*', update-types: ['version-update:semver-major'] } # รวม Next 14→16 (ต้องวางแผนย้ายเอง: static export + Tailwind)
+
+  # Docker: image ที่ใช้จริงบน Render คือ node:20-alpine (LTS) — ไม่ข้ามไป 26 โดยอัตโนมัติ
   - package-ecosystem: docker
     directory: /services/core-api
     schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 2
+    ignore:
+      - { dependency-name: node, update-types: ['version-update:semver-major'] }
   - package-ecosystem: docker
     directory: /services/redirect-service
     schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 2
+    ignore:
+      - { dependency-name: node, update-types: ['version-update:semver-major'] }
   - package-ecosystem: docker
     directory: /services/analytics-service
     schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 2
+    ignore:
+      - { dependency-name: node, update-types: ['version-update:semver-major'] }
