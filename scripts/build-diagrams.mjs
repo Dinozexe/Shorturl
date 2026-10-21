@@ -16,6 +16,45 @@ const C = {
 const FONT = `'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+/* ---------- ขึ้นบรรทัดใหม่ของป้ายบนเส้น ---------- */
+// ไทยไม่มีเว้นวรรคให้ตัดคำ จึงตัดที่ "จุดพักที่ผู้เขียนกำหนด" เท่านั้น: ตัวคั่น ' · ' และขอบของแต่ละสมาชิกในอาร์เรย์
+// แล้วบรรจุแบบ greedy ให้แต่ละบรรทัดไม่เกินความกว้าง (ประมาณจากจำนวนตัวอักษรที่ไม่ใช่สระ/วรรณยุกต์ลอย)
+const MARKS = /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/g;
+const textWidth = (t, size = 13) => t.replace(MARKS, '').length * size * 0.54;
+function wrapLabel(label, maxPx, size = 13) {
+  const items = Array.isArray(label) ? label : [label];
+  const units = [];
+  items.forEach((it) => String(it).split(' · ').forEach((part, i) => units.push({ t: part, sep: ' · ' })));
+  const lines = [];
+  let line = '';
+  const flush = () => line && lines.push(line);
+  for (const u of units) {
+    const cand = line ? line + u.sep + u.t : u.t;
+    if (!line || textWidth(cand, size) <= maxPx) line = cand;
+    else {
+      flush();
+      line = u.t;
+    }
+  }
+  flush();
+  // หน่วยเดียวที่ยาวเกิน: ตัดที่ช่องว่างภายใน
+  return lines.flatMap((l) => {
+    if (textWidth(l, size) <= maxPx || !l.includes(' ')) return [l];
+    const out = [];
+    let cur = '';
+    for (const w of l.split(' ')) {
+      const c = cur ? `${cur} ${w}` : w;
+      if (!cur || textWidth(c, size) <= maxPx) cur = c;
+      else {
+        out.push(cur);
+        cur = w;
+      }
+    }
+    out.push(cur);
+    return out;
+  });
+}
+
 /* ---------- ตัวช่วยวาด ---------- */
 class Svg {
   constructor(w, h) { this.w = w; this.h = h; this.parts = []; this.labels = []; }
@@ -77,11 +116,11 @@ class Svg {
     return { t: 'r', x, y, w, h };
   }
   // เส้นทางข้อมูล: pts = [[x,y],...]; label อยู่ที่ (lx,ly) พร้อมพื้นขาวบางๆ กันเส้นทับ
-  flow(pts, label, lx, ly, { anchor = 'middle', dash = false, both = false } = {}) {
+  flow(pts, label, lx, ly, { anchor = 'middle', dash = false, both = false, w = 190 } = {}) {
     const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0]} ${p[1]}`).join(' ');
     this.add(`<path d="${d}" fill="none" stroke="${C.flow}" stroke-width="1.6"${dash ? ' stroke-dasharray="6 4"' : ''} marker-end="url(#ah)"${both ? ' marker-start="url(#ahs)"' : ''}/>`);
     if (label) {
-      const ls = Array.isArray(label) ? label : [label];
+      const ls = wrapLabel(label, w);
       this.labels.push(`<g font-size="13" fill="${C.ink}" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke">${this.text(lx, ly, ls, { size: 13, anchor, lh: 17 })}</g>`);
     }
   }
@@ -94,11 +133,11 @@ class Svg {
     const ym = (yBox + el) / 2;
     const r1 = (v) => Math.round(v * 10) / 10;
     if (side === 'top') {
-      this.flow([[xl, yBox], [xl, r1(el)]], down, xl - 7, ym, { anchor: 'end', dash });
-      this.flow([[xr, r1(er)], [xr, yBox]], up, xr + 7, ym, { anchor: 'start', dash });
+      this.flow([[xl, yBox], [xl, r1(el)]], down, xl - 7, ym, { anchor: 'end', dash, w: 96 });
+      this.flow([[xr, r1(er)], [xr, yBox]], up, xr + 7, ym, { anchor: 'start', dash, w: 96 });
     } else {
-      this.flow([[xl, r1(el)], [xl, yBox]], down, xl - 7, ym, { anchor: 'end', dash });
-      this.flow([[xr, yBox], [xr, r1(er)]], up, xr + 7, ym, { anchor: 'start', dash });
+      this.flow([[xl, r1(el)], [xl, yBox]], down, xl - 7, ym, { anchor: 'end', dash, w: 96 });
+      this.flow([[xr, yBox], [xr, r1(er)]], up, xr + 7, ym, { anchor: 'start', dash, w: 96 });
     }
   }
   // ลูกศรคู่แนวนอนระหว่างกล่องข้างจอกับวงกลมใหญ่ side 'left' | 'right' (ตำแหน่งของกล่อง) — บนสุดไปทางวงกลม, ล่างกลับมา
@@ -106,9 +145,9 @@ class Svg {
     const edge = (yy) => c.x + (side === 'left' ? -1 : 1) * Math.sqrt(Math.max(0, c.r * c.r - (yy - c.y) ** 2));
     const r1 = (v) => Math.round(v * 10) / 10;
     const y1 = y - gap, y2 = y + gap, e1 = edge(y1), e2 = edge(y2);
-    const n = (l) => (Array.isArray(l) ? l.length : 1);
-    this.flow([[xBox, y1], [r1(e1), y1]], toSys, (xBox + e1) / 2, y1 - 10 - (n(toSys) - 1) * 8.5, {});
-    this.flow([[r1(e2), y2], [xBox, y2]], fromSys, (xBox + e2) / 2, y2 + 14 + (n(fromSys) - 1) * 8.5, {});
+    const W = Math.min(260, Math.abs(xBox - e1) - 20), n = (l) => wrapLabel(l, W).length;
+    this.flow([[xBox, y1], [r1(e1), y1]], toSys, (xBox + e1) / 2, y1 - 10 - (n(toSys) - 1) * 8.5, { w: W });
+    this.flow([[r1(e2), y2], [xBox, y2]], fromSys, (xBox + e2) / 2, y2 + 14 + (n(fromSys) - 1) * 8.5, { w: W });
   }
   // เชื่อมรูปสองรูปด้วยเส้นตรงที่ตัดขอบรูปให้เอง; off = เลื่อนเส้นขนาน (ใช้กับคู่เส้นสองทิศ)
   link(a, b, label, { off = 0, lt = 0.5, ldx = 0, ldy = 0, lo = 0, both = false, dash = false, anchor = 'middle' } = {}) {
@@ -153,7 +192,7 @@ function dfd0() {
   E(1020, 410, 'ผู้ดูแล', 'ADMIN / MODERATOR');
   s.hpairC(185, 240, c, 'left', ['ลิงก์ต้นฉบับ', 'คำขอเปิดลิงก์ · รหัสผ่านลิงก์'], ['ลิงก์สั้น (ใช้ได้ 7 วัน)', '302 ไปปลายทาง / หน้าสถานะ']);
   s.hpairC(455, 240, c, 'left', ['คำขอเข้าสู่ระบบ · ข้อมูลลิงก์', 'การป้องกัน · คำขอ QR · คำขอสถิติ'], ['โทเคนเข้าสู่ระบบ · รายการลิงก์', 'ข้อมูล QR · สถิติการคลิก']);
-  s.hpairC(185, 1020, c, 'right', ['id_token', '(sub, email)'], ['คำขอยืนยันตัวตน', '(OIDC + PKCE)']);
+  s.hpairC(185, 1020, c, 'right', 'id_token (sub, email)', 'คำขอยืนยันตัวตน (OIDC + PKCE)');
   s.hpairC(455, 1020, c, 'right', ['คำสั่งจัดการผู้ใช้ · ลิงก์', 'โดเมนที่บล็อก'], ['ภาพรวมระบบ · รายชื่อ', 'audit log']);
   s.add(s.text(630, 612, 'สี่เหลี่ยม = ผู้ใช้งาน/ระบบภายนอก · วงกลม = กระบวนการ · ลูกศร = ข้อมูลที่ไหล (หนึ่งเส้นต่อหนึ่งทิศ)', { size: 12.5, fill: C.muted }));
   return s.render('DFD Level 0');
@@ -183,10 +222,10 @@ function dfd1() {
   panel('p5', [['D6', 'Redis', 'ดึงคิวคลิก'], ['D3', 'clicks', 'link_daily_stats'], ['D2', 'links', 'click_count']]);
 
   const top = 100, topY = (c, x) => CY - Math.sqrt(R * R - (x - c) ** 2);
-  s.vpairC(cx.p6, top, circ('p6'), 'top', ['คำสั่ง', 'ผู้ดูแล'], ['ภาพรวม', 'audit']);
-  s.vpairC(cx.p1 - 30, top, circ('p1'), 'top', ['คำขอ', 'OIDC'], ['id_token']);
+  s.vpairC(cx.p6, top, circ('p6'), 'top', 'คำสั่งผู้ดูแล', ['ภาพรวม', 'audit']);
+  s.vpairC(cx.p1 - 30, top, circ('p1'), 'top', 'คำขอ OIDC', ['id_token']);
   s.vpairC(cx.p2, top, circ('p2'), 'top', ['ข้อมูลลิงก์'], ['ลิงก์สั้น']);
-  s.vpairC(cx.p3, top, circ('p3'), 'top', ['คำขอเปิดลิงก์', 'รหัสผ่าน'], ['302 /', 'หน้าสถานะ']);
+  s.vpairC(cx.p3, top, circ('p3'), 'top', ['คำขอเปิดลิงก์', 'รหัสผ่าน'], '302 / หน้าสถานะ');
   s.vpairC(cx.p4, top, circ('p4'), 'top', ['ขอ QR'], ['ข้อมูล QR']);
   s.vpairC(cx.p5, top, circ('p5'), 'top', ['ขอสถิติ'], ['สถิติ']);
   // ผู้ใช้ → 1.0 (เส้นหักมุมฉาก: เส้นบนเลี้ยวไกลกว่า เพื่อไม่ตัดกัน)
@@ -223,10 +262,10 @@ function dfd2() {
   ['ข้อมูลลิงก์', 'ผ่านเงื่อนไข', 'รหัสถูกต้อง', 'ได้สิทธิ์'].forEach((l, i) => s.flow([[x[i] + R, cy], [x[i + 1] - R, cy]], l, (x[i] + x[i + 1]) / 2, cy - 14));
   // ผลตอบกลับขึ้นไปหาผู้เข้าชม
   const top = cy - R;
-  s.flow([[x[1], top], [x[1], 100]], ['403 ยังไม่เริ่ม', '404 ไม่พบ · 410 หมดอายุ'], x[1] + 8, 200, { anchor: 'start' });
-  s.flow([[x[2], top], [x[2], 100]], ['401 ขอรหัสผ่าน', '429 ลองผิดเกิน'], x[2] + 8, 200, { anchor: 'start' });
+  s.flow([[x[1], top], [x[1], 100]], ['403 ยังไม่เริ่ม', '404 ไม่พบ', '410 หมดอายุ'], x[1] + 8, 200, { anchor: 'start', w: 110 });
+  s.flow([[x[2], top], [x[2], 100]], ['401 ขอรหัสผ่าน', '429 ลองผิดเกิน'], x[2] + 8, 200, { anchor: 'start', w: 110 });
   s.flow([[x[3], top], [x[3], 100]], '410 ครบจำนวนคลิก', x[3] + 8, 200, { anchor: 'start' });
-  s.flow([[x[4], top], [x[4], 100]], ['302 +', 'URL ต้นฉบับ'], x[4] + 8, 200, { anchor: 'start' });
+  s.flow([[x[4], top], [x[4], 100]], '302 + URL ต้นฉบับ', x[4] + 8, 200, { anchor: 'start' });
   // ที่เก็บข้อมูล
   const SY = 530, bot = cy + R;
   s.store(300, SY, 710, 62, 'D6', 'Redis', 'link:{code} · lim:{id} · rl:*');
@@ -234,12 +273,12 @@ function dfd2() {
   s.store(60, 660, 230, 62, 'D2', 'links', 'อ่านเมื่อ cache miss');
   const e = (xx, i = 0) => cy + Math.sqrt(R * R - (xx - x[i]) ** 2);
   s.flow([[323, e(323)], [323, SY]], 'GET link:{code}', 331, 455, { anchor: 'start' });
-  s.flow([[347, SY], [347, e(347)]], ['ลิงก์', '(cache hit)'], 355, 490, { anchor: 'start' });
+  s.flow([[347, SY], [347, e(347)]], 'ลิงก์ (cache hit)', 355, 490, { anchor: 'start' });
   s.flow([[250, e(250)], [250, 660]], 'SELECT เมื่อ cache miss', 242, 570, { anchor: 'end', dash: true });
   s.flow([[266, 660], [266, e(266)]], 'ข้อมูลลิงก์', 274, 620, { anchor: 'start', dash: true });
   s.vpairC(x[2] - 20, SY, C(2), 'bottom', 'นับครั้งที่ลอง', 'ผลตรวจ');
-  s.vpairC(x[3] - 20, SY, C(3), 'bottom', 'INCR lim:{id}', ['สิทธิ์', 'ที่เหลือ']);
-  s.flow([[x[4], bot], [x[4], SY]], ['เหตุการณ์คลิก', '(ip_hash · UA · ประเทศ)'], x[4] - 8, 450, { anchor: 'end' });
+  s.vpairC(x[3] - 20, SY, C(3), 'bottom', 'INCR lim:{id}', 'สิทธิ์ที่เหลือ');
+  s.flow([[x[4], bot], [x[4], SY]], ['เหตุการณ์คลิก', '(ip_hash, UA, ประเทศ)'], x[4] - 8, 450, { anchor: 'end' });
   s.add(s.text(630, 752, 'เข้าคิวคลิกหลังตอบ 302 แล้ว (fire-and-forget) — ถ้า analytics ล่มก็ไม่กระทบผู้เข้าชม', { size: 12.5, fill: C.muted }));
   return s.render('DFD Level 2 — 3.0 Redirect');
 }
@@ -335,7 +374,7 @@ function arch() {
   const RDS = box(880, 560, 430, 130, 'Redis 7 (Upstash)', ['cache link:{code} · session rt:/bl:', 'rate limit · ตัวนับ lim:{id}', 'คิว clicks:queue'], C.store, C.storeLine);
   s.link(BR, FE, 'โหลดหน้าเว็บ', { lt: 0.5, ldx: -48, ldy: -6 });
   s.link(BR, CORE, 'fetch /api/*', { lt: 0.5, ldy: -14 });
-  s.flow([[135, 250], [135, 205], [780, 205], [780, 270]], 'เปิดลิงก์สั้น  s.kittametdev.com/:code', 450, 192);
+  s.flow([[135, 250], [135, 205], [780, 205], [780, 270]], 'เปิดลิงก์สั้น  s.kittametdev.com/:code', 450, 192, { w: 360 });
   s.flow([[560, 270], [560, 235], [1130, 235], [1130, 270]], 'ขอสถิติ (x-internal-key)', 870, 248);
   s.link(CORE, GG, 'OIDC code exchange', { dash: true, lt: 0.35, ldx: 90, ldy: -42 });
   s.link(RED, ANA, 'ping /internal/flush', { lt: 0.5, ldy: -14 });

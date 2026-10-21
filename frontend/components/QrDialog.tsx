@@ -278,6 +278,16 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
         <div className="grid gap-6 md:grid-cols-[17rem_minmax(0,1fr)]">
           {/* ซ้าย: ตัวอย่างสด + ดาวน์โหลด */}
           <div className="flex flex-col items-center gap-4 md:sticky md:top-0 md:self-start">
+            {warnings.length > 0 && (
+              <ul className="w-full max-w-[17rem] space-y-2" role="status">
+                {warnings.map((w) => (
+                  <li key={w} className="flex items-start gap-2.5 rounded-xl bg-danger/10 px-3.5 py-3 text-[13px] font-medium leading-relaxed text-danger">
+                    <AdminIcon name="alert" className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span className="min-w-0 flex-1 [text-wrap:balance]">{t(`qr.warn.${w}` as MsgKey)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className={`flex w-full max-w-[17rem] items-center justify-center rounded-2xl p-3 shadow-sm ring-1 ring-line ${checker}`}>
               {rendered ? (
                 <div role="img" aria-label={t('qr.alt', { url: link.shortUrl })} className="w-full [&_svg]:h-auto [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: rendered.svg }} />
@@ -286,17 +296,6 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
               )}
             </div>
             <p className="break-all text-center font-mono text-sm font-medium">{link.shortUrl}</p>
-
-            {warnings.length > 0 && (
-              <ul className="w-full space-y-1.5" role="status">
-                {warnings.map((w) => (
-                  <li key={w} className="flex gap-2 rounded-xl bg-danger/10 px-3 py-2 text-xs font-medium leading-snug text-danger">
-                    <span aria-hidden="true">!</span>
-                    {t(`qr.warn.${w}` as MsgKey)}
-                  </li>
-                ))}
-              </ul>
-            )}
 
             <div className="flex w-full flex-col gap-2">
               <div role="radiogroup" aria-label={t('qr.sizeLegend')} className="grid grid-cols-3 gap-1.5 rounded-xl bg-ink/[0.05] p-1">
@@ -423,7 +422,7 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
             </Card>
 
             {/* แถบบันทึกค้างด้านล่าง: เลื่อนดูตัวเลือกยาวๆ ก็กดบันทึกได้ตลอด */}
-            <div className="sticky bottom-0 z-10 -mx-1 -mb-1 flex flex-wrap gap-2 border-t border-line bg-surface/90 px-1 pb-1 pt-3 backdrop-blur">
+            <div className="sticky -bottom-5 z-10 -mx-5 -mb-5 flex flex-wrap gap-2 border-t border-line bg-surface px-5 pb-5 pt-3 sm:-bottom-6 sm:-mx-6 sm:-mb-6 sm:px-6 sm:pb-6">
               <button type="button" className="btn-primary h-11 flex-1 rounded-xl sm:flex-none sm:px-8" disabled={saving} onClick={() => persist(style)}>
                 <AdminIcon name="check" className="h-4 w-4" />
                 {t('qr.save')}
