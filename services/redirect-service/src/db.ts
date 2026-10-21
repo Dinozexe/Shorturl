@@ -17,8 +17,8 @@ export interface LinkRow {
 
 export async function findLink(code: string): Promise<LinkRow | null> {
   const { rows } = await pool.query(
-    // Prisma เก็บเวลาเป็น UTC ใน `timestamp` (ไม่มี time zone) แต่ pg อ่านเป็นเวลาท้องถิ่นของเครื่อง → ต้อง AT TIME ZONE 'UTC' ไม่งั้นวันหมดอายุเพี้ยนตาม timezone
-    `SELECT id, original_url AS url, status, expires_at AT TIME ZONE 'UTC' AS "expiresAt", starts_at AT TIME ZONE 'UTC' AS "startsAt", max_clicks AS "maxClicks", (password_hash IS NOT NULL) AS "hasPassword" FROM links WHERE short_code = $1`,
+    // คอลัมน์เวลาเป็น timestamptz → pg ได้ Date ที่ถูกต้องเสมอ ไม่ขึ้นกับ timezone ของเครื่อง
+    `SELECT id, original_url AS url, status, expires_at AS "expiresAt", starts_at AS "startsAt", max_clicks AS "maxClicks", (password_hash IS NOT NULL) AS "hasPassword" FROM links WHERE short_code = $1`,
     [code],
   );
   return rows[0] ?? null;

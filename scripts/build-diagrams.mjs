@@ -204,23 +204,23 @@ function dfd2() {
 /* ---------- ER ---------- */
 const T = {
   users: { x: 470, y: 40, cols: [
-    ['id', 'uuid', 'PK'], ['email', 'text', 'UK'], ['name', 'text?', ''], ['role', 'USER|MODERATOR|ADMIN', ''], ['is_banned', 'bool', ''], ['last_login_at', 'timestamp?', ''], ['created_at', 'timestamp', ''],
+    ['id', 'uuid', 'PK'], ['email', 'text', 'UK'], ['name', 'text?', ''], ['role', 'USER|MODERATOR|ADMIN', ''], ['is_banned', 'bool', ''], ['last_login_at', 'timestamptz?', ''], ['created_at', 'timestamptz', ''],
   ] },
   sso_identities: { x: 10, y: 40, cols: [
-    ['id', 'uuid', 'PK'], ['user_id', 'uuid', 'FK'], ['provider', 'google|microsoft', 'UK'], ['subject', 'text (sub)', 'UK'], ['email', 'text', ''], ['email_verified', 'bool', ''], ['created_at', 'timestamp', ''], ['last_login_at', 'timestamp', ''],
+    ['id', 'uuid', 'PK'], ['user_id', 'uuid', 'FK'], ['provider', 'google|microsoft', 'UK'], ['subject', 'text (sub)', 'UK'], ['email', 'text', ''], ['email_verified', 'bool', ''], ['created_at', 'timestamptz', ''], ['last_login_at', 'timestamptz', ''],
   ] },
   links: { x: 470, y: 380, cols: [
     ['id', 'int', 'PK'], ['user_id', 'uuid?', 'FK'], ['short_code', 'text', 'UK'], ['original_url', 'text', ''], ['original_host', 'text', 'IDX'], ['status', 'ACTIVE|DISABLED|ADMIN_DISABLED', ''],
-    ['expires_at', 'timestamp?', ''], ['starts_at', 'timestamp?', ''], ['max_clicks', 'int?', ''], ['password_hash', 'text? (scrypt)', ''], ['qr_style', 'jsonb?', ''], ['click_count', 'int', ''], ['created_at', 'timestamp', ''],
+    ['expires_at', 'timestamptz?', ''], ['starts_at', 'timestamptz?', ''], ['max_clicks', 'int?', ''], ['password_hash', 'text? (scrypt)', ''], ['qr_style', 'jsonb?', ''], ['click_count', 'int', ''], ['created_at', 'timestamptz', ''],
   ] },
   audit_logs: { x: 10, y: 400, cols: [
-    ['id', 'int', 'PK'], ['actor_id', 'uuid?', 'FK'], ['action', 'enum', ''], ['target_type', 'USER|LINK|DOMAIN|API_KEY', ''], ['target_id', 'text', ''], ['detail', 'text?', ''], ['created_at', 'timestamp', ''],
+    ['id', 'int', 'PK'], ['actor_id', 'uuid?', 'FK'], ['action', 'enum', ''], ['target_type', 'USER|LINK|DOMAIN|API_KEY', ''], ['target_id', 'text', ''], ['detail', 'text?', ''], ['created_at', 'timestamptz', ''],
   ] },
   blocked_domains: { x: 930, y: 400, cols: [
-    ['id', 'int', 'PK'], ['domain', 'text', 'UK'], ['reason', 'text', ''], ['created_by_id', 'uuid?', 'FK'], ['created_at', 'timestamp', ''],
+    ['id', 'int', 'PK'], ['domain', 'text', 'UK'], ['reason', 'text', ''], ['created_by_id', 'uuid?', 'FK'], ['created_at', 'timestamptz', ''],
   ] },
   clicks: { x: 10, y: 770, cols: [
-    ['id', 'bigint', 'PK'], ['link_id', 'int', 'FK'], ['ip_hash', 'sha256+salt', ''], ['user_agent', 'text?', ''], ['referer', 'text?', ''], ['country', 'char(2)?', ''], ['device', 'desktop|mobile|tablet|bot|unknown', ''], ['os', 'text?', ''], ['browser', 'text?', ''], ['clicked_at', 'timestamp', 'IDX'],
+    ['id', 'bigint', 'PK'], ['link_id', 'int', 'FK'], ['ip_hash', 'sha256+salt', ''], ['user_agent', 'text?', ''], ['referer', 'text?', ''], ['country', 'char(2)?', ''], ['device', 'desktop|mobile|tablet|bot|unknown', ''], ['os', 'text?', ''], ['browser', 'text?', ''], ['clicked_at', 'timestamptz', 'IDX'],
   ] },
   link_daily_stats: { x: 470, y: 850, cols: [['link_id', 'int', 'PK FK'], ['day', 'date (UTC)', 'PK'], ['clicks', 'int', '']] },
 };

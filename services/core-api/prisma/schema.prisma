@@ -57,8 +57,8 @@ model User {
   name        String?
   role        Role      @default(USER)
   isBanned    Boolean   @default(false) @map("is_banned")
-  lastLoginAt DateTime? @map("last_login_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  lastLoginAt DateTime? @db.Timestamptz(3) @map("last_login_at")
+  createdAt   DateTime  @db.Timestamptz(3) @default(now()) @map("created_at")
 
   identities     SsoIdentity[]
   links          Link[]
@@ -75,8 +75,8 @@ model SsoIdentity {
   subject       String
   email         String
   emailVerified Boolean     @default(false) @map("email_verified")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  lastLoginAt   DateTime    @default(now()) @map("last_login_at")
+  createdAt     DateTime    @db.Timestamptz(3) @default(now()) @map("created_at")
+  lastLoginAt   DateTime    @db.Timestamptz(3) @default(now()) @map("last_login_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -92,13 +92,13 @@ model Link {
   originalUrl  String     @map("original_url")
   originalHost String     @map("original_host")
   status       LinkStatus @default(ACTIVE)
-  expiresAt    DateTime?  @map("expires_at")
+  expiresAt    DateTime?  @db.Timestamptz(3) @map("expires_at")
   clickCount   Int        @default(0) @map("click_count")
   qrStyle      Json?      @map("qr_style")
   passwordHash String?    @map("password_hash")
   maxClicks    Int?       @map("max_clicks")
-  startsAt     DateTime?  @map("starts_at")
-  createdAt    DateTime   @default(now()) @map("created_at")
+  startsAt     DateTime?  @db.Timestamptz(3) @map("starts_at")
+  createdAt    DateTime   @db.Timestamptz(3) @default(now()) @map("created_at")
 
   user       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   clicks     Click[]
@@ -119,7 +119,7 @@ model Click {
   device    Device   @default(unknown)
   os        String?
   browser   String?
-  clickedAt DateTime @default(now()) @map("clicked_at")
+  clickedAt DateTime @db.Timestamptz(3) @default(now()) @map("clicked_at")
 
   link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
 
@@ -144,10 +144,11 @@ model BlockedDomain {
   domain      String   @unique
   reason      String?
   createdById String?  @map("created_by_id") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt   DateTime @db.Timestamptz(3) @default(now()) @map("created_at")
 
   createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
+  @@index([createdById])
   @@map("blocked_domains")
 }
 
@@ -158,10 +159,11 @@ model AuditLog {
   targetType AuditTarget? @map("target_type")
   targetId   String?      @map("target_id")
   detail     String?
-  createdAt  DateTime     @default(now()) @map("created_at")
+  createdAt  DateTime     @db.Timestamptz(3) @default(now()) @map("created_at")
 
   actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
 
+  @@index([actorId])
   @@index([action, createdAt(sort: Desc)])
   @@index([createdAt(sort: Desc)])
   @@map("audit_logs")

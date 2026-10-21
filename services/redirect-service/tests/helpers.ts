@@ -34,11 +34,11 @@ export interface LinkOpts {
 }
 
 let seq = 0;
-/** เพิ่มลิงก์ตรงใน DB (เวลาแปลงเป็น UTC แบบเดียวกับที่ Prisma เก็บ) */
+/** เพิ่มลิงก์ตรงใน DB (เวลาเป็น timestamptz) */
 export async function addLink(code = `t${Date.now().toString(36)}${++seq}`, o: LinkOpts = {}) {
   const { rows } = await pool.query(
     `INSERT INTO links (short_code, original_url, original_host, status, expires_at, starts_at, max_clicks, password_hash, click_count)
-     VALUES ($1, $2, 'example.com', $3::"LinkStatus", to_timestamp($4::double precision / 1000) AT TIME ZONE 'UTC', to_timestamp($5::double precision / 1000) AT TIME ZONE 'UTC', $6, $7, $8)
+     VALUES ($1, $2, 'example.com', $3::"LinkStatus", to_timestamp($4::double precision / 1000), to_timestamp($5::double precision / 1000), $6, $7, $8)
      RETURNING id`,
     [code, o.url ?? 'https://example.com/dest', o.status ?? 'ACTIVE', o.expiresAt ?? null, o.startsAt ?? null, o.maxClicks ?? null, o.passwordHash ?? null, o.clickCount ?? 0],
   );

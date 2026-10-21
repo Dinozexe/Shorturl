@@ -21,11 +21,11 @@ export interface FlushResult {
 }
 
 // ทั้งหมดอยู่ในคำสั่งเดียว (CTE ที่แก้ข้อมูล) = transaction เดียว: clicks + link_daily_stats + links.click_count
-// กรองลิงก์ที่ถูกลบไปแล้วออกด้วย EXISTS (ไม่งั้น FK ล้มทั้ง batch); เวลาเก็บเป็น UTC ใน timestamp (ไม่มี tz)
+// กรองลิงก์ที่ถูกลบไปแล้วออกด้วย EXISTS (ไม่งั้น FK ล้มทั้ง batch); เวลาเก็บเป็น timestamptz; วันของสถิติรายวันนับตามเวลา UTC
 const WRITE_SQL = `
 WITH ev AS (
   SELECT t.link_id, t.ip_hash, t.ua, t.ref, t.country, t.device, t.os, t.browser,
-         (to_timestamp(t.ms / 1000.0) AT TIME ZONE 'UTC') AS ts
+         to_timestamp(t.ms / 1000.0) AS ts
   FROM unnest($1::int[], $2::text[], $3::text[], $4::text[], $5::text[], $6::text[], $7::text[], $8::text[], $9::bigint[])
        AS t(link_id, ip_hash, ua, ref, country, device, os, browser, ms)
   WHERE EXISTS (SELECT 1 FROM links l WHERE l.id = t.link_id)
@@ -37,7 +37,7 @@ ins AS (
 ),
 daily AS (
   INSERT INTO link_daily_stats (link_id, day, clicks)
-  SELECT link_id, ts::date, count(*)::int FROM ev GROUP BY link_id, ts::date
+  SELECT link_id, (ts AT TIME ZONE 'UTC')::date, count(*)::int FROM ev GROUP BY link_id, (ts AT TIME ZONE 'UTC')::date
   ON CONFLICT (link_id, day) DO UPDATE SET clicks = link_daily_stats.clicks + EXCLUDED.clicks
   RETURNING 1
 ),
@@ -102,7 +102,7 @@ async function cleanupOld(): Promise<number> {
   for (let i = 0; i < 10; i++) {
     const r = await pool.query(
       `DELETE FROM clicks WHERE id IN (
-         SELECT id FROM clicks WHERE clicked_at < (now() AT TIME ZONE 'UTC') - make_interval(days => $1) ORDER BY clicked_at LIMIT $2)`,
+         SELECT id FROM clicks WHERE clicked_at < now() - make_interval(days => $1) ORDER BY clicked_at LIMIT $2)`,
       [config.clickRetentionDays, CLEANUP_CHUNK],
     );
     total += r.rowCount ?? 0;

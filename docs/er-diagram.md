@@ -19,8 +19,8 @@ erDiagram
         string name "nullable"
         enum role "USER | MODERATOR | ADMIN"
         boolean is_banned
-        datetime last_login_at "nullable"
-        datetime created_at
+        timestamptz last_login_at "nullable"
+        timestamptz created_at
     }
     SSO_IDENTITIES {
         uuid id PK
@@ -29,8 +29,8 @@ erDiagram
         string subject "sub จาก id_token"
         string email
         boolean email_verified
-        datetime created_at
-        datetime last_login_at
+        timestamptz created_at
+        timestamptz last_login_at
     }
     LINKS {
         int id PK
@@ -39,13 +39,13 @@ erDiagram
         string original_url
         string original_host "lowercase, idx"
         enum status "ACTIVE | DISABLED | ADMIN_DISABLED"
-        datetime expires_at "nullable"
+        timestamptz expires_at "nullable"
         jsonb qr_style "nullable, สไตล์ QR ที่บันทึกไว้"
         string password_hash "nullable, scrypt"
         int max_clicks "nullable, จำกัดจำนวนเปิด"
         timestamp starts_at "nullable, วันเริ่มใช้งาน"
         int click_count "denormalized"
-        datetime created_at
+        timestamptz created_at
     }
     CLICKS {
         bigint id PK
@@ -57,7 +57,7 @@ erDiagram
         enum device "desktop|mobile|tablet|bot|unknown"
         string os
         string browser
-        datetime clicked_at "ลบเมื่อเกิน retention"
+        timestamptz clicked_at "ลบเมื่อเกิน retention"
     }
     LINK_DAILY_STATS {
         int link_id PK,FK "CASCADE"
@@ -69,7 +69,7 @@ erDiagram
         string domain UK "lowercase (CHECK)"
         string reason
         uuid created_by_id FK "SET NULL"
-        datetime created_at
+        timestamptz created_at
     }
     AUDIT_LOGS {
         int id PK
@@ -78,7 +78,7 @@ erDiagram
         enum target_type "USER | LINK | DOMAIN"
         string target_id
         string detail "nullable"
-        datetime created_at
+        timestamptz created_at
     }
 ```
 
@@ -102,6 +102,7 @@ erDiagram
 | `device` เป็น enum | ค่าปิดตายตัว; `os`/`browser`/`country` เปิดกว้างจึงเป็น text (country มี CHECK `^[A-Z]{2}$`) |
 | `audit_logs` | `action`/`target_type` เป็น enum กันพิมพ์ผิด; `actor_id` SET NULL (ผู้กระทำถูกลบแล้ว log ยังอยู่); index `(action, created_at DESC)` รองรับตัวกรองในหน้าแอดมิน |
 | CHECK constraint | email/domain/host ต้องเป็นตัวพิมพ์เล็ก, domain ต้องเป็นรูปแบบโดเมน — กันข้อมูลซ้ำต่างตัวพิมพ์ที่ unique index จับไม่ได้ (เขียนใน migration; Prisma schema เขียนไม่ได้) |
+| ชนิดเวลา | ทุกคอลัมน์เวลาเป็น `timestamptz` (เก็บเป็น UTC, ไม่ขึ้นกับ timezone ของเครื่อง/session); `link_daily_stats.day` เป็น `date` นับตามวัน UTC |
 | `ip_hash` | ไม่เก็บ IP ดิบ (PDPA) hash พร้อม salt |
 | refresh token | **ไม่เก็บใน DB** — JWT อายุ 7 วัน (httpOnly cookie) สถานะ rotation อยู่ใน Redis (`rt:{jti}`) |
 | QR Code | ไม่มีตาราง — สร้างจาก short URL ตอนเรียก (`GET /api/links/:id/qr`) |
@@ -131,4 +132,4 @@ ALTER TABLE "link_daily_stats" ADD CONSTRAINT link_daily_stats_clicks_chk       
 ALTER TABLE "links"            ADD CONSTRAINT links_click_count_chk             CHECK ("click_count" >= 0);
 ```
 
-Index ที่ต้องมี: `links(user_id, created_at DESC)`, `links(original_host)`, `clicks(link_id, clicked_at)`, `clicks(clicked_at)`, `audit_logs(action, created_at DESC)`, `audit_logs(created_at DESC)`; unique: `sso_identities(provider, subject)`, `sso_identities(user_id, provider)`, `links(short_code)`, `users(email)`, `blocked_domains(domain)`
+Index ที่ต้องมี: `links(user_id, created_at DESC)`, `links(original_host)`, `clicks(link_id, clicked_at)`, `clicks(clicked_at)`, `audit_logs(action, created_at DESC)`, `audit_logs(created_at DESC)`, `audit_logs(actor_id)`, `blocked_domains(created_by_id)` (index ให้ FK ที่ SET NULL ตอนลบผู้ใช้); unique: `sso_identities(provider, subject)`, `sso_identities(user_id, provider)`, `links(short_code)`, `users(email)`, `blocked_domains(domain)`

@@ -106,7 +106,7 @@ describe('flush: คิว Redis → Postgres (transaction เดียว)', ()
 
   it('ลบคลิกดิบเก่ากว่า retention แต่ยอดรายวันและ click_count เก็บไว้ถาวร', async () => {
     const id = await addLink(5);
-    await pool.query(`INSERT INTO clicks (link_id, ip_hash, device, clicked_at) VALUES ($1, 'h', 'desktop', (now() AT TIME ZONE 'UTC') - interval '120 days'), ($1, 'h', 'desktop', (now() AT TIME ZONE 'UTC') - interval '10 days')`, [id]);
+    await pool.query(`INSERT INTO clicks (link_id, ip_hash, device, clicked_at) VALUES ($1, 'h', 'desktop', now() - interval '120 days'), ($1, 'h', 'desktop', now() - interval '10 days')`, [id]);
     await pool.query(`INSERT INTO link_daily_stats (link_id, day, clicks) VALUES ($1, current_date - 120, 4)`, [id]);
     const r = await flush();
     assert.equal(r.cleaned, 1);

@@ -32,20 +32,20 @@ export async function getLinkStats(linkId: number, days: number): Promise<LinkSt
   if (link.rowCount === 0) return null;
 
   const start = windowStart(days);
-  const since = `${dayStr(start)} 00:00:00`; // timestamp ไม่มี tz = UTC เหมือนที่เก็บ
+  const since = `${dayStr(start)}T00:00:00Z`; // เริ่มวันตามเวลา UTC
 
   // key เป็นชื่อคอลัมน์ที่เรากำหนดเอง (ไม่รับจากผู้ใช้) จึงต่อ string ได้ปลอดภัย
   const group = (col: string, limit: number) =>
     pool.query(
       `SELECT ${col} AS key, count(*)::int AS clicks FROM clicks
-       WHERE link_id = $1 AND clicked_at >= $2::timestamp GROUP BY 1 ORDER BY 2 DESC, 1 NULLS LAST LIMIT ${limit}`,
+       WHERE link_id = $1 AND clicked_at >= $2::timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 NULLS LAST LIMIT ${limit}`,
       [linkId, since],
     );
 
   const [daily, win, referers, countries, devices, os, browsers] = await Promise.all([
     pool.query('SELECT day::text AS day, clicks FROM link_daily_stats WHERE link_id = $1 AND day >= $2::date', [linkId, dayStr(start)]),
     pool.query(
-      'SELECT count(*)::int AS clicks, count(DISTINCT ip_hash)::int AS visitors FROM clicks WHERE link_id = $1 AND clicked_at >= $2::timestamp',
+      'SELECT count(*)::int AS clicks, count(DISTINCT ip_hash)::int AS visitors FROM clicks WHERE link_id = $1 AND clicked_at >= $2::timestamptz',
       [linkId, since],
     ),
     group('referer', 10),
