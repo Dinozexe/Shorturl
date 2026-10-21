@@ -19,7 +19,7 @@ const config: Config = {
         ok: c('ok'),
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans-latin)', 'var(--font-sans-thai)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
       },
     },
