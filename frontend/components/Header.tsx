@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { useSlowHint } from '@/lib/useSlowHint';
 import { useI18n, type MsgKey } from '@/lib/i18n';
 import { ProfileMenu } from './ProfileMenu';
 import { AdminIcon } from '@/components/Icon';
@@ -25,6 +26,8 @@ const NAV: NavItem[] = [
 // จอเล็ก: แถวบน = โลโก้ + ตัวสลับภาษา/ธีม + ปุ่มบัญชี, แถวล่าง = เมนู (เลื่อนซ้ายขวาได้ถ้ายาวเกิน)
 export function Header() {
   const { status, user, logout } = useAuth();
+  // ตรวจสถานะล็อกอินนานเกิน 1.5 วินาที (เช่นเซิร์ฟเวอร์ที่หลับกำลังตื่น) → แสดงปุ่มเข้าสู่ระบบไว้ก่อน ไม่ให้มุมขวาบนว่างเปล่า
+  const checkingLong = useSlowHint(status === 'loading', 1500);
   const { t } = useI18n();
   const router = useRouter();
   const { openLogin } = useLoginModal();
@@ -69,7 +72,8 @@ export function Header() {
         <div className="col-start-2 row-start-1 flex items-center justify-self-end gap-1.5 text-sm md:col-start-3 md:gap-2">
           <HeaderControls />
           {status === 'authed' && user && <ProfileMenu onLogout={onLogout} />}
-          {(status === 'anon' || status === 'offline') && (
+          {status === 'loading' && !checkingLong && <span aria-hidden="true" className="h-9 w-9 animate-pulse rounded-full bg-ink/10" />}
+          {(status === 'anon' || status === 'offline' || (status === 'loading' && checkingLong)) && (
             <button type="button" onClick={openLogin} aria-label={t('nav.login')} title={t('nav.login')} className="btn-primary whitespace-nowrap px-2.5 py-2 text-sm min-[400px]:px-4">
               <AdminIcon name="user" className="h-5 w-5 min-[400px]:hidden" />
               <span className="hidden min-[400px]:inline">{t('nav.login')}</span>
