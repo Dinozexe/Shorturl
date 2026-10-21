@@ -171,7 +171,7 @@ export function AdminShell({ tab, onNav, role, children }: ShellProps) {
           </nav>
         </header>
 
-        <main className="mx-auto w-full max-w-[90rem] px-4 pb-24 pt-2 sm:px-6">{children}</main>
+        <main className="mx-auto w-full max-w-[90rem] px-4 pb-8 pt-2 sm:px-6">{children}</main>
       </div>
     </div>
   );

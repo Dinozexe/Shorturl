@@ -12,7 +12,7 @@ function ticksOf(max: number): number[] {
 }
 
 /** กราฟแท่งรายวัน (div ล้วน ยืดตามความกว้าง): เส้นไกด์จาง + ค่าบนแกน, แท่งมนไล่เฉด, วันที่ไม่มีคนเปิดเป็นช่องว่างจางๆ ไม่ใช่ขีด, ชี้เมาส์/โฟกัสเห็นป้ายค่าของวันนั้น */
-export function DailyChart({ daily }: { daily: Stats['daily'] }) {
+export function DailyChart({ daily, fill = false }: { daily: Stats['daily']; fill?: boolean }) {
   const { t, fmt } = useI18n();
   const max = Math.max(1, ...daily.map((d) => d.clicks));
   const total = daily.reduce((s, d) => s + d.clicks, 0);
@@ -23,9 +23,9 @@ export function DailyChart({ daily }: { daily: Stats['daily'] }) {
   const dense = daily.length > 14;
 
   return (
-    <figure>
-      <div className="flex gap-2">
-        <div className="relative h-44 w-7 shrink-0" aria-hidden="true">
+    <figure className={fill ? 'flex h-full min-h-0 flex-col' : undefined}>
+      <div className={`flex gap-2 ${fill ? 'min-h-0 flex-1' : ''}`}>
+        <div className={`relative w-7 shrink-0 ${fill ? 'h-full min-h-[6rem]' : 'h-44'}`} aria-hidden="true">
           {ticks.map((v) => (
             <span key={v} className="absolute right-0 translate-y-1/2 text-[11px] leading-none tabular-nums text-muted" style={{ bottom: `${(v / max) * 100}%` }}>
               {fmt.number(v)}
@@ -33,7 +33,7 @@ export function DailyChart({ daily }: { daily: Stats['daily'] }) {
           ))}
         </div>
 
-        <div role="img" aria-label={t('stats.chartAria', { days: daily.length, total: fmt.number(total), max: fmt.number(max) })} className="relative h-44 min-w-0 flex-1">
+        <div role="img" aria-label={t('stats.chartAria', { days: daily.length, total: fmt.number(total), max: fmt.number(max) })} className={`relative min-w-0 flex-1 ${fill ? 'h-full min-h-[6rem]' : 'h-44'}`}>
           {ticks.map((v) => (
             <div key={v} className={`absolute inset-x-0 border-t ${v === 0 ? 'border-line' : 'border-dashed border-line/70'}`} style={{ bottom: `${(v / max) * 100}%` }} aria-hidden="true" />
           ))}
