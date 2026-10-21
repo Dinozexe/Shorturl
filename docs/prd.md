@@ -210,10 +210,10 @@ ER, DFD L0–2, Architecture, PRD นี้
 ### P9 — Deploy ฟรี (~3 ชม.)
 - [ ] สร้างบัญชี Neon / Upstash / Render (Cloudflare ใช้บัญชีเดิม); DNS `s.` `api.` บน Cloudflare (DNS-only ชี้ Render), `shorturl.` ผูกเป็น custom domain ของ Cloudflare Pages
 - [ ] OAuth redirect URI = `https://api.kittametdev.com/api/auth/sso/google/callback`
-- [ ] `render.yaml` 3 service (migrate ตอนสตาร์ท; `SEED_ON_START=true` ครั้งแรก แล้วปิด)
+- [x] `render.yaml` 3 service + Dockerfile ของ core-api (migrate ตอนสตาร์ท; `SEED_ON_START=true` ครั้งแรก แล้วปิด) + `frontend/public/_headers`
 - [ ] ตั้ง env ให้ตรงกัน: `INTERNAL_API_KEY`, `DATABASE_URL`, `REDIS_URL` ทั้ง 3 service; `COOKIE_DOMAIN=.kittametdev.com`, `COOKIE_SECURE=true`
 - [ ] Cloudflare Pages: เชื่อม GitHub, build `npm run build` (static export, output `out/`), ตั้ง `NEXT_PUBLIC_API_URL` (ฝังตอน build)
-- [ ] เช็คลิสต์ใน `docs/deploy-render.md`
+- [x] เช็คลิสต์ใน `docs/deploy-render.md` (เขียนแล้ว; ขั้นที่ต้องใช้บัญชีของเจ้าของโปรเจกต์ยังไม่ได้ลงมือ)
 
 **เสร็จเมื่อ:** บนโดเมนจริง ล็อกอิน Google → ย่อลิงก์ → เปิด `s.…/code` เด้งได้ → ดูสถิติได้ → refresh หน้าแล้วยังล็อกอินอยู่  
 **Commit:** `chore: deploy config`

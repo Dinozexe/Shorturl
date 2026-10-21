@@ -17,7 +17,8 @@
 | P6 | Frontend (Next.js): เข้าสู่ระบบ (หน้าต่างเด้ง), ย่อลิงก์ (ไม่ล็อกอินได้แบบลิงก์สั้น 7 วัน), รายการ/ค้นหา, QR ปรับแต่งได้, สถิติ, แก้ไข/ปิด/ลบ, หน้าฟีเจอร์/รูปแบบบัญชี | เสร็จ |
 | P7 | แอดมิน `/admin` (ภาพรวม / ผู้ใช้ / ลิงก์ทั้งหมด / โดเมนที่บล็อก / audit log) — MODERATOR ใช้ภาพรวม/ลิงก์/โดเมน, ADMIN ใช้ได้ทั้งหมด | เสร็จ |
 | P8 | API key (หน้า `/keys`) + CLI สำหรับจัดการลิงก์ (`surl login/shorten/ls/stats/qr/on/off/rm`) | เสร็จ |
-| P9–P10 | Deploy, README ฉบับสมบูรณ์ | ยังไม่ทำ |
+| P9 | Deploy: `render.yaml` + Dockerfile ครบ 3 service + คู่มือ (`docs/deploy-render.md`) | เตรียมไฟล์เสร็จ — ขั้นสมัครบัญชี/ใส่ค่าลับ/ผูกโดเมนต้องทำเอง |
+| P10 | README ฉบับสมบูรณ์ + ซ้อมเดโม | ยังไม่ทำ |
 
 แผนละเอียดและเกณฑ์ตรวจรับอยู่ที่ [`docs/prd.md`](docs/prd.md)
 
@@ -188,6 +189,8 @@ Prisma เป็นตัวจัดการ schema (`services/core-api/prisma
 | `api.kittametdev.com` | Render (core-api) | `/api/*` |
 | `s.kittametdev.com` | Render (redirect-service) | ลิงก์สั้น `/:code` |
 
+ขั้นตอน deploy ทีละขั้นและเช็กลิสต์หลัง deploy อยู่ที่ [`docs/deploy-render.md`](docs/deploy-render.md) (มี `render.yaml` + Dockerfile ของทั้ง 3 service ให้แล้ว)
+
 ฐานข้อมูลใช้ Neon (Postgres) และ Redis ใช้ Upstash; DNS อยู่ที่ Cloudflare ตั้ง `COOKIE_DOMAIN=.kittametdev.com` เพื่อให้หน้าเว็บกับ API อยู่ site เดียวกัน refresh cookie (SameSite=Lax) จึงถูกส่ง
 
 ข้อสังเกต: Render free แต่ละ service หลับแยกกันหลังว่างราว 15 นาที ปลุกใช้เวลา 30–50 วินาที Frontend ถูก build เป็น static export จึงไม่มี server ฝั่ง Next.js และ `NEXT_PUBLIC_API_URL` ถูกฝังตอน build (เปลี่ยนแล้วต้อง build ใหม่)
@@ -206,6 +209,8 @@ services/
       common/             config, error handler, rate limit
       prisma/ redis/      client
       app.ts main.ts      สร้าง express app / เปิดพอร์ต
+    scripts/start-prod.sh migrate → (seed) → เปิดเซิร์ฟเวอร์ ใช้ใน Docker/Render
+    Dockerfile
   redirect-service/       Express: GET /:code → 302 (Redis cache → DB), ส่งคลิกเข้าคิว
     src/                  app.ts clicks.ts ua.ts db.ts redis.ts pages.ts config.ts index.ts
     Dockerfile
@@ -213,12 +218,13 @@ services/
     src/                  flush.ts stats.ts events.ts auth.ts app.ts db.ts redis.ts config.ts index.ts
     Dockerfile
 frontend/                 Next.js 14 (static export) + Tailwind
-  app/                    หน้า: / (แนะนำ), /login, /dashboard
+  app/                    หน้า: / (ย่อลิงก์), /features, /plans, /login (เปิดหน้าต่างล็อกอิน), /dashboard, /keys, /admin
   components/             ฟอร์มย่อลิงก์, แถบผลลัพธ์, แถวลิงก์, dialog (QR / สถิติ / แก้ไข / ลบ), กราฟ
   lib/                    api.ts (access token ใน memory + refresh แบบ single-flight), auth.tsx, format.ts
-cli/surl.mjs             CLI (`surl dev`, `surl status`, `surl migrate`; คำสั่งจัดการลิงก์เพิ่มใน P8)
+cli/surl.mjs             CLI (`surl dev/status/migrate` สำหรับพัฒนา · `surl login/shorten/ls/stats/qr/on/off/rm` ใช้กับ API key)
+render.yaml              Render Blueprint (3 service) — ดู docs/deploy-render.md
 package.json              (root) ลงทะเบียนคำสั่ง `surl` + `npm run dev`
-docs/                     prd, er-diagram, dfd, api, diagrams.html, img/
+docs/                     prd, er-diagram, dfd, api, deploy-render, diagrams.html, img/
 docker-compose.yml        PostgreSQL + Redis สำหรับพัฒนา (เพิ่ม service แอปด้วย `docker compose --profile full up --build`)
 ```
 

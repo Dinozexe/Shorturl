@@ -1,0 +1,69 @@
+# Render Blueprint: 3 service (free, Docker) — ใช้คู่กับ docs/deploy-render.md
+# ค่า `sync: false` = Render ถามตอนสร้าง Blueprint (ไม่เก็บค่าลับในไฟล์นี้) — INTERNAL_API_KEY, DATABASE_URL, REDIS_URL, IP_HASH_SALT ต้องใส่ "ค่าเดียวกัน" ทุก service
+# เปลี่ยนโดเมนได้ที่เดียว: แก้ hostname ในค่า PUBLIC_BASE_URL / API_BASE_URL / FRONTEND_ORIGIN / COOKIE_DOMAIN
+services:
+  - type: web
+    name: shorturl-core-api
+    runtime: docker
+    region: singapore
+    plan: free
+    dockerfilePath: ./services/core-api/Dockerfile
+    dockerContext: ./services/core-api
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - { key: NODE_ENV, value: production }
+      - { key: PUBLIC_BASE_URL, value: "https://s.kittametdev.com" }
+      - { key: API_BASE_URL, value: "https://api.kittametdev.com" }
+      - { key: FRONTEND_ORIGIN, value: "https://shorturl.kittametdev.com" }
+      - { key: COOKIE_SECURE, value: "true" }
+      - { key: COOKIE_DOMAIN, value: ".kittametdev.com" }
+      - { key: BEHIND_CLOUDFLARE, value: "false" } # เปลี่ยนเป็น true เมื่อเปิดพร็อกซี Cloudflare (ส้ม) ให้ api./s. — ดู docs/deploy-render.md
+      - { key: SEED_ON_START, value: "true" } # ครั้งแรกเท่านั้น แล้วเปลี่ยนเป็น false
+      - { key: DATABASE_URL, sync: false }
+      - { key: REDIS_URL, sync: false }
+      - { key: INTERNAL_API_KEY, sync: false }
+      - { key: ANALYTICS_URL, sync: false } # https://shorturl-analytics.onrender.com (URL ภายในของ Render หลังสร้าง analytics)
+      - { key: JWT_ACCESS_SECRET, sync: false }
+      - { key: JWT_REFRESH_SECRET, sync: false }
+      - { key: ADMIN_EMAIL, sync: false }
+      - { key: DEMO_ADMIN_EMAIL, sync: false }
+      - { key: DEMO_ADMIN_PASSWORD, sync: false }
+      - { key: GOOGLE_CLIENT_ID, sync: false }
+      - { key: GOOGLE_CLIENT_SECRET, sync: false }
+
+  - type: web
+    name: shorturl-redirect
+    runtime: docker
+    region: singapore
+    plan: free
+    dockerfilePath: ./services/redirect-service/Dockerfile
+    dockerContext: ./services/redirect-service
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - { key: NODE_ENV, value: production }
+      - { key: FRONTEND_ORIGIN, value: "https://shorturl.kittametdev.com" }
+      - { key: BEHIND_CLOUDFLARE, value: "false" }
+      - { key: CLICK_FLUSH_SECONDS, value: "60" }
+      - { key: DATABASE_URL, sync: false }
+      - { key: REDIS_URL, sync: false }
+      - { key: INTERNAL_API_KEY, sync: false }
+      - { key: IP_HASH_SALT, sync: false }
+      - { key: ANALYTICS_URL, sync: false }
+
+  - type: web
+    name: shorturl-analytics
+    runtime: docker
+    region: singapore
+    plan: free
+    dockerfilePath: ./services/analytics-service/Dockerfile
+    dockerContext: ./services/analytics-service
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - { key: NODE_ENV, value: production }
+      - { key: CLICK_RETENTION_DAYS, value: "90" }
+      - { key: DATABASE_URL, sync: false }
+      - { key: REDIS_URL, sync: false }
+      - { key: INTERNAL_API_KEY, sync: false }

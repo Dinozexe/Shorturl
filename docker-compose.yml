@@ -24,6 +24,22 @@ services:
       - "6380:6379" # host 6380 กันชนกับ redis ที่ลงในเครื่อง (6379)
 
   # service ของแอป (ไม่รันตอน `docker compose up -d` ปกติ; ใช้: docker compose --profile full up --build)
+  core-api:
+    profiles: ["full"]
+    build: ./services/core-api
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://shorturl:shorturl@postgres:5432/shorturl
+      REDIS_URL: redis://redis:6379
+      ANALYTICS_URL: http://analytics-service:4002
+      NODE_ENV: development # compose ใช้ HTTP ในเครื่อง; production จริงตั้งใน render.yaml
+      PORT: "4000"
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   redirect-service:
     profiles: ["full"]
     build: ./services/redirect-service
