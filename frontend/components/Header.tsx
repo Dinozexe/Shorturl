@@ -52,11 +52,11 @@ export function Header() {
             {items.map((item) => {
               const active = isActive(item.href);
               return (
-                <li key={item.href} className="min-w-0 flex-1 md:flex-none">
+                <li key={item.href} className="flex-auto md:flex-none">
                   <Link
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
-                    className={`block whitespace-nowrap rounded-full px-1 py-2 text-center text-[13px] font-medium transition-colors sm:px-5 sm:py-1.5 sm:text-sm ${active ? 'bg-accent text-on-accent' : 'text-ink/80 hover:bg-ink/[0.06] hover:text-ink'}`}
+                    className={`block whitespace-nowrap rounded-full px-2 py-2 text-center text-[13px] font-medium transition-colors sm:px-5 sm:py-1.5 sm:text-sm ${active ? 'bg-accent text-on-accent' : 'text-ink/80 hover:bg-ink/[0.06] hover:text-ink'}`}
                   >
                     {t(item.key)}
                   </Link>
