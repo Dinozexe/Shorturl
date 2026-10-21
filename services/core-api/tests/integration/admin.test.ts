@@ -54,8 +54,19 @@ describe('ภาพรวม', () => {
     await link(user.user.id, 'ov-a', 'example.com', { clickCount: 4 });
     await link(null, 'ov-b', 'example.com', { clickCount: 6, status: 'ADMIN_DISABLED' });
     await prisma.blockedDomain.create({ data: { domain: 'bad.test' } });
+    const la = await prisma.link.findUniqueOrThrow({ where: { shortCode: 'ov-a' } });
+    await prisma.linkDailyStat.create({ data: { linkId: la.id, day: new Date(new Date().toISOString().slice(0, 10)), clicks: 7 } });
     const r = await api.get('/api/admin/overview', admin.token);
-    assert.deepEqual(r.body, { users: 3, bannedUsers: 1, links: 2, adminDisabledLinks: 1, blockedDomains: 1, clicks: 10 });
+    const { users, bannedUsers, links: nLinks, adminDisabledLinks, blockedDomains, clicks, newUsers7d, newLinks7d, linksByStatus, daily, topLinks } = r.body;
+    assert.deepEqual({ users, bannedUsers, links: nLinks, adminDisabledLinks, blockedDomains, clicks }, { users: 3, bannedUsers: 1, links: 2, adminDisabledLinks: 1, blockedDomains: 1, clicks: 10 });
+    assert.equal(newUsers7d, 3);
+    assert.equal(newLinks7d, 2);
+    assert.deepEqual(linksByStatus, { active: 1, disabled: 0, adminDisabled: 1 });
+    assert.equal(daily.length, 14);
+    assert.equal(daily[13].clicks, 7); // วันนี้ (UTC) อยู่ท้ายสุด
+    assert.equal(daily.slice(0, 13).reduce((n: number, d: { clicks: number }) => n + d.clicks, 0), 0);
+    assert.deepEqual(topLinks.map((l: { clickCount: number }) => l.clickCount), [4]); // เฉพาะลิงก์ที่ ACTIVE และมีคลิก
+    assert.match(topLinks[0].shortUrl, /ov-a$/);
   });
 });
 

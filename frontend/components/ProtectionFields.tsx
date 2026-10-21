@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { isoToLocalInput, localInputToIso } from '@/lib/format';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { useI18n } from '@/lib/i18n';
 import type { Link } from '@/lib/types';
 import { AdminIcon } from './Icon';
@@ -64,7 +65,7 @@ export function ProtectionFields({ value, onChange, hasPassword = false }: { val
           <AdminIcon name="clock" className="h-4 w-4 text-muted" />
           {t('prot.start')}
         </span>
-        <input className="field" type="datetime-local" value={value.startsAt} onChange={(e) => set({ startsAt: e.target.value })} />
+        <DateTimePicker label={t('prot.start')} value={value.startsAt} onChange={(v) => set({ startsAt: v })} defaultTime="00:00" />
         <span className="text-xs font-normal text-muted">{t('prot.startHelp')}</span>
       </label>
 

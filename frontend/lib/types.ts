@@ -75,6 +75,11 @@ export interface AdminOverview {
   adminDisabledLinks: number;
   blockedDomains: number;
   clicks: number;
+  newUsers7d: number;
+  newLinks7d: number;
+  linksByStatus: { active: number; disabled: number; adminDisabled: number };
+  daily: Array<{ day: string; clicks: number }>;
+  topLinks: Array<{ id: number; shortUrl: string; originalUrl: string; clickCount: number }>;
 }
 
 export interface AdminUser {

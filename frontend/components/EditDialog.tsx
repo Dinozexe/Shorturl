@@ -4,6 +4,7 @@ import { AdminIcon } from './Icon';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '@/lib/api';
 import { isoToLocalInput, localInputToIso } from '@/lib/format';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { useI18n } from '@/lib/i18n';
 import type { Link } from '@/lib/types';
 import { Modal } from './Modal';
@@ -63,7 +64,7 @@ export function EditDialog({ link, onClose, onSaved }: { link: Link | null; onCl
           </label>
           <label className="flex flex-col gap-1.5 text-sm font-medium">
             {t('edit.expires')}
-            <input className="field" type="datetime-local" value={expires} onChange={(e) => setExpires(e.target.value)} />
+            <DateTimePicker label={t('edit.expires')} value={expires} onChange={setExpires} defaultTime="23:59" />
             <span className="text-xs font-normal text-muted">{t('edit.expiresHelp')}</span>
           </label>
           <div className="border-t border-line pt-4">

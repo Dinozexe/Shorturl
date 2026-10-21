@@ -33,7 +33,7 @@
 
 | Method | Path | สิทธิ์ | อธิบาย |
 |---|---|---|---|
-| GET | `/api/admin/overview` | MOD, ADMIN | `{users, bannedUsers, links, adminDisabledLinks, blockedDomains, clicks}` |
+| GET | `/api/admin/overview` | MOD, ADMIN | `{users, bannedUsers, links, adminDisabledLinks, blockedDomains, clicks, newUsers7d, newLinks7d, linksByStatus: {active, disabled, adminDisabled}, daily: [{day, clicks}] (14 วัน UTC), topLinks: [{id, shortUrl, originalUrl, clickCount}] (5 อันดับ ACTIVE)}` |
 | GET | `/api/admin/users?q=&page=&pageSize=` | ADMIN | ผู้ใช้ + `linkCount`; `q` ค้นอีเมล/ชื่อ |
 | PATCH | `/api/admin/users/:id` | ADMIN | `{isBanned?, role?}`; แก้ตัวเองไม่ได้ (400); ระงับ/เปลี่ยนบทบาท = เพิกถอนทุก session ของผู้นั้นทันที |
 | GET | `/api/admin/links?q=&status=&page=` | MOD, ADMIN | ลิงก์ทุกคน + `ownerEmail` (null = ผู้เยี่ยมชม); `q` ค้นรหัส/ปลายทาง/อีเมลเจ้าของ |

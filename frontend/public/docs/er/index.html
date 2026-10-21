@@ -59,7 +59,6 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <a class="back" href="/">เปิดเว็บ</a></div></header>
 <main id="main"><h1>ER Diagram</h1>
 <p class="lead">ตรงกับ <code>services/core-api/prisma/schema.prisma</code> · 7 ตาราง · ไม่เก็บรหัสผ่านผู้ใช้ (ใช้ SSO) · ไม่เก็บ IP ดิบ (เก็บ hash)</p>
-<div class="layout"><ul class="toc" aria-label="ในหน้านี้"><li><a href="#erd">แผนภาพ</a></li><li><a href="#notes">เหตุผลการออกแบบ</a></li></ul><div class="content">
 <section class="d" id="erd"><h2>ความสัมพันธ์ระหว่างตาราง</h2><p class="lead">PK = primary key · FK = foreign key · UK = unique · ? = ว่างได้</p>
 <figure><div class="sv" role="img" aria-label="ER Diagram" tabindex="0"><svg viewBox="0 0 1290 1060" width="1290" height="1060" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
 <defs>
@@ -189,7 +188,7 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <rect x="11" y="506" width="338" height="24" fill="#f8fafc"/>
 <text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="521.5"></tspan></text>
 <text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="522.5">target_type</tspan></text>
-<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="521.9">USER|LINK|DOMAIN|API_KEY</tspan></text>
+<text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="521.9">USER|LINK|DOMAIN</tspan></text>
 <text x="22" text-anchor="start" font-size="10" font-weight="700" fill="#475569"><tspan x="22" y="545.5"></tspan></text>
 <text x="62" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a" font-family="ui-monospace,Menlo,Consolas,monospace"><tspan x="62" y="546.5">target_id</tspan></text>
 <text x="340" text-anchor="end" font-size="11" font-weight="400" fill="#475569"><tspan x="340" y="545.9">text</tspan></text>
@@ -311,9 +310,6 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="652" y="744.2">1</tspan></text></g>
 <g stroke="#fff" stroke-width="4" paint-order="stroke"><text x="652" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8"><tspan x="652" y="846.2">N</tspan></text></g>
 </svg></div>
-<figcaption><span>เลื่อนซ้าย-ขวาถ้าภาพกว้างกว่าจอ</span><span><a href="er-diagram.svg" target="_blank" rel="noopener">เปิดภาพเต็ม</a> · <a href="er-diagram.svg" download>ดาวน์โหลด SVG</a></span></figcaption></figure></section>
-<section class="d" id="notes"><h2>เหตุผลการออกแบบ</h2>
-<div class="tw"><table><thead><tr><th scope="col">ประเด็น</th><th scope="col">การตัดสินใจ</th></tr></thead><tbody><tr><td><code>sso_identities</code> แยกจาก <code>users</code></td><td>1 คนผูกได้หลาย provider ระบุตัวตนด้วย <code>sub</code> ไม่ใช่อีเมล</td></tr><tr><td><code>links.user_id</code> เป็น NULL ได้</td><td>ลิงก์ guest ไม่มีเจ้าของ (หมดอายุ 7 วัน) และเมื่อลบผู้ใช้ ลิงก์/QR ที่แจกไปแล้วยังใช้ได้</td></tr><tr><td><code>password_hash</code></td><td>scrypt + salt ต่อลิงก์ ไม่ส่งออกทาง API</td></tr><tr><td><code>max_clicks</code></td><td>ตัวนับจริงอยู่ใน Redis (<code>lim:{id}</code>) เพื่อนับแบบ atomic</td></tr><tr><td><code>click_count</code></td><td>เก็บซ้ำใน links เพื่ออ่านเร็ว อัปเดตเป็น batch จากคิว</td></tr><tr><td><code>clicks</code> + <code>link_daily_stats</code></td><td>คลิกดิบเก็บ 90 วัน ยอดรายวันเก็บถาวรเพื่อกราฟย้อนหลัง</td></tr><tr><td><code>qr_style</code></td><td>JSONB บันทึกสไตล์ QR (ไม่เก็บรูปที่อัปโหลด)</td></tr><tr><td><code>ip_hash</code></td><td>sha256(ip + salt) เพื่อ PDPA</td></tr></tbody></table></div>
-<p>รายละเอียดเต็ม (CHECK constraint, index, key ใน Redis) อยู่ที่ <a href="https://github.com/Dinozexe/Shorturl/blob/main/docs/er-diagram.md">docs/er-diagram.md</a></p></section></div></div><div class="pn"><a href="/docs/dfd/" rel="prev">← Data Flow Diagram</a><a href="/docs/architecture/" rel="next">Architecture →</a></div></main>
+<figcaption><span>เลื่อนซ้าย-ขวาถ้าภาพกว้างกว่าจอ</span><span><a href="er-diagram.svg" target="_blank" rel="noopener">เปิดภาพเต็ม</a> · <a href="er-diagram.svg" download>ดาวน์โหลด SVG</a></span></figcaption></figure></section><div class="pn"><a href="/docs/dfd/" rel="prev">← Data Flow Diagram</a><a href="/docs/architecture/" rel="next">Architecture →</a></div></main>
 <footer>วาดจากโค้ดจริงของระบบ · <a href="https://github.com/Dinozexe/Shorturl">ซอร์สโค้ดบน GitHub</a></footer>
 <script>(function(){var l=[].slice.call(document.querySelectorAll('.toc a'));if(!l.length||!('IntersectionObserver' in window))return;var m={};l.forEach(function(a){m[a.getAttribute('href').slice(1)]=a});var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){l.forEach(function(a){a.classList.remove('on')});m[e.target.id].classList.add('on')}})},{rootMargin:'-20% 0px -70% 0px'});Object.keys(m).forEach(function(id){var n=document.getElementById(id);if(n)o.observe(n)});l[0].classList.add('on')})();</script></body></html>

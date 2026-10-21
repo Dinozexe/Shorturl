@@ -37,16 +37,46 @@ function parseLinkId(raw: unknown): number {
 }
 
 // ---- ภาพรวม ----
+const OVERVIEW_DAYS = 14;
+const dayKey = (d: Date) => d.toISOString().slice(0, 10);
+
 adminRouter.get('/overview', async (_req, res) => {
-  const [users, banned, links, adminDisabled, blockedDomains, clicks] = await prisma.$transaction([
+  const now = Date.now();
+  const week = new Date(now - 7 * 24 * 3600 * 1000);
+  const start = new Date(Date.UTC(new Date(now).getUTCFullYear(), new Date(now).getUTCMonth(), new Date(now).getUTCDate() - (OVERVIEW_DAYS - 1)));
+  const [users, banned, links, adminDisabled, blockedDomains, clicks, newUsers, newLinks, active, disabled, daily, top] = await prisma.$transaction([
     prisma.user.count(),
     prisma.user.count({ where: { isBanned: true } }),
     prisma.link.count(),
     prisma.link.count({ where: { status: 'ADMIN_DISABLED' } }),
     prisma.blockedDomain.count(),
     prisma.link.aggregate({ _sum: { clickCount: true } }),
+    prisma.user.count({ where: { createdAt: { gte: week } } }),
+    prisma.link.count({ where: { createdAt: { gte: week } } }),
+    prisma.link.count({ where: { status: 'ACTIVE' } }),
+    prisma.link.count({ where: { status: 'DISABLED' } }),
+    prisma.linkDailyStat.groupBy({ by: ['day'], where: { day: { gte: start } }, _sum: { clicks: true }, orderBy: { day: 'asc' } }),
+    prisma.link.findMany({ where: { clickCount: { gt: 0 }, status: 'ACTIVE' }, orderBy: [{ clickCount: 'desc' }, { id: 'asc' }], take: 5 }),
   ]);
-  res.json({ users, bannedUsers: banned, links, adminDisabledLinks: adminDisabled, blockedDomains, clicks: clicks._sum.clickCount ?? 0 });
+  // เติมวันที่ไม่มีคลิกเป็น 0 ให้ครบ 14 วัน (UTC)
+  const byDay = new Map(daily.map((r) => [dayKey(r.day), r._sum?.clicks ?? 0]));
+  const series = Array.from({ length: OVERVIEW_DAYS }, (_, i) => {
+    const day = dayKey(new Date(start.getTime() + i * 24 * 3600 * 1000));
+    return { day, clicks: byDay.get(day) ?? 0 };
+  });
+  res.json({
+    users,
+    bannedUsers: banned,
+    links,
+    adminDisabledLinks: adminDisabled,
+    blockedDomains,
+    clicks: clicks._sum.clickCount ?? 0,
+    newUsers7d: newUsers,
+    newLinks7d: newLinks,
+    linksByStatus: { active, disabled, adminDisabled },
+    daily: series,
+    topLinks: top.map((l) => ({ id: l.id, shortUrl: toLinkDto(l).shortUrl, originalUrl: l.originalUrl, clickCount: l.clickCount })),
+  });
 });
 
 // ---- ผู้ใช้ ----
