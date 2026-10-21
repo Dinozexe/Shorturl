@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useI18n, type MsgKey } from '@/lib/i18n';
 import { ProfileMenu } from './ProfileMenu';
+import { AdminIcon } from '@/components/Icon';
 import { HeaderControls } from './HeaderControls';
 import { Logo } from './Logo';
 import { useLoginModal } from './LoginModal';
@@ -38,14 +38,6 @@ export function Header() {
   // ล็อกอินแล้วมี "ลิงก์ของฉัน" ในแท่งเมนูเลย (กดเข้ารายการลิงก์ได้ทันที)
   const items: NavItem[] = status === 'authed' ? [...NAV, { href: '/dashboard', key: 'dash.myLinks' }] : [...NAV];
 
-  // จอเล็ก: เมนูยาวเกินจอจนเลื่อนได้ → เลื่อนให้รายการที่เปิดอยู่โผล่มากลางแถบ
-  const navRef = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const nav = navRef.current;
-    const cur = nav?.querySelector<HTMLElement>('[aria-current=page]');
-    if (nav && cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
-  }, [pathname, status, user]);
-
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
@@ -55,16 +47,16 @@ export function Header() {
           <Logo />
         </div>
 
-        <nav ref={navRef} aria-label={t('nav.menu')} className="col-span-2 row-start-2 min-w-0 overflow-x-auto md:col-span-1 md:col-start-2 md:row-start-1 md:justify-self-center md:overflow-visible">
-          <ul className="mx-auto flex w-max items-center gap-1 rounded-full border border-line bg-surface p-1 shadow-sm">
+        <nav aria-label={t('nav.menu')} className="col-span-2 row-start-2 min-w-0 md:col-span-1 md:col-start-2 md:row-start-1 md:justify-self-center">
+          <ul className="flex w-full items-center gap-0.5 rounded-full border border-line bg-surface p-1 shadow-sm md:mx-auto md:w-max md:gap-1">
             {items.map((item) => {
               const active = isActive(item.href);
               return (
-                <li key={item.href}>
+                <li key={item.href} className="min-w-0 flex-1 md:flex-none">
                   <Link
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
-                    className={`block whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors sm:px-5 ${active ? 'bg-accent text-on-accent' : 'text-ink/80 hover:bg-ink/[0.06] hover:text-ink'}`}
+                    className={`block whitespace-nowrap rounded-full px-1 py-2 text-center text-[13px] font-medium transition-colors sm:px-5 sm:py-1.5 sm:text-sm ${active ? 'bg-accent text-on-accent' : 'text-ink/80 hover:bg-ink/[0.06] hover:text-ink'}`}
                   >
                     {t(item.key)}
                   </Link>
@@ -78,8 +70,9 @@ export function Header() {
           <HeaderControls />
           {status === 'authed' && user && <ProfileMenu onLogout={onLogout} />}
           {(status === 'anon' || status === 'offline') && (
-            <button type="button" onClick={openLogin} className="btn-primary whitespace-nowrap px-4 py-2 text-sm">
-              {t('nav.login')}
+            <button type="button" onClick={openLogin} aria-label={t('nav.login')} title={t('nav.login')} className="btn-primary whitespace-nowrap px-2.5 py-2 text-sm min-[400px]:px-4">
+              <AdminIcon name="user" className="h-5 w-5 min-[400px]:hidden" />
+              <span className="hidden min-[400px]:inline">{t('nav.login')}</span>
             </button>
           )}
         </div>

@@ -9,7 +9,7 @@ import { ActionIcon } from './ui/ActionIcon';
 import { Chip } from './ui/Chip';
 import { useToast } from './Toast';
 
-export type RowAction = 'qr' | 'stats' | 'edit' | 'toggle' | 'delete';
+export type RowAction = 'view' | 'qr' | 'stats' | 'edit' | 'toggle' | 'delete';
 
 function Status({ link }: { link: Link }) {
   const { t } = useI18n();
@@ -46,14 +46,20 @@ export function LinkRow({ link, onAction, busy }: { link: Link; onAction: (a: Ro
   const dim = link.status !== 'ACTIVE' || link.expired || link.limitReached;
 
   return (
-    <li className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 rounded-2xl sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:gap-x-5 px-3 py-3.5 transition-colors hover:bg-ink/[0.035] sm:px-4">
-      <span aria-hidden="true" className={`flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold ${dim ? 'bg-ink/[0.06] text-muted' : 'bg-accent/15 text-accent'}`}>
+    <li className="group grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 rounded-2xl sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:gap-x-5 px-3 py-3.5 transition-colors hover:bg-ink/[0.035] sm:px-4"
+      onClick={(e) => {
+        // กดตรงไหนของแถวก็เปิดรายละเอียด ยกเว้นลิงก์/ปุ่ม/ข้อความที่กำลังเลือกอยู่
+        if ((e.target as HTMLElement).closest('a, button') || window.getSelection()?.toString()) return;
+        onAction('view', link);
+      }}
+    >
+      <span aria-hidden="true" className={`hidden h-12 w-12 items-center sm:flex justify-center rounded-2xl text-lg font-bold ${dim ? 'bg-ink/[0.06] text-muted' : 'bg-accent/15 text-accent'}`}>
         {initial}
       </span>
 
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-          <a href={link.shortUrl} target="_blank" rel="noopener noreferrer" className="break-all font-mono text-base font-semibold underline-offset-4 hover:underline sm:text-lg">
+          <a href={link.shortUrl} target="_blank" rel="noopener noreferrer" className="break-all font-mono text-[15px] font-semibold underline-offset-4 hover:underline sm:text-lg">
             {shown}
           </a>
           <Status link={link} />
@@ -80,7 +86,8 @@ export function LinkRow({ link, onAction, busy }: { link: Link; onAction: (a: Ro
         <span className="mt-1 block text-xs text-muted">{t('row.opens')}</span>
       </p>
 
-      <div className="col-span-3 flex items-center gap-0.5 border-t border-line/60 pt-2.5 sm:col-span-1 sm:border-0 sm:pt-0">
+      <div className="col-span-2 flex items-center gap-0.5 border-t border-line/60 pt-2.5 sm:col-span-1 sm:border-0 sm:pt-0">
+        <ActionIcon icon="eye" label={t('row.aria.view', { code })} onClick={act('view')} />
         <ActionIcon icon={copied ? 'check' : 'copy'} tone={copied ? 'ok' : 'default'} label={t('row.aria.copy', { code })} onClick={copy} />
         <ActionIcon icon="qr" label={t('row.aria.qr', { code })} onClick={act('qr')} />
         <ActionIcon icon="clicks" label={t('row.aria.stats', { code })} onClick={act('stats')} />

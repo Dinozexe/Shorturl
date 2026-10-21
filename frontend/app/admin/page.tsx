@@ -59,7 +59,7 @@ export default function AdminPage() {
 
   return (
     <AdminShell tab={active} onNav={navigate} role={user.role}>
-      <h1 className="mb-6 text-2xl font-bold tracking-tight sm:text-3xl">{t(tabMeta(active).label)}</h1>
+      <h1 className="sr-only">{t(tabMeta(active).label)}</h1>
       {active === 'overview' && <OverviewPanel onTab={navigate} />}
       {active === 'users' && <UsersPanel />}
       {active === 'links' && <LinksPanel />}

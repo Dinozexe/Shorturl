@@ -46,9 +46,9 @@ export function ListCard({
           {total !== null && <span className="ml-2 text-sm font-normal text-muted">{t('admin.total', { n: fmt.number(total) })}</span>}
         </h2>
         {(filters || controls) && (
-          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:flex-1 lg:justify-end">
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center lg:w-auto lg:flex-1 lg:justify-end [&>button]:w-full sm:[&>button]:w-auto">
             {filters}
-            {controls}
+            {controls && <div className="col-span-2 sm:col-auto">{controls}</div>}
           </div>
         )}
       </div>

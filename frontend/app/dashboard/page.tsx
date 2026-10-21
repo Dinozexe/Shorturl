@@ -13,6 +13,7 @@ import { CreateForm } from '@/components/CreateForm';
 import { EditDialog } from '@/components/EditDialog';
 import { Header } from '@/components/Header';
 import { AdminIcon, type AdminIconName } from '@/components/Icon';
+import { LinkDetailDialog } from '@/components/LinkDetailDialog';
 import { LinkRow, type RowAction } from '@/components/LinkRow';
 import { QrDialog } from '@/components/QrDialog';
 import { ResultStrip } from '@/components/ResultStrip';
@@ -51,6 +52,7 @@ export default function DashboardPage() {
   const [created, setCreated] = useState<Link | null>(null);
   const [prefill, setPrefill] = useState<{ url: string; error: string } | null>(null);
   const pendingChecked = useRef(false);
+  const [detailLink, setDetailLink] = useState<Link | null>(null);
   const [qrLink, setQrLink] = useState<Link | null>(null);
   const [statsLink, setStatsLink] = useState<Link | null>(null);
   const [editLink, setEditLink] = useState<Link | null>(null);
@@ -113,6 +115,7 @@ export default function DashboardPage() {
   }, [status, refresh, t]);
 
   const onAction = async (action: RowAction, link: Link) => {
+    if (action === 'view') return setDetailLink(link);
     if (action === 'qr') return setQrLink(link);
     if (action === 'stats') return setStatsLink(link);
     if (action === 'edit') return setEditLink(link);
@@ -256,6 +259,7 @@ export default function DashboardPage() {
         </section>
       </main>
 
+      <LinkDetailDialog link={detailLink} onClose={() => setDetailLink(null)} onAction={onAction} />
       <QrDialog link={qrLink} onClose={() => setQrLink(null)} onSaved={refresh} />
       <StatsDialog link={statsLink} onClose={() => setStatsLink(null)} />
       <EditDialog

@@ -88,3 +88,24 @@ export function HeroDecor() {
     </div>
   );
 }
+
+// จอเล็ก (< lg): การ์ดสาธิตใบเดียวใต้ช่องวางลิงก์ — ลิงก์ยาวหดเป็นลิงก์สั้น + QR ที่มีเส้นสแกนวิ่ง (ใช้ภาพเคลื่อนไหวชุดเดียวกับการ์ดจอใหญ่)
+export function HeroDemo() {
+  const { t } = useI18n();
+  return (
+    <div aria-hidden="true" className="demo-in mx-auto mt-9 flex w-full max-w-sm items-center gap-5 rounded-2xl border border-line bg-surface p-4 text-left shadow-[0_10px_30px_rgba(0,0,0,0.08)] lg:hidden" style={vars({ '--d': '0.9s' })}>
+      <div className="min-w-0 flex-1">
+        <p className={`relative h-5 ${title}`}>
+          <span className="decor-label-long absolute left-0 top-0">{t('decor.long')}</span>
+          <span className="decor-label-short absolute left-0 top-0 text-ink">{t('decor.short')}</span>
+        </p>
+        <div className="decor-line h-2 w-full rounded bg-line" style={vars({ '--to': '0.3', '--ld': '0s' })} />
+        <div className="decor-line mt-2.5 h-2 w-4/5 rounded bg-line" style={vars({ '--to': '0.2', '--ld': '0.08s' })} />
+        <div className="decor-line mt-2.5 h-2 w-3/5 rounded bg-line" style={vars({ '--to': '0.15', '--ld': '0.16s' })} />
+      </div>
+      <div className="shrink-0 scale-[0.8]">
+        <MiniQr />
+      </div>
+    </div>
+  );
+}

@@ -5,65 +5,34 @@ import { AdminIcon, type AdminIconName } from '@/components/Icon';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useI18n, type MsgKey } from '@/lib/i18n';
-import type { AdminLink, AdminOverview, AuditEntry, Paged } from '@/lib/types';
+import type { AdminOverview } from '@/lib/types';
 import type { AdminTab } from './AdminShell';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { Chip } from '@/components/ui/Chip';
-import { DataTable } from '@/components/ui/DataTable';
 import { DailyChart } from '@/components/charts';
 import { StatusDonut } from '@/components/ui/StatusDonut';
 
-const STATUS_KEY = { ACTIVE: 'status.active', DISABLED: 'status.disabled', ADMIN_DISABLED: 'status.adminDisabled' } as const;
-
-function Block({ title, onAll, children }: { title: string; onAll: () => void; children: React.ReactNode }) {
-  const { t } = useI18n();
-  return (
-    <section className="bento overflow-hidden" aria-label={title}>
-      <div className="flex items-center justify-between gap-3 px-5 py-4">
-        <h2 className="text-lg font-bold">{title}</h2>
-        <button type="button" onClick={onAll} className="text-sm font-semibold text-accent hover:underline">
-          {t('admin.seeAll')}
-        </button>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-// ภาพรวม: ทักทาย · ตัวเลขสรุป · กราฟเปิดลิงก์ 14 วัน · สถานะลิงก์ · ลิงก์ยอดนิยม · รายการต้องดูแล · ลิงก์ล่าสุด · (ADMIN) กิจกรรมล่าสุด
+// ภาพรวม: ตัวเลขสรุป · กราฟเปิดลิงก์ 14 วัน · สถานะลิงก์ · ลิงก์ยอดนิยม · รายการต้องดูแล
 export function OverviewPanel({ onTab }: { onTab: (t: AdminTab) => void }) {
-  const { t, fmt, lang } = useI18n();
+  const { t, fmt } = useI18n();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const [data, setData] = useState<AdminOverview | null>(null);
-  const [links, setLinks] = useState<AdminLink[] | null>(null);
-  const [audit, setAudit] = useState<AuditEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const when = new Intl.DateTimeFormat(lang === 'th' ? 'th-TH' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' });
 
   const load = useCallback(() => {
     setError(null);
     api<AdminOverview>('/api/admin/overview')
       .then(setData)
       .catch((e) => setError(e instanceof Error ? e.message : t('admin.loadFail')));
-    api<Paged<AdminLink>>('/api/admin/links?pageSize=6')
-      .then((d) => setLinks(d.items))
-      .catch(() => setLinks([]));
-    if (isAdmin) {
-      api<Paged<AuditEntry>>('/api/admin/audit?pageSize=6')
-        .then((d) => setAudit(d.items))
-        .catch(() => setAudit([]));
-    }
-  }, [t, isAdmin]);
+  }, [t]);
 
   useEffect(load, [load]);
 
   if (error) return <ErrorState message={error} onRetry={load} className="bento" />;
   if (!data) return <LoadingState text={t('admin.loading')} />;
 
-  const name = user?.name || user?.email.split('@')[0] || '';
   const st = data.linksByStatus;
   const topMax = Math.max(1, ...data.topLinks.map((l) => l.clickCount));
   const kpis: Array<{ label: string; value: number; icon: AdminIconName; sub?: string }> = [
@@ -80,17 +49,6 @@ export function OverviewPanel({ onTab }: { onTab: (t: AdminTab) => void }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="-mt-3 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-lg font-bold">{t('admin.ov.hello', { name })}</p>
-          <p className="text-sm text-muted">{t('admin.ov.sub')}</p>
-        </div>
-        <p className="flex items-center gap-2 rounded-xl bg-surface px-3.5 py-2 text-sm font-medium ring-1 ring-line">
-          <AdminIcon name="calendar" className="h-4 w-4 text-muted" />
-          {new Intl.DateTimeFormat(lang === 'th' ? 'th-TH' : 'en-GB', { dateStyle: 'long' }).format(new Date())}
-        </p>
-      </div>
-
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((k) => (
           <li key={k.label} className="bento flex items-center gap-4 p-5">
@@ -171,47 +129,6 @@ export function OverviewPanel({ onTab }: { onTab: (t: AdminTab) => void }) {
             </ul>
           )}
         </section>
-      </div>
-
-      <div className={`grid gap-6 ${isAdmin ? '2xl:grid-cols-2' : ''}`}>
-        <Block title={t('admin.recent.links')} onAll={() => onTab('links')}>
-          {links && links.length === 0 ? (
-            <EmptyState compact icon="inbox" title={t('admin.recent.empty')} />
-          ) : (
-            links && (
-              <DataTable
-                rows={links}
-                rowKey={(l) => l.id}
-                columns={[
-                  { id: 'short', header: t('admin.col.shortUrl'), cell: (l) => <span className="whitespace-nowrap font-mono text-[13px] font-semibold text-accent">{l.shortUrl.replace(/^https?:\/\//, '')}</span> },
-                  { id: 'owner', header: t('admin.col.owner'), className: 'max-w-[10rem]', cell: (l) => <span className="block truncate text-muted">{l.ownerEmail ?? t('admin.l.guest')}</span> },
-                  { id: 'status', header: t('admin.col.status'), cell: (l) => <Chip tone={l.status === 'ACTIVE' ? 'ok' : l.status === 'ADMIN_DISABLED' ? 'danger' : 'muted'}>{t(STATUS_KEY[l.status])}</Chip> },
-                  { id: 'opens', header: t('admin.col.opens'), className: 'tabular-nums', cell: (l) => fmt.number(l.clickCount) },
-                ]}
-              />
-            )
-          )}
-        </Block>
-
-        {isAdmin && (
-          <Block title={t('admin.recent.audit')} onAll={() => onTab('audit')}>
-            {audit && audit.length === 0 ? (
-              <EmptyState compact icon="inbox" title={t('admin.recent.empty')} />
-            ) : (
-              audit && (
-                <DataTable
-                  rows={audit}
-                  rowKey={(a) => a.id}
-                  columns={[
-                    { id: 'when', header: t('admin.col.when'), className: 'whitespace-nowrap text-muted', cell: (a) => <time dateTime={a.createdAt}>{when.format(new Date(a.createdAt))}</time> },
-                    { id: 'action', header: t('admin.col.action'), cell: (a) => <span className="whitespace-nowrap font-medium">{t(`audit.${a.action}` as 'audit.USER_BAN')}</span> },
-                    { id: 'actor', header: t('admin.col.actor'), className: 'max-w-[10rem]', cell: (a) => <span className="block truncate text-muted">{a.actorEmail || t('admin.a.system')}</span> },
-                  ]}
-                />
-              )
-            )}
-          </Block>
-        )}
       </div>
     </div>
   );

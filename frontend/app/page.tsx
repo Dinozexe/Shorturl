@@ -1,7 +1,8 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { Header } from '@/components/Header';
-import { HeroDecor } from '@/components/HeroDecor';
+import { HeroDecor, HeroDemo } from '@/components/HeroDecor';
 import { HeroShortener } from '@/components/HeroShortener';
 import { useI18n } from '@/lib/i18n';
 
@@ -32,17 +33,17 @@ export default function HomePage() {
 
           <div className="relative z-10 px-5 py-14 text-center sm:py-20 lg:pb-52 lg:pt-32">
             <h1 className="text-[1.875rem] font-bold leading-[1.22] tracking-tight sm:text-[2.75rem] sm:leading-[1.15]">
-              <span className="block">{t('home.h1a')}</span>
-              <span className="block">{t('home.h1b')}</span>
+              <span className="rise block">{t('home.h1a')}</span>
+              <span className="rise block" style={{ '--d': '0.12s' } as CSSProperties}>{t('home.h1b')}</span>
             </h1>
 
-            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-muted">{t('home.sub')}</p>
+            <p className="rise mx-auto mt-5 max-w-md text-base leading-relaxed text-muted" style={{ '--d': '0.26s' } as CSSProperties}>{t('home.sub')}</p>
 
-            <div className="mt-7">
+            <div className="rise mt-7" style={{ '--d': '0.4s' } as CSSProperties}>
               <HeroShortener />
             </div>
 
-            <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] font-medium">
+            <ul className="rise mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] font-medium" style={{ '--d': '0.55s' } as CSSProperties}>
               {PERKS.map((k) => (
                 <li key={k} className="flex items-center gap-2">
                   <Check />
@@ -50,6 +51,8 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
+
+            <HeroDemo />
           </div>
         </section>
       </main>
