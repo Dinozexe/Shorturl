@@ -131,7 +131,7 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
             {pending && (
               <p className="mt-5 rounded-xl bg-accent/10 px-4 py-3 text-left text-sm">
                 <span className="text-muted">{t('login.pending')}</span>
-                <span className="mt-0.5 block truncate font-mono font-medium" title={pending}>
+                <span className="mt-0.5 block max-h-24 overflow-y-auto break-all font-mono text-[13px] font-medium leading-snug" title={pending}>
                   {pending}
                 </span>
               </p>
