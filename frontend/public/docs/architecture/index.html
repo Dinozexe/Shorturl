@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Architecture · Short URL By Kittamet</title>
+<style>
+:root{--ink:#0f172a;--muted:#475569;--line:#e2e8f0;--blue:#1d4ed8;--soft:#eff6ff}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:15px/1.65 'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif}
+header{border-bottom:1px solid var(--line);background:#fff}
+.bar{max-width:1280px;margin:0 auto;padding:10px 20px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.bar b{margin-right:14px;font-size:15px}.bar a{color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:999px;font-size:14px;font-weight:500}
+.bar a:hover{background:var(--soft);color:var(--blue)}.bar a.on{background:var(--blue);color:#fff}
+main{max-width:1280px;margin:0 auto;padding:28px 20px 80px}
+h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em}h2{font-size:20px;margin:40px 0 4px}p.lead{color:var(--muted);margin:0 0 18px;max-width:80ch}
+.sv{overflow:auto;border:1px solid var(--line);border-radius:14px;padding:6px;background:#fff;margin:12px 0}
+.sv svg{display:block;height:auto;min-width:900px;width:100%}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0}th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}code{font:13px ui-monospace,Menlo,Consolas,monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:20px}
+.card{display:block;border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:inherit}.card:hover{border-color:var(--blue);box-shadow:0 4px 18px #1d4ed81a}
+.card b{display:block;font-size:17px;color:var(--blue)}.card span{color:var(--muted);font-size:14px}
+ul{padding-left:20px}li{margin:3px 0}
+</style></head><body>
+<header><nav class="bar"><b>Short URL By Kittamet</b><a href="/docs/">ภาพรวม</a><a href="/docs/dfd/">DFD</a><a href="/docs/er/">ER Diagram</a><a href="/docs/architecture/" class="on">Architecture</a><a href="/">กลับหน้าเว็บ</a></nav></header>
+<main><h1>Architecture</h1><p class="lead">Micro-service 3 ตัว แยกหน้าที่ชัดเจน สื่อสารกันผ่าน HTTP ภายใน และ Redis</p><div class="sv"><svg viewBox="0 0 1360 740" width="1360" height="740" role="img" aria-label="System architecture" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#334155"/></marker>
+<marker id="ahs" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M10 0L0 5L10 10z" fill="#334155"/></marker>
+</defs>
+<rect width="1360" height="740" fill="#fff"/>
+<rect x="20" y="250" width="230" height="90" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="135" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="135" y="281.3">เบราว์เซอร์</tspan></text>
+<text x="135" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="135" y="308.2">ผู้ใช้ · ผู้เข้าชมลิงก์</tspan></text>
+<rect x="20" y="420" width="230" height="90" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="135" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="135" y="451.3">CLI  surl</tspan></text>
+<text x="135" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="135" y="478.2">API key  surl_…</tspan></text>
+<rect x="330" y="20" width="300" height="120" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="480" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="480" y="51.3">Frontend (Next.js static)</tspan></text>
+<text x="480" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="480" y="78.2">Cloudflare Workers assets</tspan><tspan x="480" y="94.2">shorturl.kittametdev.com</tspan><tspan x="480" y="110.2">หน้าเว็บ · /docs</tspan></text>
+<rect x="1030" y="20" width="300" height="100" rx="12" fill="#ecfdf5" stroke="#047857" stroke-width="2"/>
+<text x="1180" text-anchor="middle" font-size="15" font-weight="700" fill="#047857"><tspan x="1180" y="51.3">Google</tspan></text>
+<text x="1180" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="1180" y="78.2">OpenID Connect + PKCE</tspan></text>
+<rect x="330" y="270" width="300" height="130" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="480" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="480" y="301.3">core-api  :4000</tspan></text>
+<text x="480" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="480" y="328.2">api.kittametdev.com</tspan><tspan x="480" y="344.2">Auth (SSO/JWT) · Links · QR</tspan><tspan x="480" y="360.2">Admin · API keys · Guest</tspan></text>
+<rect x="680" y="270" width="300" height="130" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="830" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="830" y="301.3">redirect-service  :4001</tspan></text>
+<text x="830" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="830" y="328.2">s.kittametdev.com</tspan><tspan x="830" y="344.2">GET /:code → 302</tspan><tspan x="830" y="360.2">รหัสผ่าน · จำกัดคลิก · วันเริ่ม</tspan></text>
+<rect x="1030" y="270" width="300" height="130" rx="12" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="1180" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="1180" y="301.3">analytics-service  :4002</tspan></text>
+<text x="1180" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="1180" y="328.2">ดึงคิวคลิก → เขียน DB</tspan><tspan x="1180" y="344.2">ให้สถิติ (x-internal-key)</tspan><tspan x="1180" y="360.2">ไม่เปิดสู่สาธารณะ</tspan></text>
+<rect x="320" y="520" width="1020" height="200" rx="16" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="6 4"/>
+<text x="335" text-anchor="start" font-size="12" font-weight="700" fill="#475569"><tspan x="335" y="544.2">Data layer</tspan></text>
+<rect x="350" y="560" width="440" height="130" rx="12" fill="#f1f5f9" stroke="#334155" stroke-width="2"/>
+<text x="570" text-anchor="middle" font-size="15" font-weight="700" fill="#334155"><tspan x="570" y="591.3">PostgreSQL 16 (Neon)</tspan></text>
+<text x="570" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="570" y="618.2">users · sso_identities · api_keys · links</tspan><tspan x="570" y="634.2">clicks · link_daily_stats</tspan><tspan x="570" y="650.2">audit_logs · blocked_domains</tspan></text>
+<rect x="880" y="560" width="430" height="130" rx="12" fill="#f1f5f9" stroke="#334155" stroke-width="2"/>
+<text x="1095" text-anchor="middle" font-size="15" font-weight="700" fill="#334155"><tspan x="1095" y="591.3">Redis 7 (Upstash)</tspan></text>
+<text x="1095" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="1095" y="618.2">cache link:{code} · session rt:/bl:</tspan><tspan x="1095" y="634.2">rate limit · ตัวนับ lim:{id}</tspan><tspan x="1095" y="650.2">คิว clicks:queue</tspan></text>
+<path d="M208.1 249.5 L382.9 140.5" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M251 308.4 L329 317.5" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M250.9 421.3 L329.1 391.9" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M135 250 L135 205 L780 205 L780 270" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M560 270 L560 235 L1130 235 L1130 270" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M630.9 277.9 L1047 120.4" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+<path d="M981 335 L1029 335" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M500.5 401 L549.5 559" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M618.7 400.4 L956.3 559.6" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M771.1 400.7 L628.9 559.3" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+<path d="M890.1 400.7 L1034.9 559.3" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<path d="M1160.7 401 L1114.3 559" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M1042.4 400.4 L707.6 559.6" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="247.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="247.5" y="193.2">โหลดหน้าเว็บ</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="290" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="290" y="303.2">fetch /api/*</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="268" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="268" y="424.8">x-api-key</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="450" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="450" y="196.2">เปิดลิงก์สั้น  s.kittametdev.com/:code</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="870" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="870" y="252.2">ขอสถิติ (x-internal-key)</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="866.6" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="866.6" y="184.9">OIDC code exchange</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1005" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1005" y="325.2">ping /internal/flush</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="495" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="495" y="484.2">Prisma</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="800" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="800" y="446.4">session · rate limit · ลบ cache</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="632.9" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="632.9" y="492.1">cache miss: SELECT</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1032.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1032.5" y="484.2">cache · นับสิทธิ์ · เข้าคิว</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1182.5" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="1182.5" y="484.2">ดึงคิวคลิก</tspan></text></g>
+<g font-size="12" fill="#0f172a" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="831.1" text-anchor="middle" font-size="12" font-weight="400" fill="#0f172a"><tspan x="831.1" y="561.9">INSERT clicks · UPSERT daily · click_count</tspan></text></g>
+</svg></div>
+<table><thead><tr><th>บริการ</th><th>หน้าที่</th><th>ที่รัน</th></tr></thead><tbody><tr><td>frontend</td><td>หน้าเว็บ (Next.js export เป็น static) + หน้าเอกสารนี้</td><td>Cloudflare Workers (static assets) · shorturl.kittametdev.com</td></tr><tr><td>core-api</td><td>Auth, ลิงก์, QR, admin, API key, guest</td><td>Render · api.kittametdev.com</td></tr><tr><td>redirect-service</td><td>เปิดลิงก์สั้น → 302 ให้เร็ว (cache Redis) และเข้าคิวคลิก</td><td>Render · s.kittametdev.com</td></tr><tr><td>analytics-service</td><td>ประมวลผลคิวคลิก, ให้สถิติแก่ core-api</td><td>Render (ภายใน, ป้องกันด้วย x-internal-key)</td></tr><tr><td>PostgreSQL 16</td><td>ข้อมูลหลักทั้งหมด</td><td>Neon</td></tr><tr><td>Redis 7</td><td>cache, session, rate limit, ตัวนับ, คิว</td><td>Upstash</td></tr></tbody></table>
+<h2>การไหลสำคัญ</h2>
+<ul><li><b>ย่อลิงก์</b> — เบราว์เซอร์ → core-api ตรวจ URL/โดเมนต้องห้าม → บันทึก <code>links</code> → ลบ cache เก่า</li>
+<li><b>เปิดลิงก์</b> — redirect-service อ่าน Redis (ไม่มีค่อยอ่าน DB แล้ว cache 1 ชม.) → ตรวจเงื่อนไข → 302 → เข้าคิวคลิกแล้วแจ้ง analytics ให้ flush</li>
+<li><b>สถิติ</b> — analytics ดึงคิวเป็น batch เขียนลง DB; หน้า stats เรียก core-api → analytics (ถ้าล่ม แสดงยอดรวมจาก <code>click_count</code>)</li></ul></main></body></html>

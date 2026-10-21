@@ -5,6 +5,7 @@ import { PAGE_SIZE, Pager } from '@/components/ui/Pager';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { LoadingState } from '@/components/ui/LoadingState';
+import { PageLoading } from '@/components/ui/PageLoading';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DeleteDialog } from '@/components/ConfirmDialog';
@@ -34,7 +35,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const toast = useToast();
   const { t, fmt } = useI18n();
-  const { status, signedOut } = useAuth();
+  const { status, signedOut, retry } = useAuth();
 
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
@@ -139,13 +140,22 @@ export default function DashboardPage() {
     else refresh();
   };
 
+  if (status === 'offline') {
+    return (
+      <>
+        <Header />
+        <main className="mx-auto flex min-h-[70svh] max-w-5xl items-center justify-center px-4 sm:px-6">
+          <ErrorState title={t('wake.offlineTitle')} message={t('wake.offlineBody')} onRetry={retry} />
+        </main>
+      </>
+    );
+  }
+
   if (status !== 'authed') {
     return (
       <>
         <Header />
-        <main className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-          <p className="text-muted">{t('dash.checking')}</p>
-        </main>
+        <PageLoading text={t('dash.checking')} />
       </>
     );
   }

@@ -2,10 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent } from 'react';
-import { api, ApiError } from '@/lib/api';
+import { api, ApiError, warmShortLink } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { setPendingUrl } from '@/lib/pending';
+import { useSlowHint } from '@/lib/useSlowHint';
 import { AdminIcon, type AdminIconName } from './Icon';
 import { LinkBar } from './LinkBar';
 import { useLoginModal } from './LoginModal';
@@ -33,6 +34,7 @@ export function HeroShortener() {
   const [url, setUrl] = useState('');
   const [hint, setHint] = useState(false);
   const [busy, setBusy] = useState(false);
+  const slow = useSlowHint(busy);
   const [error, setError] = useState('');
   const [guestResult, setGuestResult] = useState('');
   const [copied, setCopied] = useState(false);
@@ -61,6 +63,7 @@ export function HeroShortener() {
     try {
       const r = await api<{ shortUrl: string }>('/api/guest/links', { method: 'POST', body: { url: v }, auth: false });
       setGuestResult(r.shortUrl);
+      warmShortLink(r.shortUrl); // ปลุก redirect-service ไว้ ผู้ใช้มักกดทดสอบลิงก์ต่อทันที
     } catch (err) {
       setError(err instanceof ApiError ? err.message : String(err));
     } finally {
@@ -99,6 +102,11 @@ export function HeroShortener() {
         describedBy={hint ? 'hero-hint' : error ? 'hero-error' : undefined}
         disabled={busy}
       />
+      {busy && slow && (
+        <p role="status" className="mt-2 text-left text-[13px] leading-relaxed text-muted">
+          {t('wake.hint')}
+        </p>
+      )}
       {hint && (
         <p id="hero-hint" role="alert" className="mt-2 text-left text-sm font-medium text-danger">
           {t('hero.empty')}

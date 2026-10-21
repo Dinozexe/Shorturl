@@ -1,5 +1,7 @@
 'use client';
 
+import { ErrorState } from '@/components/ui/ErrorState';
+import { PageLoading } from '@/components/ui/PageLoading';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AdminShell, allowedTabs, tabMeta, type AdminTab } from '@/components/admin/AdminShell';
@@ -15,7 +17,7 @@ import { useI18n } from '@/lib/i18n';
 export default function AdminPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const { status, user, signedOut } = useAuth();
+  const { status, user, signedOut, retry } = useAuth();
   const { openLogin } = useLoginModal();
   const [tab, setTab] = useState<AdminTab>('overview');
 
@@ -38,11 +40,17 @@ export default function AdminPage() {
     }
   }, [status, user, signedOut, router, openLogin]);
 
+  if (status === 'offline') {
+    return (
+      <main className="flex min-h-svh items-center justify-center px-4">
+        <ErrorState title={t('wake.offlineTitle')} message={t('wake.offlineBody')} onRetry={retry} />
+      </main>
+    );
+  }
+
   if (status !== 'authed' || !user || user.role === 'USER') {
     return (
-      <main className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-        <p className="text-muted">{t('dash.checking')}</p>
-      </main>
+      <PageLoading text={t('dash.checking')} full />
     );
   }
 

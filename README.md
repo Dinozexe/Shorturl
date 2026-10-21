@@ -4,6 +4,19 @@
 
 แยกเป็น **Micro Service 3 ตัว** (core-api / redirect-service / analytics-service) ใช้ Next.js (static export) เป็น Frontend, Express + TypeScript เป็น Backend, PostgreSQL 16 เป็นฐานข้อมูล และ Redis เป็น cache/คิว
 
+## ลิงก์สำหรับตรวจ
+
+| รายการ | URL |
+|---|---|
+| ระบบออนไลน์ (ทดลองใช้งาน) | https://shorturl.kittametdev.com |
+| เอกสารไดอะแกรมทั้งหมด | https://shorturl.kittametdev.com/docs/ |
+| DFD (Level 0 / 1 / 2) | https://shorturl.kittametdev.com/docs/dfd/ |
+| ER Diagram | https://shorturl.kittametdev.com/docs/er/ |
+| Architecture | https://shorturl.kittametdev.com/docs/architecture/ |
+| ซอร์สโค้ด | https://github.com/Dinozexe/Shorturl |
+
+บัญชีทดสอบส่งให้ผู้ตรวจแยกต่างหาก (ดูหัวข้อ [บัญชีสำหรับทดสอบ](#บัญชีสำหรับทดสอบ)) — ผู้ใช้ทั่วไปเข้าสู่ระบบด้วย Google ได้เลย ส่วนย่อลิงก์แบบไม่ล็อกอินใช้ได้จากหน้าแรก
+
 ## สถานะการพัฒนา
 
 | Phase | งาน | สถานะ |
@@ -17,8 +30,8 @@
 | P6 | Frontend (Next.js): เข้าสู่ระบบ (หน้าต่างเด้ง), ย่อลิงก์ (ไม่ล็อกอินได้แบบลิงก์สั้น 7 วัน), รายการ/ค้นหา, QR ปรับแต่งได้, สถิติ, แก้ไข/ปิด/ลบ, หน้าฟีเจอร์/รูปแบบบัญชี | เสร็จ |
 | P7 | แอดมิน `/admin` (ภาพรวม / ผู้ใช้ / ลิงก์ทั้งหมด / โดเมนที่บล็อก / audit log) — MODERATOR ใช้ภาพรวม/ลิงก์/โดเมน, ADMIN ใช้ได้ทั้งหมด | เสร็จ |
 | P8 | API key + CLI สำหรับจัดการลิงก์ (`surl login/shorten/ls/...`) | โค้ดฝั่ง API/CLI มีอยู่ แต่ **ปิดหน้าเว็บสร้างรหัสไว้** (ถอนหน้า `/keys` และเมนูออกตามที่เลือก) |
-| P9 | Deploy: `render.yaml` + Dockerfile ครบ 3 service + คู่มือ (`docs/deploy-render.md`) | เตรียมไฟล์เสร็จ — ขั้นสมัครบัญชี/ใส่ค่าลับ/ผูกโดเมนต้องทำเอง |
-| P10 | README ฉบับสมบูรณ์ + ซ้อมเดโม | ยังไม่ทำ |
+| P9 | Deploy: Render (3 service) + Neon (Postgres) + Upstash (Redis) + Cloudflare (เว็บและโดเมน) — คู่มือ `docs/deploy-render.md` | เสร็จ (ออนไลน์แล้ว) |
+| P10 | README + DFD/ER/Architecture บนเว็บ (`/docs/`) + ซ้อมเดโม | เอกสารเสร็จ — เหลือซ้อมเดโม |
 
 แผนละเอียดและเกณฑ์ตรวจรับอยู่ที่ [`docs/prd.md`](docs/prd.md)
 
@@ -35,7 +48,7 @@
 - สถิติการคลิก: กราฟรายวัน 30 วัน, อุปกรณ์ (มือถือ/คอมพิวเตอร์/แท็บเล็ต/บอท) / ระบบปฏิบัติการ / เบราว์เซอร์ / ประเทศ (เก็บ IP แบบ hash เท่านั้น; ระบบยังเก็บ referer ไว้ แต่ไม่แสดงในหน้าสถิติ) — **ประเทศแสดงได้เมื่อรันหลัง Cloudflare** (`BEHIND_CLOUDFLARE=true`, อ่านจาก `CF-IPCountry`) ตอนรันในเครื่องจะเป็น "ไม่ทราบ"
 - แอดมิน `/admin` (sidebar พับได้, ตารางข้อมูลพร้อม **ตัวกรอง/เรียง/ช่วงเวลา** และ **แบ่งหน้า** (เลขหน้า, ต่อหน้า 10–100), กดแถวดูรายละเอียดเต็ม (ลิงก์มีแท็บสถิติ), action เป็นไอคอน + modal ยืนยัน): ภาพรวม, ผู้ใช้และบทบาท (USER / MODERATOR / ADMIN), ลิงก์ทั้งหมด (+ ดูสถิติของลิงก์ใดก็ได้), **โดเมนที่บล็อก** (แสดงผลกระทบก่อนบล็อก และปิดลิงก์เดิมที่ชี้โดเมนนั้นอัตโนมัติ), audit log — MODERATOR ใช้ได้เฉพาะภาพรวม/ลิงก์/โดเมน
 - ล็อกอินแล้วผู้ดูแลถูกพาเข้า `/admin` ส่วนผู้ใช้ทั่วไปเข้า `/dashboard`; หน้าเว็บรองรับไทย/อังกฤษ และธีมสว่าง/มืด
-- CLI และ API key (ถ้ามีเวลา)
+- CLI `surl` + API key (`surl login/shorten/ls/stats/qr/...`) ใช้ได้กับ API — หน้าเว็บสร้างรหัสถูกถอดออกแล้ว
 
 ## สถาปัตยกรรม
 
@@ -48,10 +61,11 @@
 | PostgreSQL 16 | ข้อมูลหลัก ใช้ร่วมกันทุก service | — | 5442 (docker) |
 | Redis 7 | cache ลิงก์, คิวคลิก, สถานะ refresh token, rate limit | — | 6380 (docker) |
 
-ไดอะแกรม (เปิดดูและแก้ไขได้ที่ [`docs/diagrams.html`](docs/diagrams.html)):
+ไดอะแกรมเปิดดูได้บนเว็บที่ `/docs/` (ไม่ต้องล็อกอิน) สร้างจาก [`scripts/build-diagrams.mjs`](scripts/build-diagrams.mjs) — แก้ระบบแล้วรัน `node scripts/build-diagrams.mjs` เพื่อสร้างใหม่:
 
-- Architecture · DFD Level 0 / 1 / 2 → [`docs/dfd.md`](docs/dfd.md), [`docs/img/`](docs/img)
-- ER Diagram → [`docs/er-diagram.md`](docs/er-diagram.md)
+- DFD Level 0 / 1 / 2 → `/docs/dfd/` · อธิบายเพิ่ม [`docs/dfd.md`](docs/dfd.md)
+- ER Diagram → `/docs/er/` · รายละเอียดเต็ม [`docs/er-diagram.md`](docs/er-diagram.md)
+- Architecture → `/docs/architecture/` · [`docs/architecture.md`](docs/architecture.md)
 - API → [`docs/api.md`](docs/api.md)
 
 ## สิ่งที่ต้องเตรียม
@@ -235,7 +249,8 @@ frontend/                 Next.js 14 (static export) + Tailwind
 cli/surl.mjs             CLI (`surl dev/status/migrate` สำหรับพัฒนา · `surl login/shorten/ls/stats/qr/on/off/rm` ใช้กับ API key)
 render.yaml              Render Blueprint (3 service) — ดู docs/deploy-render.md
 package.json              (root) ลงทะเบียนคำสั่ง `surl` + `npm run dev`
-docs/                     prd, er-diagram, dfd, api, deploy-render, ci, diagrams.html, img/
+docs/                     prd, er-diagram, dfd, architecture, api, deploy-render, ci
+frontend/public/docs/     หน้าไดอะแกรม (สร้างโดย scripts/build-diagrams.mjs) เสิร์ฟที่ /docs/
 .github/                 workflows (ci, codeql), dependabot, CODEOWNERS
 scripts/check-repo.sh     ตรวจค่าลับหลุด/config (ใช้ใน CI)
 docker-compose.yml        PostgreSQL + Redis สำหรับพัฒนา (เพิ่ม service แอปด้วย `docker compose --profile full up --build`)

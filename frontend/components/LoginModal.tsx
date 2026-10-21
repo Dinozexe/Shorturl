@@ -6,9 +6,29 @@ import { api, API_URL } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { peekPendingUrl } from '@/lib/pending';
+import { useSlowHint } from '@/lib/useSlowHint';
 import { translateServerMessage } from '@/lib/serverMessages';
 import type { Provider } from '@/lib/types';
+import { AdminIcon } from './Icon';
 import { GoogleIcon, MailIcon } from './icons';
+
+// แยกลิงก์เป็น ชื่อเว็บ + ส่วนที่เหลือ; ส่วนที่เหลือใส่จุดตัดบรรทัดที่ดีหลัง / ? & = # (ไม่ตัดกลางตัวเลข/คำถ้าไม่จำเป็น)
+function splitLink(raw: string): { host: string; rest: ReactNode } {
+  let host = '';
+  let rest = raw;
+  try {
+    const u = new URL(raw);
+    host = u.host;
+    rest = `${u.pathname === '/' && !u.search && !u.hash ? '' : u.pathname}${u.search}${u.hash}`;
+  } catch {
+    /* ไม่ใช่ URL ที่อ่านได้ → แสดงทั้งสตริงเป็นส่วนที่เหลือ */
+  }
+  const parts = rest.split(/([/?&=#])/);
+  return {
+    host,
+    rest: parts.map((p, i) => (i % 2 === 1 ? <span key={i}>{p}<wbr /></span> : p)),
+  };
+}
 
 // หน้าต่างนี้แสดงเฉพาะ Google (backend ยังรองรับ Microsoft แต่ไม่เปิดปุ่มในหน้าเว็บ)
 const SSO = [{ id: 'google', label: 'Google' }] as const;
@@ -35,6 +55,7 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [ssoError, setSsoError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const slow = useSlowHint(busy);
   const [pending, setPending] = useState<string | null>(null);
 
   const openLogin = useCallback(() => {
@@ -129,12 +150,23 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
             <p className="relative mt-1.5 text-center text-sm text-muted">{t('login.modal.sub')}</p>
 
             {pending && (
-              <p className="mt-5 rounded-xl bg-accent/10 px-4 py-3 text-left text-sm">
-                <span className="text-muted">{t('login.pending')}</span>
-                <span className="mt-0.5 block max-h-24 overflow-y-auto break-all font-mono text-[13px] font-medium leading-snug" title={pending}>
-                  {pending}
+              <div className="mt-5 flex items-start gap-3 rounded-2xl bg-accent/10 p-3.5 text-left">
+                <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                  <AdminIcon name="links" className="h-[18px] w-[18px]" />
                 </span>
-              </p>
+                <div className="min-w-0 flex-1" title={pending}>
+                  <p className="text-xs font-medium text-muted">{t('login.pending')}</p>
+                  {(() => {
+                    const { host, rest } = splitLink(pending);
+                    return (
+                      <>
+                        {host && <p className="mt-0.5 break-all text-[15px] font-semibold leading-snug">{host}</p>}
+                        {rest && <p className="mt-0.5 max-h-20 overflow-y-auto break-words font-mono text-xs leading-relaxed text-ink/70 [overflow-wrap:anywhere]">{rest}</p>}
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
             )}
 
             {shownError && (
@@ -160,6 +192,11 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
               <button type="submit" className="btn-primary mt-1 h-12 rounded-xl text-base" disabled={busy}>
                 {busy ? t('login.submitting') : t('login.submit')}
               </button>
+              {busy && slow && (
+                <p role="status" className="text-center text-[13px] leading-relaxed text-muted">
+                  {t('wake.hint')}
+                </p>
+              )}
             </form>
 
             <div className="my-6 flex items-center gap-3 text-xs text-muted" aria-hidden="true">

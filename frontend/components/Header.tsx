@@ -77,7 +77,7 @@ export function Header() {
         <div className="col-start-2 row-start-1 flex items-center justify-self-end gap-1.5 text-sm md:col-start-3 md:gap-2">
           <HeaderControls />
           {status === 'authed' && user && <ProfileMenu onLogout={onLogout} />}
-          {status === 'anon' && (
+          {(status === 'anon' || status === 'offline') && (
             <button type="button" onClick={openLogin} className="btn-primary whitespace-nowrap px-4 py-2 text-sm">
               {t('nav.login')}
             </button>

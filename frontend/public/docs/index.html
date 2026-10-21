@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>เอกสารระบบ · Short URL By Kittamet</title>
+<style>
+:root{--ink:#0f172a;--muted:#475569;--line:#e2e8f0;--blue:#1d4ed8;--soft:#eff6ff}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:15px/1.65 'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif}
+header{border-bottom:1px solid var(--line);background:#fff}
+.bar{max-width:1280px;margin:0 auto;padding:10px 20px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.bar b{margin-right:14px;font-size:15px}.bar a{color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:999px;font-size:14px;font-weight:500}
+.bar a:hover{background:var(--soft);color:var(--blue)}.bar a.on{background:var(--blue);color:#fff}
+main{max-width:1280px;margin:0 auto;padding:28px 20px 80px}
+h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em}h2{font-size:20px;margin:40px 0 4px}p.lead{color:var(--muted);margin:0 0 18px;max-width:80ch}
+.sv{overflow:auto;border:1px solid var(--line);border-radius:14px;padding:6px;background:#fff;margin:12px 0}
+.sv svg{display:block;height:auto;min-width:900px;width:100%}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0}th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}code{font:13px ui-monospace,Menlo,Consolas,monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:20px}
+.card{display:block;border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:inherit}.card:hover{border-color:var(--blue);box-shadow:0 4px 18px #1d4ed81a}
+.card b{display:block;font-size:17px;color:var(--blue)}.card span{color:var(--muted);font-size:14px}
+ul{padding-left:20px}li{margin:3px 0}
+</style></head><body>
+<header><nav class="bar"><b>Short URL By Kittamet</b><a href="/docs/" class="on">ภาพรวม</a><a href="/docs/dfd/">DFD</a><a href="/docs/er/">ER Diagram</a><a href="/docs/architecture/">Architecture</a><a href="/">กลับหน้าเว็บ</a></nav></header>
+<main><h1>เอกสารระบบ</h1><p class="lead">ไดอะแกรมทั้งหมดวาดให้ตรงกับระบบที่ deploy อยู่ (ตาราง/โฟลว์ตามโค้ดจริง) — เปิดดูได้ทันทีโดยไม่ต้องล็อกอิน</p><div class="cards">
+<a class="card" href="/docs/dfd/"><b>Data Flow Diagram</b><span>Level 0 · Level 1 · Level 2 (Redirect) พร้อมตารางอธิบายกระบวนการและที่เก็บข้อมูล</span></a>
+<a class="card" href="/docs/er/"><b>ER Diagram</b><span>8 ตาราง คีย์ ความสัมพันธ์ และเหตุผลการออกแบบ</span></a>
+<a class="card" href="/docs/architecture/"><b>Architecture</b><span>Micro-service 3 ตัว · Postgres · Redis · โดเมนและการ deploy</span></a></div></main></body></html>

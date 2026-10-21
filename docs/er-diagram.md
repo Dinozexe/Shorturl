@@ -1,5 +1,7 @@
 # ER Diagram
 
+ภาพบนเว็บ: https://shorturl.kittametdev.com/docs/er/
+
 ตรงกับ `services/core-api/prisma/schema.prisma` (วาดด้วย Mermaid — เปิดดูได้ใน GitHub, VS Code (Markdown Preview Mermaid), หรือ https://mermaid.live)
 
 ```mermaid
