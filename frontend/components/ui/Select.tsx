@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AdminIcon } from '@/components/Icon';
+import { AdminIcon, type AdminIconName } from '@/components/Icon';
 
 export interface SelectOption<T extends string> {
   value: T;
@@ -16,17 +16,21 @@ interface SelectProps<T extends string> {
   label: string; // อ่านออกเสียงสำหรับโปรแกรมอ่านหน้าจอ
   disabled?: boolean;
   className?: string;
+  /** field = ช่องกรอบเต็มความกว้าง (ไอคอนนำ, ลูกศรท้าย) ให้กลืนกับช่องข้อมูลในหน้าต่างรายละเอียด; pill = ปุ่มพื้นเทาแบบตัวกรอง */
+  variant?: 'pill' | 'field';
+  icon?: AdminIconName;
 }
 
 // ดรอปดาวน์แบบกำหนดเอง (ไม่ใช้ <select> ของระบบ): ลิสต์ลอยด้วย portal จึงไม่โดนตัดโดยตารางที่เลื่อนได้
 // คีย์บอร์ด: ↑↓ เลื่อน, Enter/Space เลือก, Esc ปิด, Home/End
-export function Select<T extends string>({ value, options, onChange, label, disabled, className = '' }: SelectProps<T>) {
+export function Select<T extends string>({ value, options, onChange, label, disabled, className = '', variant = 'pill', icon }: SelectProps<T>) {
   const id = useId();
   const btn = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number; minWidth: number } | null>(null);
   const [active, setActive] = useState(0);
+  const [host, setHost] = useState<HTMLElement | null>(null); // อยู่ในหน้าต่าง <dialog> → วางลิสต์ในนั้น (ไม่งั้นโดนบังเพราะ dialog อยู่ชั้นบนสุด)
   const current = options.find((o) => o.value === value);
 
   const place = useCallback(() => {
@@ -37,6 +41,7 @@ export function Select<T extends string>({ value, options, onChange, label, disa
   const show = () => {
     if (disabled) return;
     place();
+    setHost((btn.current?.closest('dialog') as HTMLElement | null) ?? document.body);
     setActive(Math.max(0, options.findIndex((o) => o.value === value)));
     setOpen(true);
   };
@@ -99,9 +104,14 @@ export function Select<T extends string>({ value, options, onChange, label, disa
         aria-expanded={open}
         aria-label={`${label}: ${current?.label ?? ''}`}
         onClick={() => (open ? close(false) : show())}
-        className={`flex h-9 items-center justify-between gap-2 rounded-xl bg-ink/[0.05] pl-3 pr-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-ink/[0.08] focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+        className={
+          variant === 'field'
+            ? `flex min-h-11 w-full items-center gap-3 rounded-xl border bg-surface px-3.5 text-left text-sm font-medium text-ink outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-60 ${open ? 'border-accent' : 'border-line hover:border-ink/30'} ${className}`
+            : `flex h-9 items-center justify-between gap-2 rounded-xl bg-ink/[0.05] pl-3 pr-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-ink/[0.08] focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-60 ${className}`
+        }
       >
-        <span className="truncate">{current?.label}</span>
+        {variant === 'field' && icon && <AdminIcon name={icon} className="h-[18px] w-[18px] shrink-0 text-muted" />}
+        <span className={`truncate ${variant === 'field' ? 'flex-1' : ''}`}>{current?.label}</span>
         <AdminIcon name="chevronDown" className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
@@ -137,7 +147,7 @@ export function Select<T extends string>({ value, options, onChange, label, disa
               );
             })}
           </ul>,
-          document.body,
+          host ?? document.body,
         )}
     </>
   );

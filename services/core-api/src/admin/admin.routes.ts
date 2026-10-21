@@ -7,6 +7,7 @@ import { HttpError } from '../common/http-error';
 import { rateLimit } from '../common/rate-limit';
 import { clearLinkCache, syncLinkCache } from '../links/link.cache';
 import { toLinkDto } from '../links/link.dto';
+import { AnalyticsNotFound, fetchLinkStats } from '../links/stats.client';
 import { prisma } from '../prisma/client';
 
 // เมทริกซ์สิทธิ์ (ตาม PRD): MODERATOR = ภาพรวม/ลิงก์/โดเมนบล็อก · ADMIN = ทั้งหมด + ผู้ใช้ (ระงับ/เปลี่ยนบทบาท) + audit log
@@ -21,6 +22,11 @@ const pageOf = (q: Record<string, unknown>) => ({
   pageSize: Math.min(100, Math.max(1, Math.floor(Number(q.pageSize)) || 20)),
 });
 const qOf = (q: Record<string, unknown>) => (isString(q.q) ? q.q.trim().slice(0, 100) : '');
+// ตัวกรองช่วงเวลา: days=1|7|30|90 → createdAt ≥ เวลานั้น (ค่าอื่น = ไม่กรอง)
+const sinceOf = (q: Record<string, unknown>): Date | undefined => {
+  const d = Number(q.days);
+  return [1, 7, 30, 90].includes(d) ? new Date(Date.now() - d * 24 * 3600 * 1000) : undefined;
+};
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function parseLinkId(raw: unknown): number {
@@ -48,13 +54,20 @@ const adminOnly = requireRole('ADMIN');
 adminRouter.get('/users', adminOnly, async (req, res) => {
   const { page, pageSize } = pageOf(req.query);
   const q = qOf(req.query);
-  const where: Prisma.UserWhereInput = q
-    ? { OR: [{ email: { contains: q, mode: 'insensitive' } }, { name: { contains: q, mode: 'insensitive' } }] }
-    : {};
+  const role = isString(req.query.role) && (['USER', 'MODERATOR', 'ADMIN'] as const).includes(req.query.role as Role) ? (req.query.role as Role) : undefined;
+  const banned = req.query.banned === '1' ? true : req.query.banned === '0' ? false : undefined;
+  const since = sinceOf(req.query);
+  const where: Prisma.UserWhereInput = {
+    ...(role ? { role } : {}),
+    ...(banned !== undefined ? { isBanned: banned } : {}),
+    ...(since ? { createdAt: { gte: since } } : {}),
+    ...(q ? { OR: [{ email: { contains: q, mode: 'insensitive' } }, { name: { contains: q, mode: 'insensitive' } }] } : {}),
+  };
+  const orderBy: Prisma.UserOrderByWithRelationInput = req.query.sort === 'login' ? { lastLoginAt: { sort: 'desc', nulls: 'last' } } : req.query.sort === 'links' ? { links: { _count: 'desc' } } : { createdAt: 'desc' };
   const [items, total] = await prisma.$transaction([
     prisma.user.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: { _count: { select: { links: true } } },
@@ -114,8 +127,12 @@ adminRouter.get('/links', async (req, res) => {
   const { page, pageSize } = pageOf(req.query);
   const q = qOf(req.query);
   const status = isString(req.query.status) && (['ACTIVE', 'DISABLED', 'ADMIN_DISABLED'] as const).includes(req.query.status as LinkStatus) ? (req.query.status as LinkStatus) : undefined;
+  const owner = req.query.owner === 'guest' ? { userId: null } : req.query.owner === 'member' ? { userId: { not: null } } : {};
+  const since = sinceOf(req.query);
   const where: Prisma.LinkWhereInput = {
     ...(status ? { status } : {}),
+    ...owner,
+    ...(since ? { createdAt: { gte: since } } : {}),
     ...(q
       ? {
           OR: [
@@ -127,10 +144,25 @@ adminRouter.get('/links', async (req, res) => {
       : {}),
   };
   const [items, total] = await prisma.$transaction([
-    prisma.link.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (page - 1) * pageSize, take: pageSize, include: { user: { select: { email: true } } } }),
+    prisma.link.findMany({ where, orderBy: req.query.sort === 'clicks' ? [{ clickCount: 'desc' }, { createdAt: 'desc' }] : { createdAt: 'desc' }, skip: (page - 1) * pageSize, take: pageSize, include: { user: { select: { email: true } } } }),
     prisma.link.count({ where }),
   ]);
   res.json({ items: items.map((l) => ({ ...toLinkDto(l), ownerEmail: l.user?.email ?? null })), total, page, pageSize });
+});
+
+// สถิติการเปิดของลิงก์ใดก็ได้ (อุปกรณ์/ระบบปฏิบัติการ/เบราว์เซอร์/ประเทศ/เว็บที่พามา) — รูปแบบเดียวกับของเจ้าของลิงก์
+adminRouter.get('/links/:id/stats', async (req, res) => {
+  const link = await prisma.link.findUnique({ where: { id: parseLinkId(req.params.id) } });
+  if (!link) throw new HttpError(404, 'ไม่พบลิงก์');
+  const days = req.query.days === undefined ? 30 : Number(req.query.days);
+  if (!Number.isInteger(days) || days < 1 || days > 365) throw new HttpError(400, 'days ต้องเป็นจำนวนเต็ม 1–365');
+  try {
+    const stats = await fetchLinkStats(link.id, days);
+    if (stats) return void res.json(stats);
+  } catch (e) {
+    if (!(e instanceof AnalyticsNotFound)) throw e;
+  }
+  res.json({ unavailable: true, linkId: link.id, total: link.clickCount });
 });
 
 adminRouter.patch('/links/:id', async (req, res) => {
@@ -191,7 +223,8 @@ adminRouter.get('/blocked-domains/preview', async (req, res) => {
 adminRouter.get('/blocked-domains', async (req, res) => {
   const { page, pageSize } = pageOf(req.query);
   const q = qOf(req.query);
-  const where: Prisma.BlockedDomainWhereInput = q ? { domain: { contains: q.toLowerCase() } } : {};
+  const since = sinceOf(req.query);
+  const where: Prisma.BlockedDomainWhereInput = { ...(q ? { domain: { contains: q.toLowerCase() } } : {}), ...(since ? { createdAt: { gte: since } } : {}) };
   const [items, total] = await prisma.$transaction([
     prisma.blockedDomain.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (page - 1) * pageSize, take: pageSize, include: { createdBy: { select: { email: true } } } }),
     prisma.blockedDomain.count({ where }),
@@ -240,7 +273,13 @@ adminRouter.delete('/blocked-domains/:id', async (req, res) => {
 adminRouter.get('/audit', adminOnly, async (req, res) => {
   const { page, pageSize } = pageOf(req.query);
   const action = isString(req.query.action) && req.query.action in AuditAction ? (req.query.action as AuditAction) : undefined;
-  const where: Prisma.AuditLogWhereInput = action ? { action } : {};
+  const q = qOf(req.query);
+  const since = sinceOf(req.query);
+  const where: Prisma.AuditLogWhereInput = {
+    ...(action ? { action } : {}),
+    ...(since ? { createdAt: { gte: since } } : {}),
+    ...(q ? { OR: [{ detail: { contains: q, mode: 'insensitive' } }, { actor: { email: { contains: q, mode: 'insensitive' } } }] } : {}),
+  };
   const [items, total] = await prisma.$transaction([
     prisma.auditLog.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (page - 1) * pageSize, take: pageSize, include: { actor: { select: { email: true } } } }),
     prisma.auditLog.count({ where }),

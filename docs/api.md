@@ -27,6 +27,8 @@
 
 ## Admin — `/api/admin` (P7)
 
+**ตัวกรองรายการ (ทุก GET ที่เป็นรายการรับ `page`, `pageSize` 1–100):** `q` ค้นหา · `days=1|7|30|90` กรองตามวันที่สร้าง · users: `role`, `banned=0|1`, `sort=login|links` · links: `status`, `owner=guest|member`, `sort=clicks` · audit: `action`, `q` (ค้นในรายละเอียด/อีเมลผู้ทำ)
+
 ต้อง `Authorization: Bearer` ของบัญชี `MODERATOR` หรือ `ADMIN` (API key ใช้ไม่ได้); rate limit 120/นาที/IP · ทุกการเปลี่ยนแปลงบันทึกใน `audit_logs`
 
 | Method | Path | สิทธิ์ | อธิบาย |
@@ -36,7 +38,9 @@
 | PATCH | `/api/admin/users/:id` | ADMIN | `{isBanned?, role?}`; แก้ตัวเองไม่ได้ (400); ระงับ/เปลี่ยนบทบาท = เพิกถอนทุก session ของผู้นั้นทันที |
 | GET | `/api/admin/links?q=&status=&page=` | MOD, ADMIN | ลิงก์ทุกคน + `ownerEmail` (null = ผู้เยี่ยมชม); `q` ค้นรหัส/ปลายทาง/อีเมลเจ้าของ |
 | PATCH | `/api/admin/links/:id` | MOD, ADMIN | `{status: "ADMIN_DISABLED" \| "ACTIVE"}`; เปิดคืนได้เฉพาะลิงก์ที่ถูกผู้ดูแลปิด และโดเมนต้องไม่ถูกบล็อก (400) |
-| GET | `/api/admin/blocked-domains?q=` | MOD, ADMIN | รายการโดเมนที่บล็อก |
+| GET | `/api/admin/links/:id/stats?days=1..365` | MOD, ADMIN | สถิติของลิงก์ใดก็ได้ รูปแบบเดียวกับ `GET /api/links/:id/stats` (อุปกรณ์/OS/เบราว์เซอร์/ประเทศ/referer/รายวัน); analytics ล่ม → `{unavailable:true}` |
+| GET | `/api/admin/blocked-domains?q=` | MOD, ADMIN | รายการโดเมนที่บล็อก + `linkCount` (ลิงก์ที่ชี้โดเมนนี้รวมโดเมนย่อย) และ `disabledCount` (ที่ถูกผู้ดูแลปิด) |
+| GET | `/api/admin/blocked-domains/preview?domain=` | MOD, ADMIN | ดูผลกระทบก่อนบล็อก (ไม่เขียนข้อมูล): `{domain, alreadyBlocked, willDisable, totalLinks}`; โดเมนไม่ถูกต้อง = 400 |
 | POST | `/api/admin/blocked-domains` | MOD, ADMIN | `{domain, reason?}` (รับ URL ได้ จะตัดเหลือโดเมน) → 201 `{…, disabledLinks}`; **ปิดลิงก์เดิมที่ชี้โดเมนนี้ (รวม subdomain) เป็น `ADMIN_DISABLED` และล้าง cache**; ซ้ำ = 409 |
 | DELETE | `/api/admin/blocked-domains/:id` | MOD, ADMIN | 204; **ไม่เปิดลิงก์ที่เคยถูกปิดคืนอัตโนมัติ** (ผู้ดูแลเปิดเองทีละลิงก์) |
 | GET | `/api/admin/audit?action=&page=` | ADMIN | บันทึกกิจกรรมใหม่สุดก่อน + `actorEmail` |
@@ -47,23 +51,26 @@
 
 | Method | Path | อธิบาย |
 |---|---|---|
-| POST | `/api/links` | body `{url, alias?, expiresAt?}` → 201 ลิงก์ที่สร้าง; rate limit 30/นาที/IP |
+| POST | `/api/links` | body `{url, alias?, expiresAt?, startsAt?, maxClicks?, password?}` → 201 ลิงก์ที่สร้าง; rate limit 30/นาที/IP |
 | GET | `/api/links?q=&page=&pageSize=` | `{items, total, page, pageSize}` ใหม่สุดก่อน; `q` ค้น short code / URL (ไม่สนตัวพิมพ์), `pageSize` ปกติ 20 สูงสุด 100 |
 | GET | `/api/links/:id` | ลิงก์เดียว |
-| PATCH | `/api/links/:id` | แก้ `{url?, expiresAt? (null = ไม่หมดอายุ), status? ACTIVE\|DISABLED}`; **เปลี่ยน alias ไม่ได้ (400)**; ลิงก์ `ADMIN_DISABLED` เจ้าของเปิดเองไม่ได้ (403) |
+| PATCH | `/api/links/:id` | แก้ `{url?, expiresAt? (null = ไม่หมดอายุ), status? ACTIVE\|DISABLED, startsAt?, maxClicks?, password?}` (ฟิลด์ป้องกัน: ไม่ส่ง = ไม่เปลี่ยน, `null` = ยกเลิก); **เปลี่ยน alias ไม่ได้ (400)**; ลิงก์ `ADMIN_DISABLED` เจ้าของเปิดเองไม่ได้ (403) |
 | DELETE | `/api/links/:id` | 204 (ลบคลิกที่เกี่ยวข้องด้วย) |
-| PUT | `/api/links/:id/qr-style` | body `{style}` บันทึกสไตล์ QR ของลิงก์ (`{style:null}` = ล้าง); ฟิลด์: `dots` square/rounded/dots/diamond/classy, `eyes` square/rounded/circle, `fg`/`fg2`/`bg`/`eyeColor` เป็น `#rrggbb` (`fg2`=ไล่เฉด, `bg:null`=โปร่งใส), `angle` 0/45/90/135, `logo` none/link/star/heart/bolt, `logoSize` 10–22, `caption` ≤24 ตัว, `margin` 2–8; ฟิลด์ที่ไม่รู้จักถูกทิ้ง ค่าผิด = 400; **ไม่เก็บรูปโลโก้ที่อัปโหลด** (ใช้เฉพาะในเบราว์เซอร์) |
+| PUT | `/api/links/:id/qr-style` | body `{style}` บันทึกสไตล์ QR ของลิงก์ (`{style:null}` = ล้าง); ฟิลด์: `dots` square/rounded/dots/diamond/classy, `eyes` square/rounded/circle, `fg`/`fg2`/`bg`/`eyeColor` เป็น `#rrggbb` (`fg2`=ไล่เฉด, `bg:null`=โปร่งใส), `angle` 0/45/90/135, `logo` none/link/star/heart/bolt, `logoSize` 10–22, `caption` ≤24 ตัว, `captionStyle` pill/bar/text (ป้าย/แถบ/ตัวอักษร), `margin` 2–8; ฟิลด์ที่ไม่รู้จักถูกทิ้ง ค่าผิด = 400; **ไม่เก็บรูปโลโก้ที่อัปโหลด** (ใช้เฉพาะในเบราว์เซอร์) |
 | GET | `/api/links/:id/qr?format=png\|svg\|matrix&scale=1..20&download=1` | รูป QR ของ short URL (แบบมาตรฐานไม่ใส่สไตล์ — สำหรับสคริปต์/CLI; หน้าเว็บใช้ `format=matrix` แล้ววาดเองตามสไตล์) — ดำบนขาว, ECC ระดับ H, quiet zone 4 โมดูล; PNG ขนาด = (โมดูล+8)×`scale` พิกเซล (จำนวนเต็ม, ค่าเริ่มต้น 10); `download=1` ส่งเป็นไฟล์แนบ |
 
-**ลิงก์ (response):** `{id, shortCode, shortUrl, originalUrl, originalHost, status, expiresAt, expired, clickCount, createdAt}`
+**ลิงก์ (response):** `{id, shortCode, shortUrl, originalUrl, originalHost, status, expiresAt, expired, clickCount, startsAt, notStarted, maxClicks, limitReached, hasPassword, qrStyle, createdAt}`
 **กติกา**
 - URL: http/https เท่านั้น ยาวไม่เกิน 2048, ห้ามมี user:pass, ห้ามชี้ localhost/IP ภายในหรือที่สงวน (ตรวจหลังแปลง IP รูปแบบแปลก เช่น `2130706433`, `0x7f.1`), ห้ามโฮสต์ไม่มีจุด/ลงท้าย `.local .internal .lan ...`, ห้ามชี้ IPv6 ตรงๆ, ห้ามชี้โฮสต์ของระบบนี้เอง (กัน loop), ห้ามอยู่ใน **โดเมนต้องห้าม** (รวม subdomain; `notevil.example` ไม่ถูกบล็อกเมื่อบล็อก `evil.example`)
 - alias: 3–30 ตัว `A–Z a–z 0–9 _ -` ขึ้น/ลงท้ายด้วยตัวอักษรหรือตัวเลข แยกตัวพิมพ์เล็กใหญ่ ไม่ใช่คำสงวน (`api admin login dashboard ...`) ซ้ำ = 409
 - ไม่ใส่ alias = สุ่ม base62 ยาว `SHORT_CODE_LENGTH` (ปกติ 5) ชนแล้วลองใหม่ ชนบ่อยขยายทีละ 1 ตัว
 - `expiresAt`: ISO 8601 ต้องเป็นอนาคตและไม่เกิน 10 ปี
+- `startsAt`: ISO 8601 ไม่เกิน 10 ปีข้างหน้า และต้องมาก่อน `expiresAt`; `maxClicks`: จำนวนเต็ม 1–1,000,000; `password`: 4–64 ตัวอักษร (เก็บเป็น scrypt hash)
+- `GET /api/links/summary` → `{total, active, clicks}` รวมทุกหน้าของเจ้าของบัญชี (การ์ดสรุปบน dashboard)
+- **ผู้เปิดลิงก์:** ยังไม่ถึง `startsAt` → 403 หน้าข้อความ; เปิดครบ `maxClicks` → 410; มีรหัสผ่าน → หน้ากรอกรหัส แล้ว `POST /{code}` (form `password`) ถูก → 303 ไปปลายทาง, ผิด → 401, ลองผิดเกิน 5 ครั้ง/10 นาที/IP/ลิงก์ (หรือ 100 ครั้งรวมทุก IP) → 429; ลำดับตรวจ: ไม่พบ/ปิด/หมดอายุ → ยังไม่เริ่ม → ครบจำนวน → รหัสผ่าน; HEAD ไม่กินสิทธิ์
 - ทุกครั้งที่สร้าง/แก้ URL ระบบตั้ง `originalHost` (lowercase) ให้อัตโนมัติ
 
-**สัญญา cache กับ redirect-service:** key `link:{code}` = JSON `{i: id, u: url, e: หมดอายุ epoch ms | null}` TTL ≤ 1 ชม. (ไม่เกินเวลาหมดอายุ) เขียนเฉพาะลิงก์ที่ ACTIVE และยังไม่หมดอายุ; ปิด/ลบ/แก้ให้ไม่ ACTIVE = ล้าง key; `0` = negative cache ที่ redirect-service เขียนเอง (ถูกเขียนทับเมื่อสร้าง/เปิดลิงก์)
+**สัญญา cache กับ redirect-service:** key `link:{code}` = JSON `{i: id, u: url, e: หมดอายุ epoch ms | null, s?: วันเริ่ม epoch ms, m?: จำกัดคลิก, p?: 1 = มีรหัสผ่าน}; ตัวนับคลิกของลิงก์ที่จำกัด = `lim:{id}` (core-api ตั้งค่าเริ่มจาก `click_count`, redirect-service INCR)` TTL ≤ 1 ชม. (ไม่เกินเวลาหมดอายุ) เขียนเฉพาะลิงก์ที่ ACTIVE และยังไม่หมดอายุ; ปิด/ลบ/แก้ให้ไม่ ACTIVE = ล้าง key; `0` = negative cache ที่ redirect-service เขียนเอง (ถูกเขียนทับเมื่อสร้าง/เปิดลิงก์)
 
 ### สถิติ — `GET /api/links/:id/stats?days=30` (P5)
 

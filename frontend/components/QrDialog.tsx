@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { api } from '@/lib/api';
 import { copyText } from '@/lib/format';
 import { useI18n, type MsgKey } from '@/lib/i18n';
-import { ANGLES, DEFAULT_STYLE, DOT_STYLES, EYE_STYLES, LOGOS, PRESETS, qrWarnings, renderQrSvg, svgToPngBlob, type DotStyle, type EyeStyle, type LogoId, type QrMatrix, type QrStyle } from '@/lib/qrRender';
+import { ANGLES, CAPTION_STYLES, DEFAULT_STYLE, DOT_STYLES, EYE_STYLES, LOGOS, PRESETS, qrWarnings, renderQrSvg, svgToPngBlob, type CaptionStyle, type DotStyle, type EyeStyle, type LogoId, type QrMatrix, type QrStyle } from '@/lib/qrRender';
 import type { Link } from '@/lib/types';
 import { AdminIcon } from './Icon';
 import { Modal } from './Modal';
@@ -70,7 +70,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 /** ปุ่มเลือกแบบกลุ่ม (radio) ที่มีภาพตัวอย่างเล็กๆ */
 function Choice<T extends string>({ value, options, onChange, name }: { value: T; options: Array<{ id: T; label: string; icon: ReactNode }>; onChange: (v: T) => void; name: string }) {
   return (
-    <div role="radiogroup" aria-label={name} className="grid grid-cols-5 gap-2 sm:grid-cols-5">
+    <div role="radiogroup" aria-label={name} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
       {options.map((o) => {
         const on = o.id === value;
         return (
@@ -137,6 +137,27 @@ const eyeIcons: Record<EyeStyle, ReactNode> = {
     <g fill="none" stroke="currentColor" strokeWidth="2.4">
       <circle cx="12" cy="12" r="8.5" />
       <circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none" />
+    </g>
+  ),
+};
+
+const capIcons: Record<CaptionStyle, ReactNode> = {
+  pill: (
+    <g fill="currentColor">
+      <rect x="3" y="4" width="18" height="9" rx="1.5" opacity="0.25" />
+      <rect x="6" y="15.5" width="12" height="5" rx="2.5" />
+    </g>
+  ),
+  bar: (
+    <g fill="currentColor">
+      <rect x="3" y="4" width="18" height="10" rx="1.5" opacity="0.25" />
+      <rect x="3" y="15.5" width="18" height="5" rx="1" />
+    </g>
+  ),
+  text: (
+    <g fill="currentColor">
+      <rect x="3" y="4" width="18" height="10" rx="1.5" opacity="0.25" />
+      <path d="M7 18.5h10" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
     </g>
   ),
 };
@@ -380,6 +401,18 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
 
             <Section title={t('qr.caption')}>
               <input className="field" maxLength={24} placeholder={t('qr.caption.ph')} value={style.caption} onChange={(e) => patch({ caption: e.target.value })} aria-label={t('qr.caption')} />
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('qr.cap.quick')}>
+                {(['qr.cap.q1', 'qr.cap.q2', 'qr.cap.q3', 'qr.cap.q4'] as const).map((k) => (
+                  <button key={k} type="button" onClick={() => patch({ caption: t(k) })} className="rounded-full bg-ink/[0.05] px-3 py-1 text-xs font-medium text-ink/80 transition-colors hover:bg-ink/[0.09]">
+                    {t(k)}
+                  </button>
+                ))}
+              </div>
+              {style.caption.trim() && (
+                <div className="max-w-xs">
+                  <Choice<CaptionStyle> name="qr-capstyle" value={style.captionStyle} onChange={(v) => patch({ captionStyle: v })} options={CAPTION_STYLES.map((id) => ({ id, label: t(`qr.cap.${id}` as MsgKey), icon: capIcons[id] }))} />
+                </div>
+              )}
               <label className="flex flex-col gap-1.5 text-sm font-medium">
                 {t('qr.margin', { n: style.margin })}
                 <input type="range" min={2} max={8} step={1} value={style.margin} onChange={(e) => patch({ margin: Number(e.target.value) })} className="w-full accent-[rgb(var(--accent))]" />

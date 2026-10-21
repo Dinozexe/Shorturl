@@ -3,7 +3,8 @@ import { config } from '../common/config';
 import { HttpError } from '../common/http-error';
 import { generateShortCode, hostSuffixes, validateAlias, validateTargetUrl } from '../common/url-validator';
 import { prisma } from '../prisma/client';
-import { clearLinkCache, syncLinkCache } from './link.cache';
+import { hashLinkPassword } from '../common/password';
+import { clearLimitCounter, clearLinkCache, resetLimitCounter, syncLinkCache } from './link.cache';
 
 const MAX_EXPIRY_YEARS = 10;
 const COLLISION_TRIES_PER_LENGTH = 3;
@@ -30,10 +31,55 @@ function parseExpiry(value: unknown): Date {
   return d;
 }
 
-export async function createLink(userId: string | null, input: { url: string; alias?: string; expiresAt?: string | null }) {
+const PASSWORD_MIN = 4;
+const PASSWORD_MAX = 64;
+const MAX_CLICKS_LIMIT = 1_000_000;
+
+function parseStart(value: unknown): Date {
+  const d = typeof value === 'string' ? new Date(value) : new Date(NaN);
+  if (Number.isNaN(d.getTime())) throw new HttpError(400, 'วันเริ่มใช้งานไม่ถูกต้อง');
+  if (d.getTime() > Date.now() + MAX_EXPIRY_YEARS * 365 * 24 * 3600 * 1000) throw new HttpError(400, `วันเริ่มใช้งานต้องไม่เกิน ${MAX_EXPIRY_YEARS} ปี`);
+  return d;
+}
+
+function parseMaxClicks(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1 || value > MAX_CLICKS_LIMIT) {
+    throw new HttpError(400, `จำนวนคลิกสูงสุดต้องเป็นจำนวนเต็ม 1–${MAX_CLICKS_LIMIT.toLocaleString('en-US')}`);
+  }
+  return value;
+}
+
+async function parsePassword(value: unknown): Promise<string> {
+  if (typeof value !== 'string' || value.length < PASSWORD_MIN || value.length > PASSWORD_MAX) {
+    throw new HttpError(400, `รหัสผ่านของลิงก์ต้องยาว ${PASSWORD_MIN}–${PASSWORD_MAX} ตัวอักษร`);
+  }
+  return hashLinkPassword(value);
+}
+
+function checkWindow(startsAt: Date | null, expiresAt: Date | null) {
+  if (startsAt && expiresAt && startsAt.getTime() >= expiresAt.getTime()) throw new HttpError(400, 'วันเริ่มใช้งานต้องมาก่อนวันหมดอายุ');
+}
+
+export interface ProtectionInput {
+  password?: string | null;
+  maxClicks?: number | null;
+  startsAt?: string | null;
+}
+
+export async function createLink(userId: string | null, input: { url: string; alias?: string; expiresAt?: string | null } & ProtectionInput) {
   const target = await checkTarget(input.url);
   const expiresAt = input.expiresAt ? parseExpiry(input.expiresAt) : null;
-  const data = { userId, originalUrl: target.href, originalHost: target.host, expiresAt };
+  const startsAt = input.startsAt ? parseStart(input.startsAt) : null;
+  checkWindow(startsAt, expiresAt);
+  const data = {
+    userId,
+    originalUrl: target.href,
+    originalHost: target.host,
+    expiresAt,
+    startsAt,
+    maxClicks: input.maxClicks == null ? null : parseMaxClicks(input.maxClicks),
+    passwordHash: input.password ? await parsePassword(input.password) : null,
+  };
 
   let link;
   if (input.alias) {
@@ -58,6 +104,7 @@ export async function createLink(userId: string | null, input: { url: string; al
   }
 
   await syncLinkCache(link);
+  if (link.maxClicks !== null) await resetLimitCounter(link);
   return link;
 }
 
@@ -95,7 +142,7 @@ export async function listLinks(userId: string, opts: { q?: string; page: number
 export async function updateLink(
   userId: string,
   id: number,
-  input: { url?: string; expiresAt?: string | null; status?: LinkStatus },
+  input: { url?: string; expiresAt?: string | null; status?: LinkStatus } & ProtectionInput,
 ) {
   const current = await getOwnedLink(userId, id);
   const data: Prisma.LinkUpdateInput = {};
@@ -112,8 +159,17 @@ export async function updateLink(
     data.status = input.status;
   }
 
+  if (input.startsAt !== undefined) data.startsAt = input.startsAt === null ? null : parseStart(input.startsAt);
+  if (input.maxClicks !== undefined) data.maxClicks = input.maxClicks === null ? null : parseMaxClicks(input.maxClicks);
+  if (input.password !== undefined) data.passwordHash = input.password === null ? null : await parsePassword(input.password);
+  checkWindow(
+    data.startsAt !== undefined ? (data.startsAt as Date | null) : current.startsAt,
+    data.expiresAt !== undefined ? (data.expiresAt as Date | null) : current.expiresAt,
+  );
+
   const link = await prisma.link.update({ where: { id }, data });
   await syncLinkCache(link);
+  if (input.maxClicks !== undefined && link.maxClicks !== current.maxClicks) await resetLimitCounter(link);
   return link;
 }
 
@@ -121,4 +177,5 @@ export async function deleteLink(userId: string, id: number) {
   const link = await getOwnedLink(userId, id);
   await prisma.link.delete({ where: { id } });
   await clearLinkCache(link.shortCode);
+  await clearLimitCounter(link.id);
 }

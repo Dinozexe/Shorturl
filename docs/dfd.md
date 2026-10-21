@@ -15,11 +15,11 @@
 | Process | หน้าที่ | Service |
 |---|---|---|
 | 1.0 Authentication | ล็อกอินด้วย SSO (Google / Microsoft) หรือ API key (CLI), ออก access token (15 นาที) + refresh token (7 วัน, หมุนทุกครั้ง), logout | core-api |
-| 2.0 Link Management | สร้าง/แก้/ลบลิงก์, alias, วันหมดอายุ, ตรวจโดเมนต้องห้าม | core-api |
-| 3.0 Redirect | รับ short code → ตอบ 302 ไปยัง URL ปลายทาง (หรือ 404) แล้วส่ง click event | redirect-service |
-| 4.0 QR Generation | สร้าง QR Code (PNG/SVG) จาก short URL | core-api |
+| 2.0 Link Management | สร้าง/แก้/ลบลิงก์, alias, วันหมดอายุ, ตรวจโดเมนต้องห้าม; ผู้เยี่ยมชมที่ไม่ล็อกอินย่อได้แต่ลิงก์สั้น 7 วัน | core-api |
+| 3.0 Redirect | รับ short code → ตรวจวันเริ่ม/จำนวนคลิก/รหัสผ่าน → ตอบ 302 ไปยัง URL ปลายทาง (หรือ 404/403/410) แล้วส่ง click event | redirect-service |
+| 4.0 QR Generation | ส่งเมทริกซ์ QR + เก็บ/ล้างสไตล์ QR ของลิงก์ (หน้าเว็บวาด PNG/SVG ตามสไตล์เอง), QR มาตรฐาน PNG/SVG สำหรับสคริปต์ | core-api |
 | 5.0 Analytics | รับ click event เก็บลง Clicks เป็น batch, อัปเดตจำนวนคลิก, สรุปสถิติ | analytics-service |
-| 6.0 Admin Management | ระงับผู้ใช้, ปิดลิงก์, บล็อกโดเมน, ดูรายงาน + audit log | core-api |
+| 6.0 Admin Management | ระงับผู้ใช้/เปลี่ยนบทบาท, ปิด-เปิดลิงก์, บล็อกโดเมน (ดูผลกระทบก่อน, ปิดลิงก์เดิมอัตโนมัติ), ดูสถิติลิงก์ทุกคน, ภาพรวม + audit log | core-api |
 
 | Data Store | เก็บอะไร (ตาราง) |
 |---|---|

@@ -115,6 +115,9 @@ model Link {
   expiresAt    DateTime?  @map("expires_at")
   clickCount   Int        @default(0) @map("click_count")
   qrStyle      Json?      @map("qr_style")
+  passwordHash String?    @map("password_hash")
+  maxClicks    Int?       @map("max_clicks")
+  startsAt     DateTime?  @map("starts_at")
   createdAt    DateTime   @default(now()) @map("created_at")
 
   user       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)

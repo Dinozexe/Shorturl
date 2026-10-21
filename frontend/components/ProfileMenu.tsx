@@ -70,10 +70,6 @@ export function ProfileMenu({ onLogout, inAdmin, variant = 'avatar', side = 'bel
             <p className="truncate text-xs text-muted">{user.name ? user.email : t(`role.${user.role}` as 'role.ADMIN')}</p>
           </div>
           <div className="my-1 h-px bg-line" />
-          <Link href="/dashboard" role="menuitem" className={item}>
-            <AdminIcon name="mylinks" />
-            {t('dash.myLinks')}
-          </Link>
           {inAdmin ? (
             <Link href="/" role="menuitem" className={item}>
               <AdminIcon name="home" />

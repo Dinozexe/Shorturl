@@ -1,28 +1,24 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { copyText } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 import type { Link } from '@/lib/types';
-import { ActionIcon } from './admin/parts';
+import { AdminIcon } from './Icon';
+import { ActionIcon } from './ui/ActionIcon';
+import { Chip } from './ui/Chip';
 import { useToast } from './Toast';
 
 export type RowAction = 'qr' | 'stats' | 'edit' | 'toggle' | 'delete';
 
 function Status({ link }: { link: Link }) {
   const { t } = useI18n();
-  let label = t('status.active');
-  let tone = 'bg-ok/15 text-ok';
-  if (link.status === 'ADMIN_DISABLED') {
-    label = t('status.adminDisabled');
-    tone = 'bg-danger/15 text-danger';
-  } else if (link.status === 'DISABLED') {
-    label = t('status.disabled');
-    tone = 'bg-muted/15 text-muted';
-  } else if (link.expired) {
-    label = t('status.expired');
-    tone = 'bg-muted/15 text-muted';
-  }
-  return <span className={`inline-block rounded px-2 py-0.5 text-xs font-semibold ${tone}`}>{label}</span>;
+  if (link.status === 'ADMIN_DISABLED') return <Chip tone="danger">{t('status.adminDisabled')}</Chip>;
+  if (link.status === 'DISABLED') return <Chip>{t('status.disabled')}</Chip>;
+  if (link.expired) return <Chip>{t('status.expired')}</Chip>;
+  if (link.limitReached) return <Chip>{t('status.limitReached')}</Chip>;
+  if (link.notStarted) return <Chip tone="accent">{t('status.notStarted')}</Chip>;
+  return <Chip tone="ok">{t('status.active')}</Chip>;
 }
 
 export function LinkRow({ link, onAction, busy }: { link: Link; onAction: (a: RowAction, l: Link) => void; busy: boolean }) {
@@ -30,39 +26,62 @@ export function LinkRow({ link, onAction, busy }: { link: Link; onAction: (a: Ro
   const { t, fmt } = useI18n();
   const shown = link.shortUrl.replace(/^https?:\/\//, '');
   const code = link.shortCode;
+  const initial = (link.originalHost || link.originalUrl.replace(/^https?:\/\//, '')).replace(/^www\./, '').slice(0, 1).toUpperCase();
 
-  const copy = async () => toast((await copyText(link.shortUrl)) ? t('common.copied') : t('common.copyFailed'));
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const id = setTimeout(() => setCopied(false), 1500);
+    return () => clearTimeout(id);
+  }, [copied]);
+
+  const copy = async () => {
+    const done = await copyText(link.shortUrl);
+    setCopied(done);
+    toast(done ? t('common.copied') : t('common.copyFailed'));
+  };
   const act = (a: RowAction) => () => onAction(a, link);
   const canToggle = link.status !== 'ADMIN_DISABLED';
   const on = link.status === 'ACTIVE';
+  const dim = link.status !== 'ACTIVE' || link.expired || link.limitReached;
 
   return (
-    <li className="grid gap-x-6 gap-y-3 py-5 md:grid-cols-[minmax(0,1fr)_auto]">
+    <li className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 rounded-2xl sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:gap-x-5 px-3 py-3.5 transition-colors hover:bg-ink/[0.035] sm:px-4">
+      <span aria-hidden="true" className={`flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold ${dim ? 'bg-ink/[0.06] text-muted' : 'bg-accent/15 text-accent'}`}>
+        {initial}
+      </span>
+
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <a href={link.shortUrl} target="_blank" rel="noopener noreferrer" className="break-all font-mono text-lg font-semibold underline-offset-4 hover:underline">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <a href={link.shortUrl} target="_blank" rel="noopener noreferrer" className="break-all font-mono text-base font-semibold underline-offset-4 hover:underline sm:text-lg">
             {shown}
           </a>
           <Status link={link} />
         </div>
-        <p className="mt-1 truncate text-sm text-muted" title={link.originalUrl}>
+        <p className="mt-0.5 truncate text-sm text-muted" title={link.originalUrl}>
           {link.originalUrl}
         </p>
-        <p className="mt-1.5 flex flex-wrap gap-x-4 text-xs text-muted">
+        <p className="mt-1 flex flex-wrap gap-x-3 text-xs text-muted">
           <span>{t('row.created', { d: fmt.date(link.createdAt) })}</span>
+          {link.startsAt && <span>{t('row.starts', { d: fmt.date(link.startsAt) })}</span>}
           {link.expiresAt && <span>{t(link.expired ? 'row.expiredOn' : 'row.expires', { d: fmt.date(link.expiresAt) })}</span>}
+          {link.maxClicks !== null && <span>{t('row.limit', { n: fmt.number(link.maxClicks) })}</span>}
+          {link.hasPassword && (
+            <span className="inline-flex items-center gap-1">
+              <AdminIcon name="lock" className="h-3.5 w-3.5" />
+              {t('row.protected')}
+            </span>
+          )}
         </p>
       </div>
 
-      <div className="flex items-start gap-5 md:justify-end">
-        <p className="min-w-[4.5rem] md:text-right">
-          <span className="block text-2xl font-bold leading-none">{fmt.number(link.clickCount)}</span>
-          <span className="text-xs text-muted">{t('row.opens')}</span>
-        </p>
-      </div>
+      <p className="min-w-[4.5rem] text-right sm:border-l sm:border-line/60 sm:pl-5">
+        <span className="block text-2xl font-bold leading-none tabular-nums">{fmt.number(link.clickCount)}</span>
+        <span className="mt-1 block text-xs text-muted">{t('row.opens')}</span>
+      </p>
 
-      <div className="flex flex-wrap items-center gap-1 md:col-span-2">
-        <ActionIcon icon="copy" label={t('row.aria.copy', { code })} onClick={copy} />
+      <div className="col-span-3 flex items-center gap-0.5 border-t border-line/60 pt-2.5 sm:col-span-1 sm:border-0 sm:pt-0">
+        <ActionIcon icon={copied ? 'check' : 'copy'} tone={copied ? 'ok' : 'default'} label={t('row.aria.copy', { code })} onClick={copy} />
         <ActionIcon icon="qr" label={t('row.aria.qr', { code })} onClick={act('qr')} />
         <ActionIcon icon="clicks" label={t('row.aria.stats', { code })} onClick={act('stats')} />
         <ActionIcon icon="edit" label={t('row.aria.edit', { code })} onClick={act('edit')} />

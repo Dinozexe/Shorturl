@@ -4,19 +4,28 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useToast } from '@/components/Toast';
 import { AdminIcon } from '@/components/Icon';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { DetailModal } from '@/components/ui/DetailModal';
 import { api } from '@/lib/api';
 import { useI18n, type MsgKey } from '@/lib/i18n';
 import type { BlockedDomain, DomainPreview } from '@/lib/types';
-import { ActionIcon, DataTable, ListShell } from './parts';
+import { Select } from '@/components/ui/Select';
+import { ActionIcon } from '@/components/ui/ActionIcon';
+import { ClearFilters, dayOptions } from '@/components/ui/FilterBar';
+import { DataTable } from '@/components/ui/DataTable';
+import { ListCard } from '@/components/ui/ListCard';
 import { useAdminList } from './useAdminList';
 
 const QUICK = ['spam', 'phishing', 'malware', 'abuse'] as const;
 
 // หน้าโดเมนที่บล็อก: ตารางอยู่ซ้าย (กว้าง) · ฟอร์มบล็อกอยู่ขวา พร้อมแสดงผลกระทบก่อนกดบล็อกว่าจะปิดลิงก์เดิมกี่รายการ
 export function DomainsPanel() {
-  const { t, fmt } = useI18n();
+  const { t, fmt, lang } = useI18n();
+  const when = new Intl.DateTimeFormat(lang === 'th' ? 'th-TH' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+  const [view, setView] = useState<BlockedDomain | null>(null);
   const toast = useToast();
-  const list = useAdminList<BlockedDomain>('/api/admin/blocked-domains');
+  const [daysF, setDaysF] = useState('');
+  const list = useAdminList<BlockedDomain>('/api/admin/blocked-domains', daysF ? { days: daysF } : {});
   const [domain, setDomain] = useState('');
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -92,8 +101,8 @@ export function DomainsPanel() {
   );
 
   return (
-    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
-      <form onSubmit={submit} noValidate aria-label={t('admin.d.formTitle')} className="bento p-5 xl:sticky xl:top-20 xl:order-2">
+    <div className="flex flex-col gap-6">
+      <form onSubmit={submit} noValidate aria-label={t('admin.d.formTitle')} className="bento p-5">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-danger/10 text-danger">
             <AdminIcon name="domains" className="h-5 w-5" />
@@ -101,57 +110,66 @@ export function DomainsPanel() {
           <h2 className="text-lg font-bold">{t('admin.d.formTitle')}</h2>
         </div>
 
-        <label className="relative mt-5 block">
-          <span className="sr-only">{t('admin.d.domain')}</span>
-          <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-          </svg>
-          <input
-            className="h-11 w-full rounded-xl bg-ink/[0.05] pl-10 pr-3 font-mono text-sm outline-none placeholder:font-sans placeholder:text-muted/70 focus:ring-2 focus:ring-accent"
-            placeholder={t('admin.d.domain')}
-            value={domain}
-            onChange={(e) => {
-              setDomain(e.target.value);
-              setError(null);
-            }}
-            autoComplete="off"
-            spellCheck={false}
-          />
-        </label>
-        <div className="mt-2.5 min-h-[1.25rem]" aria-live="polite">
-          {error ? (
-            <p role="alert" className="text-[13px] font-medium text-danger">
-              {error}
-            </p>
-          ) : (
-            impact
-          )}
+        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto]">
+          <label className="relative block">
+            <span className="sr-only">{t('admin.d.domain')}</span>
+            <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+            </svg>
+            <input
+              className="h-11 w-full rounded-xl bg-ink/[0.05] pl-10 pr-3 font-mono text-sm outline-none placeholder:font-sans placeholder:text-muted/70 focus:ring-2 focus:ring-accent"
+              placeholder={t('admin.d.domain')}
+              value={domain}
+              onChange={(e) => {
+                setDomain(e.target.value);
+                setError(null);
+              }}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </label>
+          <label className="block">
+            <span className="sr-only">{t('admin.d.reason')}</span>
+            <input className="h-11 w-full rounded-xl bg-ink/[0.05] px-3.5 text-sm outline-none placeholder:text-muted/70 focus:ring-2 focus:ring-accent" placeholder={t('admin.d.reason')} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={200} autoComplete="off" />
+          </label>
+          <button type="submit" className="btn-danger h-11 px-6 !border-0 !bg-danger !font-semibold !text-white hover:!opacity-90">
+            <AdminIcon name="domains" className="h-4 w-4" />
+            {t('admin.d.submit')}
+          </button>
         </div>
 
-        <label className="mt-4 block">
-          <span className="sr-only">{t('admin.d.reason')}</span>
-          <input className="h-11 w-full rounded-xl bg-ink/[0.05] px-3.5 text-sm outline-none placeholder:text-muted/70 focus:ring-2 focus:ring-accent" placeholder={t('admin.d.reason')} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={200} autoComplete="off" />
-        </label>
-        <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label={t('admin.d.reasonQuick')}>
-          {QUICK.map((q) => (
-            <button key={q} type="button" onClick={() => setReason(t(`admin.d.r.${q}` as MsgKey))} className="rounded-full bg-ink/[0.05] px-3 py-1 text-xs font-medium text-ink/80 transition-colors hover:bg-ink/[0.09]">
-              {t(`admin.d.r.${q}` as MsgKey)}
-            </button>
-          ))}
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="min-h-[1.25rem] min-w-0 flex-1 basis-72" aria-live="polite">
+            {error ? (
+              <p role="alert" className="text-[13px] font-medium text-danger">
+                {error}
+              </p>
+            ) : (
+              impact
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('admin.d.reasonQuick')}>
+            {QUICK.map((q) => (
+              <button key={q} type="button" onClick={() => setReason(t(`admin.d.r.${q}` as MsgKey))} className="rounded-full bg-ink/[0.05] px-3 py-1 text-xs font-medium text-ink/80 transition-colors hover:bg-ink/[0.09]">
+                {t(`admin.d.r.${q}` as MsgKey)}
+              </button>
+            ))}
+          </div>
         </div>
-
-        <button type="submit" className="btn-danger mt-5 h-11 w-full !border-0 !bg-danger !font-semibold !text-white hover:!opacity-90">
-          <AdminIcon name="domains" className="h-4 w-4" />
-          {t('admin.d.submit')}
-        </button>
       </form>
 
-      <div className="min-w-0 xl:order-1">
-        <ListShell
+      <div className="min-w-0">
+        <ListCard
           title={t('admin.tab.domains')}
           total={list.data?.total ?? null}
-          controls={<input className="field py-2 sm:w-64" type="search" aria-label={t('admin.d.search')} placeholder={t('admin.d.search')} value={list.q} onChange={(e) => list.setQ(e.target.value)} />}
+          controls={<input className="field h-9 w-full text-ellipsis py-0 text-sm sm:w-52 xl:w-60" type="search" aria-label={t('admin.d.search')} placeholder={t('admin.d.search')} value={list.q} onChange={(e) => list.setQ(e.target.value)} />}
+          filters={
+            <>
+              <Select<string> label={t('admin.fl.period')} value={daysF} options={dayOptions(t)} onChange={setDaysF} className="w-auto" />
+              <ClearFilters active={!!daysF} onClear={() => setDaysF('')} />
+            </>
+          }
           error={list.error}
           onRetry={list.reload}
           loading={list.loading}
@@ -161,19 +179,13 @@ export function DomainsPanel() {
           totalPages={list.totalPages}
           onPage={list.setPage}
         >
-          {list.data && list.data.items.length === 0 && (
-            <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink/[0.05] text-muted">
-                <AdminIcon name="domains" className="h-7 w-7" />
-              </span>
-              <p className="font-semibold">{list.debouncedQ ? t('admin.empty') : t('admin.d.empty')}</p>
-              {!list.debouncedQ && <p className="max-w-xs text-sm text-muted">{t('admin.d.emptyHint')}</p>}
-            </div>
-          )}
+          {list.data && list.data.items.length === 0 && <EmptyState icon="domains" title={list.debouncedQ ? t('admin.empty') : t('admin.d.empty')} body={list.debouncedQ ? undefined : t('admin.d.emptyHint')} />}
           {list.data && list.data.items.length > 0 && (
             <DataTable
               rows={list.data.items}
               rowKey={(d) => d.id}
+              onRowClick={setView}
+              rowLabel={(d) => `${t('admin.view')}: ${d.domain}`}
               columns={[
                 {
                   id: 'domain',
@@ -204,13 +216,48 @@ export function DomainsPanel() {
                     </div>
                   ),
                 },
-                { id: 'actions', header: t('admin.col.actions'), className: 'w-24', cell: (d) => <ActionIcon icon="unlock" label={t('admin.d.unblock')} onClick={() => setAskUnblock(d)} /> },
+                { id: 'actions', header: t('admin.col.actions'), className: 'w-24', cell: (d) => (
+                    <div className="flex items-center gap-0.5">
+                      <ActionIcon icon="eye" label={t('admin.view')} onClick={() => setView(d)} />
+                      <ActionIcon icon="unlock" label={t('admin.d.unblock')} onClick={() => setAskUnblock(d)} />
+                    </div>
+                  ),
+                },
               ]}
             />
           )}
-        </ListShell>
+        </ListCard>
       </div>
 
+      <DetailModal
+        open={!!view}
+        title={t('admin.detail.domain')}
+        subtitle={view?.domain}
+        icon="domains"
+        tone="danger"
+        infoLabel={t('admin.tab.info')}
+        onClose={() => setView(null)}
+        fields={
+          view
+            ? [
+                { icon: 'globe', label: t('admin.col.domain'), value: view.domain, copy: view.domain, mono: true },
+                { icon: 'info', label: t('admin.col.reason'), value: view.reason || t('admin.f.none') },
+                { half: true, icon: 'links', label: t('admin.d.col.matched'), value: fmt.number(view.linkCount) },
+                { half: true, icon: 'linkOff', label: t('admin.d.col.off'), value: fmt.number(view.disabledCount) },
+                { icon: 'user', label: t('admin.col.by'), value: view.createdByEmail || t('admin.f.none') },
+                { half: true, icon: 'calendar', label: t('admin.col.created'), value: when.format(new Date(view.createdAt)) },
+              ]
+            : []
+        }
+        footer={
+          view && (
+            <button type="button" className="btn" onClick={() => { setAskUnblock(view); setView(null); }}>
+              <AdminIcon name="unlock" className="h-4 w-4" />
+              {t('admin.d.unblock')}
+            </button>
+          )
+        }
+      />
       <ConfirmModal
         open={askBlock}
         title={t('admin.c.block.title')}

@@ -5,10 +5,12 @@ export const DOT_STYLES = ['square', 'rounded', 'dots', 'diamond', 'classy'] as 
 export const EYE_STYLES = ['square', 'rounded', 'circle'] as const;
 export const LOGOS = ['none', 'link', 'star', 'heart', 'bolt'] as const;
 export const ANGLES = [0, 45, 90, 135] as const;
+export const CAPTION_STYLES = ['pill', 'bar', 'text'] as const;
 
 export type DotStyle = (typeof DOT_STYLES)[number];
 export type EyeStyle = (typeof EYE_STYLES)[number];
 export type LogoId = (typeof LOGOS)[number];
+export type CaptionStyle = (typeof CAPTION_STYLES)[number];
 
 export interface QrStyle {
   dots: DotStyle;
@@ -21,6 +23,7 @@ export interface QrStyle {
   logo: LogoId;
   logoSize: number; // % ของความกว้าง
   caption: string;
+  captionStyle: CaptionStyle; // pill = ป้ายมนกลาง, bar = แถบเต็มความกว้างใต้ QR, text = ตัวอักษรล้วน
   margin: number; // quiet zone (โมดูล)
 }
 
@@ -40,6 +43,7 @@ export const DEFAULT_STYLE: QrStyle = {
   logo: 'none',
   logoSize: 18,
   caption: '',
+  captionStyle: 'pill',
   margin: 4,
 };
 
@@ -54,7 +58,7 @@ export const PRESETS: Array<{ id: string; style: Partial<QrStyle> }> = [
 ];
 
 const U = 10; // 1 โมดูล = 10 หน่วย SVG
-const CAPTION_H = 64;
+const CAPTION_H = 88;
 
 // ---------------------------------------------------------------- สี
 
@@ -241,10 +245,28 @@ export function renderQrSvg(m: QrMatrix, style: QrStyle, logoDataUrl?: string | 
     }
   }
 
-  // ข้อความใต้ QR
+  // ข้อความใต้ QR (อยู่นอกพื้นที่ QR จึงไม่กระทบการสแกน)
   if (caption) {
-    const fs = Math.min(30, Math.max(14, (side * 0.9) / Math.max(caption.length * 0.62, 1)));
-    body += `<text x="${f(width / 2)}" y="${f(side + CAPTION_H / 2 + fs * 0.12)}" text-anchor="middle" dominant-baseline="middle" font-family="'Noto Sans Thai','Sarabun',system-ui,sans-serif" font-size="${f(fs)}" font-weight="700" fill="${style.eyeColor ?? style.fg}">${esc(caption)}</text>`;
+    const mode = style.captionStyle;
+    const font = "font-family=\"'Noto Sans Thai','Sarabun',system-ui,sans-serif\" font-weight=\"700\"";
+    // สีตัวอักษรบนป้าย/แถบ: ขาวถ้าพื้นสีเข้ม, เข้มถ้าพื้นสีอ่อน (ไล่เฉดใช้ค่าเฉลี่ยของสองสี)
+    const fillLum = style.fg2 ? (lum(style.fg) + lum(style.fg2)) / 2 : lum(style.fg);
+    const onFill = fillLum < 0.4 ? '#ffffff' : '#0f172a';
+    const cy = side + CAPTION_H / 2;
+    if (mode === 'text') {
+      const fs = Math.min(32, Math.max(16, (side * 0.9) / Math.max(caption.length * 0.62, 1)));
+      body += `<text x="${f(width / 2)}" y="${f(cy)}" text-anchor="middle" dominant-baseline="central" ${font} font-size="${f(fs)}" letter-spacing="0.5" fill="${style.eyeColor ?? style.fg}">${esc(caption)}</text>`;
+    } else if (mode === 'bar') {
+      const fs = Math.min(30, Math.max(15, (side * 0.88) / Math.max(caption.length * 0.62, 1)));
+      body += `<path d="${roundRect(0, side - 2, width, CAPTION_H + 2, 0, 0, 0, 0)}" fill="${fill}"/>`;
+      body += `<text x="${f(width / 2)}" y="${f(cy)}" text-anchor="middle" dominant-baseline="central" ${font} font-size="${f(fs)}" letter-spacing="0.5" fill="${onFill}">${esc(caption)}</text>`;
+    } else {
+      const fs = Math.min(28, Math.max(15, (side * 0.7) / Math.max(caption.length * 0.62, 1)));
+      const pw = Math.min(width - 40, caption.length * fs * 0.62 + 64);
+      const ph = fs + 28;
+      body += `<rect x="${f((width - pw) / 2)}" y="${f(cy - ph / 2 - 2)}" width="${f(pw)}" height="${f(ph)}" rx="${f(ph / 2)}" fill="${fill}"/>`;
+      body += `<text x="${f(width / 2)}" y="${f(cy - 2)}" text-anchor="middle" dominant-baseline="central" ${font} font-size="${f(fs)}" letter-spacing="0.5" fill="${onFill}">${esc(caption)}</text>`;
+    }
   }
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" shape-rendering="geometricPrecision">${defs}${body}</svg>`;

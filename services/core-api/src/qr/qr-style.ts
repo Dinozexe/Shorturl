@@ -4,6 +4,7 @@ import { HttpError } from '../common/http-error';
 export const DOT_STYLES = ['square', 'rounded', 'dots', 'diamond', 'classy'] as const;
 export const EYE_STYLES = ['square', 'rounded', 'circle'] as const;
 export const LOGOS = ['none', 'link', 'star', 'heart', 'bolt'] as const;
+export const CAPTION_STYLES = ['pill', 'bar', 'text'] as const;
 export const ANGLES = [0, 45, 90, 135] as const;
 
 export interface QrStyle {
@@ -17,6 +18,7 @@ export interface QrStyle {
   logo: (typeof LOGOS)[number];
   logoSize: number; // % ของความกว้าง 10–22 (ECC ระดับ H รับได้)
   caption: string; // ข้อความใต้ QR (ว่างได้)
+  captionStyle: (typeof CAPTION_STYLES)[number];
   margin: number; // quiet zone เป็นจำนวนโมดูล 2–8
 }
 
@@ -54,6 +56,7 @@ export function parseQrStyle(raw: unknown): QrStyle {
     logo: oneOf(o.logo ?? 'none', LOGOS, 'โลโก้'),
     logoSize: Math.round(logoSize),
     caption,
+    captionStyle: oneOf(o.captionStyle ?? 'pill', CAPTION_STYLES, 'รูปแบบข้อความใต้ QR'),
     margin,
   };
   return style;

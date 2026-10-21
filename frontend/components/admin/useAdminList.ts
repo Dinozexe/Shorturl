@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { PAGE_SIZE } from '@/components/ui/Pager';
 import { useI18n } from '@/lib/i18n';
 import type { Paged } from '@/lib/types';
 
-const PAGE_SIZE = 15;
 
 /** โหลดรายการแบบแบ่งหน้าจาก /api/admin/... พร้อมคำค้น (หน่วงพิมพ์ 300 ms) และตัวกรองเพิ่มเติม */
 export function useAdminList<T>(path: string, extra: Record<string, string> = {}) {
@@ -30,6 +30,7 @@ export function useAdminList<T>(path: string, extra: Record<string, string> = {}
   useEffect(() => {
     setPage(1);
   }, [extraKey]);
+
 
   useEffect(() => {
     let alive = true;

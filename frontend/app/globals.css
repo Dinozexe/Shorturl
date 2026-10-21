@@ -60,7 +60,9 @@
     color: rgb(var(--paper));
   }
   dialog::backdrop {
-    background: rgb(var(--ink) / 0.55);
+    /* ฉากหลังหน้าต่างเด้ง: ดำโปร่งเสมอ (ไม่ใช้ --ink เพราะโหมดมืด ink เป็นสีอ่อน ทำให้เป็นฝ้าขาวทับหน้า) */
+    background: rgb(0 0 0 / 0.55);
+    backdrop-filter: blur(2px);
   }
 }
 

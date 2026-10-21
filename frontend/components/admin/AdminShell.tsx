@@ -6,7 +6,6 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { HeaderControls } from '@/components/HeaderControls';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import { SidebarSettings } from './SidebarSettings';
-import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useI18n, type MsgKey } from '@/lib/i18n';
 import type { AdminOverview, Role } from '@/lib/types';
@@ -20,14 +19,13 @@ interface Item {
   label: MsgKey;
   icon: AdminIconName;
   adminOnly?: boolean; // ผู้ช่วยดูแล (MODERATOR) ไม่เห็นรายการนี้ และ API ก็ตอบ 403
-  badge?: keyof AdminOverview; // ตัวเลขเตือนข้างเมนู (แสดงเมื่อ > 0)
 }
 
 const ITEMS: Item[] = [
   { id: 'overview', label: 'admin.tab.overview', icon: 'overview' },
-  { id: 'users', label: 'admin.tab.users', icon: 'users', adminOnly: true, badge: 'bannedUsers' },
-  { id: 'links', label: 'admin.tab.links', icon: 'links', badge: 'adminDisabledLinks' },
-  { id: 'domains', label: 'admin.tab.domains', icon: 'domains', badge: 'blockedDomains' },
+  { id: 'users', label: 'admin.tab.users', icon: 'users', adminOnly: true },
+  { id: 'links', label: 'admin.tab.links', icon: 'links' },
+  { id: 'domains', label: 'admin.tab.domains', icon: 'domains' },
   { id: 'audit', label: 'admin.tab.audit', icon: 'audit', adminOnly: true },
 ];
 
@@ -53,7 +51,6 @@ export function AdminShell({ tab, onNav, role, children }: ShellProps) {
   const current = tabMeta(tab);
   const [collapsed, setCollapsed] = useState(false);
   const [drawer, setDrawer] = useState(false);
-  const [counts, setCounts] = useState<AdminOverview | null>(null);
 
   useEffect(() => {
     try {
@@ -68,17 +65,6 @@ export function AdminShell({ tab, onNav, role, children }: ShellProps) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [drawer]);
-  // ตัวเลขเตือนข้างเมนู: โหลดใหม่ทุกครั้งที่เปลี่ยนหน้า
-  useEffect(() => {
-    let alive = true;
-    api<AdminOverview>('/api/admin/overview')
-      .then((d) => alive && setCounts(d))
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, [tab]);
-
   const toggleCollapse = () =>
     setCollapsed((c) => {
       try {
@@ -104,17 +90,9 @@ export function AdminShell({ tab, onNav, role, children }: ShellProps) {
   const rowOn = 'bg-ink/[0.07] font-bold text-ink';
   const rowOff = 'font-medium text-muted hover:bg-ink/[0.05] hover:text-ink';
 
-  const Badge = ({ n }: { n: number }) =>
-    n > 0 ? (
-      <>
-        <span className={`ml-auto rounded-md bg-danger/15 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-danger ${lbl}`}>{n}</span>
-        <span aria-hidden="true" className={`absolute right-1.5 top-1.5 hidden h-2 w-2 rounded-full bg-danger ${collapsed ? 'md:block' : ''}`} />
-      </>
-    ) : null;
-
   return (
     <div className="min-h-svh bg-ink/[0.035] md:flex">
-      {drawer && <div className="fixed inset-0 z-40 bg-ink/40 md:hidden" onClick={() => setDrawer(false)} aria-hidden="true" />}
+      {drawer && <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setDrawer(false)} aria-hidden="true" />}
 
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-72 transition-[transform,width] duration-200 ease-out md:sticky md:top-0 md:z-30 md:h-svh md:translate-x-0 ${drawer ? 'translate-x-0' : '-translate-x-full'} ${collapsed ? 'md:w-[4.75rem]' : 'md:w-64'}`}
@@ -144,13 +122,11 @@ export function AdminShell({ tab, onNav, role, children }: ShellProps) {
             <ul className="flex flex-col gap-1">
               {items.map((it) => {
                 const active = it.id === tab;
-                const count = it.badge && counts ? counts[it.badge] : 0;
                 return (
                   <li key={it.id} className="group/item relative">
                     <button type="button" aria-label={t(it.label)} aria-current={active ? 'page' : undefined} onClick={() => go(it.id)} className={`${rowBase} ${active ? rowOn : rowOff}`}>
                       <AdminIcon name={it.icon} className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-accent' : ''}`} />
                       <span className={`truncate ${lbl}`}>{t(it.label)}</span>
-                      <Badge n={count} />
                     </button>
                     {collapsed && (
                       <span role="tooltip" className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 hidden -translate-y-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-xs font-semibold text-paper opacity-0 shadow-lg transition-opacity md:block md:group-hover/item:opacity-100">

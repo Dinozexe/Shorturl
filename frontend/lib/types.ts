@@ -18,6 +18,11 @@ export interface Link {
   expiresAt: string | null;
   expired: boolean;
   clickCount: number;
+  startsAt: string | null;
+  notStarted: boolean;
+  maxClicks: number | null;
+  limitReached: boolean;
+  hasPassword: boolean;
   qrStyle?: Partial<import('./qrRender').QrStyle> | null;
   createdAt: string;
 }

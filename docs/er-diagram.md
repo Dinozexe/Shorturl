@@ -49,6 +49,10 @@ erDiagram
         string original_host "lowercase, idx"
         enum status "ACTIVE | DISABLED | ADMIN_DISABLED"
         datetime expires_at "nullable"
+        jsonb qr_style "nullable, สไตล์ QR ที่บันทึกไว้"
+        string password_hash "nullable, scrypt"
+        int max_clicks "nullable, จำกัดจำนวนเปิด"
+        timestamp starts_at "nullable, วันเริ่มใช้งาน"
         int click_count "denormalized"
         datetime created_at
     }
@@ -98,6 +102,11 @@ erDiagram
 | `links.status` 3 สถานะ | `ADMIN_DISABLED` แยกจาก `DISABLED` (เจ้าของปิดเอง) — เดิมใช้ `status` + flag ซึ่งเกิดสถานะขัดแย้งได้ |
 | `links.original_host` | เก็บ hostname แยก (มี index) → บล็อกโดเมน/ปิดลิงก์เดิมด้วย `WHERE original_host = d OR LIKE '%.d'` ไม่ต้อง parse URL ทุกแถว |
 | `links.user_id` SET NULL | ลบผู้ใช้แล้วลิงก์/QR ที่แจกไปแล้วยังใช้ได้ |
+| `links.qr_style` | JSONB (nullable) เก็บสไตล์ QR ที่ผู้ใช้ตั้ง: ลายจุด/ตา/สี/ไล่เฉด/โลโก้สำเร็จรูป/ข้อความใต้ QR/ขอบ — ผ่านการตรวจและกรองฟิลด์ก่อนเก็บ (ไม่เก็บรูปที่อัปโหลด); null = QR มาตรฐานดำบนขาว |
+| `links.password_hash` | `scrypt$salt$hash` (salt สุ่มต่อลิงก์) ไม่เก็บรหัสจริง ไม่ส่งออกทาง API (DTO มีแค่ `hasPassword`); null = ไม่มีรหัส |
+| `links.max_clicks` | จำกัดจำนวนครั้งที่เปิดได้ (1–1,000,000); ตัวนับจริงอยู่ใน Redis `lim:{id}` เพื่อให้นับแบบ atomic; null = ไม่จำกัด |
+| `links.starts_at` | ก่อนเวลานี้ redirect-service ตอบหน้า "ยังไม่เปิดใช้งาน" (403); null = ใช้ได้ทันที |
+| `links.user_id` NULL | ลิงก์ที่สร้างโดยไม่ล็อกอิน (`POST /api/guest/links`) ไม่มีเจ้าของ หมดอายุใน 7 วัน |
 | `click_count` | เก็บซ้ำใน `links` เพื่ออ่านเร็ว; อัปเดตเป็น batch (`CLICK_FLUSH_SECONDS`=60) จากคิว Redis |
 | `clicks` + `link_daily_stats` | คลิกดิบถูกลบเมื่อเกิน `CLICK_RETENTION_DAYS` (90) เพื่อไม่ให้ DB ฟรีเต็ม; ยอดรายวันสะสมใน `link_daily_stats` (เขียนใน transaction เดียวกับ clicks) จึงดูกราฟย้อนหลังได้ถาวร |
 | `device` เป็น enum | ค่าปิดตายตัว; `os`/`browser`/`country` เปิดกว้างจึงเป็น text (country มี CHECK `^[A-Z]{2}$`) |

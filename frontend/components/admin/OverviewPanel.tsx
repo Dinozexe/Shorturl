@@ -1,13 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AdminIcon, type AdminIconName } from '@/components/Icon';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useI18n, type MsgKey } from '@/lib/i18n';
 import type { AdminLink, AdminOverview, AuditEntry, Paged } from '@/lib/types';
 import type { AdminTab } from './AdminShell';
-import { Chip, DataTable } from './parts';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { Chip } from '@/components/ui/Chip';
+import { DataTable } from '@/components/ui/DataTable';
 
 const TILES: Array<{ key: keyof AdminOverview; label: MsgKey; icon: AdminIconName; warn?: boolean }> = [
   { key: 'users', label: 'admin.ov.users', icon: 'users' },
@@ -46,7 +50,8 @@ export function OverviewPanel({ onTab }: { onTab: (t: AdminTab) => void }) {
   const [error, setError] = useState<string | null>(null);
   const when = new Intl.DateTimeFormat(lang === 'th' ? 'th-TH' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' });
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setError(null);
     api<AdminOverview>('/api/admin/overview')
       .then(setData)
       .catch((e) => setError(e instanceof Error ? e.message : t('admin.loadFail')));
@@ -60,8 +65,10 @@ export function OverviewPanel({ onTab }: { onTab: (t: AdminTab) => void }) {
     }
   }, [t, isAdmin]);
 
-  if (error) return <p role="alert" className="py-6 text-center text-sm font-medium text-danger">{error}</p>;
-  if (!data) return <p className="py-10 text-center text-muted">{t('admin.loading')}</p>;
+  useEffect(load, [load]);
+
+  if (error) return <ErrorState message={error} onRetry={load} className="bento" />;
+  if (!data) return <LoadingState text={t('admin.loading')} />;
 
   return (
     <div className="flex flex-col gap-6">
@@ -86,7 +93,7 @@ export function OverviewPanel({ onTab }: { onTab: (t: AdminTab) => void }) {
       <div className={`grid gap-6 ${isAdmin ? '2xl:grid-cols-2' : ''}`}>
         <Block title={t('admin.recent.links')} onAll={() => onTab('links')}>
           {links && links.length === 0 ? (
-            <p className="px-5 pb-6 text-sm text-muted">{t('admin.recent.empty')}</p>
+            <EmptyState compact icon="inbox" title={t('admin.recent.empty')} />
           ) : (
             links && (
               <DataTable
@@ -106,7 +113,7 @@ export function OverviewPanel({ onTab }: { onTab: (t: AdminTab) => void }) {
         {isAdmin && (
           <Block title={t('admin.recent.audit')} onAll={() => onTab('audit')}>
             {audit && audit.length === 0 ? (
-              <p className="px-5 pb-6 text-sm text-muted">{t('admin.recent.empty')}</p>
+              <EmptyState compact icon="inbox" title={t('admin.recent.empty')} />
             ) : (
               audit && (
                 <DataTable

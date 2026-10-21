@@ -36,6 +36,18 @@ const isString = (v: unknown): v is string => typeof v === 'string';
 const bodyOf = (body: unknown): Record<string, unknown> =>
   body && typeof body === 'object' && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
 
+// ฟิลด์ป้องกันลิงก์: ไม่ส่ง = ไม่เปลี่ยน, null = ยกเลิก; ตรวจรูปแบบละเอียดใน links.service
+function protectionOf(b: Record<string, unknown>) {
+  if (b.password !== undefined && b.password !== null && !isString(b.password)) throw new HttpError(400, 'รหัสผ่านของลิงก์ไม่ถูกต้อง');
+  if (b.startsAt !== undefined && b.startsAt !== null && !isString(b.startsAt)) throw new HttpError(400, 'วันเริ่มใช้งานไม่ถูกต้อง');
+  if (b.maxClicks !== undefined && b.maxClicks !== null && typeof b.maxClicks !== 'number') throw new HttpError(400, 'จำนวนคลิกสูงสุดไม่ถูกต้อง');
+  return {
+    password: b.password as string | null | undefined,
+    startsAt: b.startsAt as string | null | undefined,
+    maxClicks: b.maxClicks as number | null | undefined,
+  };
+}
+
 linksRouter.post('/', rateLimit('link-create', 30, 60), async (req, res) => {
   const b = bodyOf(req.body);
   if (!isString(b.url)) throw new HttpError(400, 'กรุณากรอกลิงก์');
@@ -46,6 +58,7 @@ linksRouter.post('/', rateLimit('link-create', 30, 60), async (req, res) => {
     url: b.url,
     alias: (b.alias as string | null | undefined) || undefined,
     expiresAt: b.expiresAt as string | null | undefined,
+    ...protectionOf(b),
   });
   res.status(201).json(toLinkDto(link));
 });
@@ -56,6 +69,17 @@ linksRouter.get('/', async (req, res) => {
   const pageSize = Math.min(100, Math.max(1, Math.floor(Number(req.query.pageSize)) || 20));
   const { items, total } = await listLinks(req.user!.id, { q: q || undefined, page, pageSize });
   res.json({ items: items.map(toLinkDto), total, page, pageSize });
+});
+
+// ตัวเลขรวมของเจ้าของบัญชี (ทุกหน้า ไม่ใช่เฉพาะหน้าที่เปิดอยู่) สำหรับการ์ดสรุปบน dashboard
+linksRouter.get('/summary', async (req, res) => {
+  const userId = req.user!.id;
+  const [total, active, clicks] = await prisma.$transaction([
+    prisma.link.count({ where: { userId } }),
+    prisma.link.count({ where: { userId, status: 'ACTIVE', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } }),
+    prisma.link.aggregate({ where: { userId }, _sum: { clickCount: true } }),
+  ]);
+  res.json({ total, active, clicks: clicks._sum.clickCount ?? 0 });
 });
 
 linksRouter.get('/:id', async (req, res) => {
@@ -74,6 +98,7 @@ linksRouter.patch('/:id', async (req, res) => {
     url: b.url as string | undefined,
     expiresAt: b.expiresAt as string | null | undefined,
     status: b.status as LinkStatus | undefined,
+    ...protectionOf(b),
   });
   res.json(toLinkDto(link));
 });

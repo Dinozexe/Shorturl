@@ -12,10 +12,12 @@ interface ModalProps {
   wide?: boolean;
   /** กล่องเล็กแบบจัดกลาง: ไม่มีแถบหัวเรื่องของ Modal (ผู้เรียกวาง <h2 id="modal-title"> เอง) เหลือแค่ปุ่มปิดมุมขวาบน */
   bare?: boolean;
+  /** ไม่มีขอบในกล่อง: ผู้เรียกจัดหัวกล่อง/เนื้อหาเอง (แบนเนอร์เต็มความกว้าง ฯลฯ) — ปุ่มปิดลอยมุมขวาบน */
+  flush?: boolean;
 }
 
 // ใช้ <dialog> ของเบราว์เซอร์: ล็อกโฟกัสในกล่อง, กด Esc ปิดได้, อ่านออกเสียงเป็น dialog ให้อัตโนมัติ
-export function Modal({ open, onClose, title, children, wide, bare }: ModalProps) {
+export function Modal({ open, onClose, title, children, wide, bare, flush }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const { t } = useI18n();
 
@@ -34,16 +36,16 @@ export function Modal({ open, onClose, title, children, wide, bare }: ModalProps
         if (e.target === ref.current) onClose(); // คลิกพื้นหลัง
       }}
       aria-labelledby="modal-title"
-      className={`m-auto w-[calc(100%-1.5rem)] rounded-3xl bg-surface p-0 text-ink shadow-2xl ${wide ? 'max-w-4xl' : bare ? 'max-w-md' : 'max-w-lg'}`}
+      className={`m-auto w-[calc(100%-1.5rem)] rounded-3xl bg-surface p-0 text-ink shadow-2xl ${wide ? 'max-w-4xl' : bare ? 'max-w-md' : 'max-w-lg'} ${flush ? 'overflow-hidden' : ''}`}
     >
       {open && (
-        <div className={`max-h-[85vh] overflow-y-auto p-5 sm:p-6 ${bare ? 'relative px-6 pb-6 pt-8 sm:px-8' : ''}`}>
-          {bare && (
+        <div className={`max-h-[88vh] overflow-y-auto ${flush ? 'relative' : 'p-5 sm:p-6'} ${bare ? 'relative px-6 pb-6 pt-8 sm:px-8' : ''}`}>
+          {(bare || flush) && (
             <button type="button" onClick={onClose} className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-ink/[0.07] hover:text-ink" aria-label={t('common.closeDialog')} title={t('common.close')}>
               <AdminIcon name="x" className="h-5 w-5" />
             </button>
           )}
-          {!bare && <div className="mb-5 flex items-start justify-between gap-4">
+          {!bare && !flush && <div className="mb-5 flex items-start justify-between gap-4">
             <h2 id="modal-title" className="text-xl font-bold">
               {title}
             </h2>

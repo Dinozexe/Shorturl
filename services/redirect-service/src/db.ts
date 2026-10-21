@@ -10,13 +10,26 @@ export interface LinkRow {
   url: string;
   status: 'ACTIVE' | 'DISABLED' | 'ADMIN_DISABLED';
   expiresAt: Date | null;
+  startsAt: Date | null;
+  maxClicks: number | null;
+  hasPassword: boolean;
 }
 
 export async function findLink(code: string): Promise<LinkRow | null> {
   const { rows } = await pool.query(
     // Prisma เก็บเวลาเป็น UTC ใน `timestamp` (ไม่มี time zone) แต่ pg อ่านเป็นเวลาท้องถิ่นของเครื่อง → ต้อง AT TIME ZONE 'UTC' ไม่งั้นวันหมดอายุเพี้ยนตาม timezone
-    `SELECT id, original_url AS url, status, expires_at AT TIME ZONE 'UTC' AS "expiresAt" FROM links WHERE short_code = $1`,
+    `SELECT id, original_url AS url, status, expires_at AT TIME ZONE 'UTC' AS "expiresAt", starts_at AT TIME ZONE 'UTC' AS "startsAt", max_clicks AS "maxClicks", (password_hash IS NOT NULL) AS "hasPassword" FROM links WHERE short_code = $1`,
     [code],
   );
   return rows[0] ?? null;
+}
+
+export async function getPasswordHash(id: number): Promise<string | null> {
+  const { rows } = await pool.query('SELECT password_hash AS h FROM links WHERE id = $1', [id]);
+  return rows[0]?.h ?? null;
+}
+
+export async function getClickCount(id: number): Promise<number> {
+  const { rows } = await pool.query('SELECT click_count AS n FROM links WHERE id = $1', [id]);
+  return rows[0]?.n ?? 0;
 }

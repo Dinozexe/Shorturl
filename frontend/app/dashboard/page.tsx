@@ -1,12 +1,17 @@
 'use client';
 
 import { useLoginModal } from '@/components/LoginModal';
+import { PAGE_SIZE, Pager } from '@/components/ui/Pager';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DeleteDialog } from '@/components/ConfirmDialog';
 import { CreateForm } from '@/components/CreateForm';
 import { EditDialog } from '@/components/EditDialog';
 import { Header } from '@/components/Header';
+import { AdminIcon, type AdminIconName } from '@/components/Icon';
 import { LinkRow, type RowAction } from '@/components/LinkRow';
 import { QrDialog } from '@/components/QrDialog';
 import { ResultStrip } from '@/components/ResultStrip';
@@ -18,7 +23,12 @@ import { useI18n } from '@/lib/i18n';
 import { takePendingUrl } from '@/lib/pending';
 import type { Link, LinkPage } from '@/lib/types';
 
-const PAGE_SIZE = 10;
+interface Summary {
+  total: number;
+  active: number;
+  clicks: number;
+}
+
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -34,6 +44,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
   const { openLogin } = useLoginModal();
+  const [summary, setSummary] = useState<Summary | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
 
   const [created, setCreated] = useState<Link | null>(null);
@@ -78,6 +89,11 @@ export default function DashboardPage() {
       alive = false;
     };
   }, [status, page, debouncedQ, reload, t]);
+
+  useEffect(() => {
+    if (status !== 'authed') return;
+    api<Summary>('/api/links/summary').then(setSummary).catch(() => {});
+  }, [status, reload]);
 
   const refresh = useCallback(() => setReload((n) => n + 1), []);
 
@@ -141,11 +157,13 @@ export default function DashboardPage() {
     <>
       <Header />
       <main className="mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-6 sm:pt-10">
-        <section className="card p-5 sm:p-7" aria-labelledby="create-heading">
-          <h1 id="create-heading" className="text-2xl font-bold tracking-tight">
+        <h1 className="sr-only">{t('dash.myLinks')}</h1>
+
+        <section className="bento p-5 sm:p-7" aria-labelledby="create-heading">
+          <h2 id="create-heading" className="text-xl font-bold tracking-tight">
             {t('dash.newTitle')}
-          </h1>
-          <div className="mt-5">
+          </h2>
+          <div className="mt-4">
             <CreateForm
               prefill={prefill}
               onCreated={(l) => {
@@ -164,42 +182,59 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <section className="card mt-8" aria-labelledby="links-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4 sm:px-7">
+        <dl className="mt-5 grid grid-cols-3 gap-3 sm:gap-4">
+          {([
+            { icon: 'links', label: t('dash.sum.total'), value: summary?.total },
+            { icon: 'power', label: t('dash.sum.active'), value: summary?.active },
+            { icon: 'clicks', label: t('dash.sum.clicks'), value: summary?.clicks },
+          ] as Array<{ icon: AdminIconName; label: string; value?: number }>).map((x) => (
+            <div key={x.label} className="bento flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+              <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                <AdminIcon name={x.icon} className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <dd className="text-2xl font-bold leading-none tabular-nums sm:text-3xl">{x.value === undefined ? '–' : fmt.number(x.value)}</dd>
+                <dt className="mt-1.5 truncate text-xs text-muted sm:text-sm">{x.label}</dt>
+              </div>
+            </div>
+          ))}
+        </dl>
+
+        <section className="bento mt-5" aria-labelledby="links-heading">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-3 pt-5 sm:px-7 sm:pt-6">
             <h2 id="links-heading" className="text-lg font-bold">
               {t('dash.myLinks')}{data ? <>{' '}<span className="ml-1 font-normal text-muted">{t(data.total === 1 ? 'dash.countOne' : 'dash.count', { n: fmt.number(data.total) })}</span></> : null}
             </h2>
             {!isEmpty && (
-              <label className="w-full sm:w-72">
+              <label className="relative w-full sm:w-72">
                 <span className="sr-only">{t('dash.searchLabel')}</span>
-                <input className="field py-2" type="search" placeholder={t('dash.search')} value={q} onChange={(e) => setQ(e.target.value)} />
+                <AdminIcon name="search" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                <input className="field rounded-xl bg-ink/[0.035] py-2.5 pl-10" type="search" placeholder={t('dash.search')} value={q} onChange={(e) => setQ(e.target.value)} />
               </label>
             )}
           </div>
 
-          <div className="px-5 sm:px-7">
-            {error && (
-              <div role="alert" className="flex flex-wrap items-center gap-3 py-5 text-sm font-medium text-danger">
-                {error}
-                <button type="button" className="btn" onClick={refresh}>
-                  {t('common.retry')}
-                </button>
-              </div>
+          <div className="px-2 pb-2 sm:px-3">
+            {error && <ErrorState message={error} onRetry={refresh} busy={loading} />}
+
+            {loading && !data && !error && <LoadingState text={t('dash.loadingList')} />}
+
+            {isEmpty && <EmptyState icon="links" title={t('dash.emptyTitle')} body={t('dash.emptyBody')} />}
+
+            {data && data.total === 0 && debouncedQ && (
+              <EmptyState
+                icon="search"
+                title={t('dash.noMatch', { q: debouncedQ })}
+                action={
+                  <button type="button" className="btn" onClick={() => setQ('')}>
+                    {t('dash.clearSearch')}
+                  </button>
+                }
+              />
             )}
-
-            {loading && !data && <p className="py-8 text-muted">{t('dash.loadingList')}</p>}
-
-            {isEmpty && (
-              <div className="py-12 text-center">
-                <p className="text-lg font-semibold">{t('dash.emptyTitle')}</p>
-                <p className="mt-1 text-muted">{t('dash.emptyBody')}</p>
-              </div>
-            )}
-
-            {data && data.total === 0 && debouncedQ && <p className="py-10 text-center text-muted">{t('dash.noMatch', { q: debouncedQ })}</p>}
 
             {data && data.items.length > 0 && (
-              <ul className={`divide-y divide-line transition-opacity ${loading ? 'opacity-60' : ''}`}>
+              <ul className={`flex flex-col gap-1 transition-opacity ${loading ? 'opacity-60' : ''}`}>
                 {data.items.map((l) => (
                   <LinkRow key={l.id} link={l} onAction={onAction} busy={busyId === l.id} />
                 ))}
@@ -207,19 +242,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {data && totalPages > 1 && (
-            <nav aria-label={t('dash.pagesNav')} className="flex items-center justify-between gap-3 border-t border-line px-5 py-4 sm:px-7">
-              <button type="button" className="btn" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                {t('dash.prev')}
-              </button>
-              <span className="text-sm text-muted">
-                {t('dash.page', { p: page, n: totalPages })}
-              </span>
-              <button type="button" className="btn" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-                {t('dash.next')}
-              </button>
-            </nav>
-          )}
+          {data && data.total > 0 && <Pager page={page} totalPages={totalPages} total={data.total} onPage={setPage} />}
         </section>
       </main>
 

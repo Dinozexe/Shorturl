@@ -6,12 +6,14 @@ import { localInputToIso } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 import type { Link } from '@/lib/types';
 import { LinkBar } from './LinkBar';
+import { emptyProtection, ProtectionFields, protectionBody, protectionError, type Protection } from './ProtectionFields';
 
 export function CreateForm({ onCreated, prefill }: { onCreated: (link: Link) => void; prefill?: { url: string; error: string } | null }) {
   const { t } = useI18n();
   const [url, setUrl] = useState('');
   const [alias, setAlias] = useState('');
   const [expires, setExpires] = useState('');
+  const [prot, setProt] = useState<Protection>(emptyProtection);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -29,15 +31,21 @@ export function CreateForm({ onCreated, prefill }: { onCreated: (link: Link) => 
       setError(t('hero.empty'));
       return;
     }
+    const bad = protectionError(prot);
+    if (bad) {
+      setError(t(bad));
+      return;
+    }
     setBusy(true);
     try {
       const link = await api<Link>('/api/links', {
         method: 'POST',
-        body: { url: url.trim(), alias: alias.trim() || undefined, expiresAt: localInputToIso(expires) },
+        body: { url: url.trim(), alias: alias.trim() || undefined, expiresAt: localInputToIso(expires), ...protectionBody(prot) },
       });
       setUrl('');
       setAlias('');
       setExpires('');
+      setProt(emptyProtection);
       onCreated(link);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('create.failed'));
@@ -72,6 +80,9 @@ export function CreateForm({ onCreated, prefill }: { onCreated: (link: Link) => 
             <input className="field" type="datetime-local" value={expires} onChange={(e) => setExpires(e.target.value)} />
             <span className="text-xs font-normal text-muted">{t('create.expiresHelp')}</span>
           </label>
+        </div>
+        <div className="mt-4 border-t border-line pt-4">
+          <ProtectionFields value={prot} onChange={setProt} />
         </div>
       </details>
 

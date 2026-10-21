@@ -7,11 +7,13 @@ import { isoToLocalInput, localInputToIso } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 import type { Link } from '@/lib/types';
 import { Modal } from './Modal';
+import { emptyProtection, ProtectionFields, protectionBody, protectionError, protectionOf, type Protection } from './ProtectionFields';
 
 export function EditDialog({ link, onClose, onSaved }: { link: Link | null; onClose: () => void; onSaved: () => void }) {
   const { t } = useI18n();
   const [url, setUrl] = useState('');
   const [expires, setExpires] = useState('');
+  const [prot, setProt] = useState<Protection>(emptyProtection);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -19,18 +21,24 @@ export function EditDialog({ link, onClose, onSaved }: { link: Link | null; onCl
     if (!link) return;
     setUrl(link.originalUrl);
     setExpires(isoToLocalInput(link.expiresAt));
+    setProt(protectionOf(link));
     setError(null);
   }, [link]);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!link) return;
+    const bad = protectionError(prot);
+    if (bad) {
+      setError(t(bad));
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
       await api(`/api/links/${link.id}`, {
         method: 'PATCH',
-        body: { url: url.trim(), expiresAt: expires ? localInputToIso(expires) : null },
+        body: { url: url.trim(), expiresAt: expires ? localInputToIso(expires) : null, ...protectionBody(prot, link) },
       });
       onSaved();
     } catch (err) {
@@ -41,7 +49,7 @@ export function EditDialog({ link, onClose, onSaved }: { link: Link | null; onCl
   };
 
   return (
-    <Modal open={!!link} onClose={onClose} title={t('edit.title')}>
+    <Modal open={!!link} onClose={onClose} title={t('edit.title')} wide>
       {link && (
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
           <div>
@@ -58,6 +66,9 @@ export function EditDialog({ link, onClose, onSaved }: { link: Link | null; onCl
             <input className="field" type="datetime-local" value={expires} onChange={(e) => setExpires(e.target.value)} />
             <span className="text-xs font-normal text-muted">{t('edit.expiresHelp')}</span>
           </label>
+          <div className="border-t border-line pt-4">
+            <ProtectionFields value={prot} onChange={setProt} hasPassword={link.hasPassword} />
+          </div>
           {error && (
             <p role="alert" className="text-sm font-medium text-danger">
               {error}

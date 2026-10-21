@@ -35,7 +35,8 @@ export function Header() {
     router.replace('/');
   };
 
-  const items: NavItem[] = [...NAV];
+  // ล็อกอินแล้วมี "ลิงก์ของฉัน" ในแท่งเมนูเลย (กดเข้ารายการลิงก์ได้ทันที)
+  const items: NavItem[] = status === 'authed' ? [...NAV, { href: '/dashboard', key: 'dash.myLinks' }] : [...NAV];
 
   // จอเล็ก: เมนูยาวเกินจอจนเลื่อนได้ → เลื่อนให้รายการที่เปิดอยู่โผล่มากลางแถบ
   const navRef = useRef<HTMLElement>(null);
