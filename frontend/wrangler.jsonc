@@ -1,0 +1,10 @@
+// Cloudflare Workers (static assets): เสิร์ฟโฟลเดอร์ out/ ที่ `next build` (output: 'export') สร้างไว้ ไม่มี Worker/SSR
+// Build command: npm run build · Deploy command: npx wrangler deploy · name ต้องตรงกับชื่อ Worker ใน Cloudflare
+{
+  "name": "shorturl",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page"
+  }
+}
