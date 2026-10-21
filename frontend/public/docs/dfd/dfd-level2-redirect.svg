@@ -13,84 +13,84 @@
 <path d="M380 86L394 100H380z" fill="#1e40af"/>
 <text x="805" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af"><tspan x="805" y="62.3">ผู้เข้าชม</tspan></text>
 <text x="805" text-anchor="middle" font-size="12" font-weight="400" fill="#475569"><tspan x="805" y="81.2">รับผลตอบกลับ: หน้าสถานะ (3.2–3.4) หรือ 302 ไปยัง URL ต้นฉบับ (3.5)</tspan></text>
-<rect x="225" y="282" width="130" height="96" rx="12" fill="#fff" stroke="#2563eb" stroke-width="2.4"/>
-<path d="M225 308V294a12 12 0 0 1 12-12H343a12 12 0 0 1 12 12V308z" fill="#2563eb"/>
-<text x="290" text-anchor="middle" font-size="13" font-weight="700" fill="#fff"><tspan x="290" y="299.6">3.1</tspan></text>
-<text x="290" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a"><tspan x="290" y="340.3">หาลิงก์</tspan></text>
-<text x="290" text-anchor="middle" font-size="11.5" font-weight="400" fill="#475569"><tspan x="290" y="359.0">cache → DB</tspan></text>
-<rect x="435" y="282" width="130" height="96" rx="12" fill="#fff" stroke="#2563eb" stroke-width="2.4"/>
-<path d="M435 308V294a12 12 0 0 1 12-12H553a12 12 0 0 1 12 12V308z" fill="#2563eb"/>
-<text x="500" text-anchor="middle" font-size="13" font-weight="700" fill="#fff"><tspan x="500" y="299.6">3.2</tspan></text>
-<text x="500" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a"><tspan x="500" y="340.3">ตรวจเงื่อนไข</tspan></text>
-<text x="500" text-anchor="middle" font-size="11.5" font-weight="400" fill="#475569"><tspan x="500" y="359.0">ปิด/หมดอายุ/เริ่ม</tspan></text>
-<rect x="645" y="282" width="130" height="96" rx="12" fill="#fff" stroke="#2563eb" stroke-width="2.4"/>
-<path d="M645 308V294a12 12 0 0 1 12-12H763a12 12 0 0 1 12 12V308z" fill="#2563eb"/>
-<text x="710" text-anchor="middle" font-size="13" font-weight="700" fill="#fff"><tspan x="710" y="299.6">3.3</tspan></text>
-<text x="710" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a"><tspan x="710" y="340.3">ตรวจรหัสผ่าน</tspan></text>
-<text x="710" text-anchor="middle" font-size="11.5" font-weight="400" fill="#475569"><tspan x="710" y="359.0">scrypt</tspan></text>
-<rect x="855" y="282" width="130" height="96" rx="12" fill="#fff" stroke="#2563eb" stroke-width="2.4"/>
-<path d="M855 308V294a12 12 0 0 1 12-12H973a12 12 0 0 1 12 12V308z" fill="#2563eb"/>
-<text x="920" text-anchor="middle" font-size="13" font-weight="700" fill="#fff"><tspan x="920" y="299.6">3.4</tspan></text>
-<text x="920" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a"><tspan x="920" y="340.3">นับสิทธิ์คลิก</tspan></text>
-<text x="920" text-anchor="middle" font-size="11.5" font-weight="400" fill="#475569"><tspan x="920" y="359.0">INCR lim:{id}</tspan></text>
-<rect x="1065" y="282" width="130" height="96" rx="12" fill="#fff" stroke="#2563eb" stroke-width="2.4"/>
-<path d="M1065 308V294a12 12 0 0 1 12-12H1183a12 12 0 0 1 12 12V308z" fill="#2563eb"/>
-<text x="1130" text-anchor="middle" font-size="13" font-weight="700" fill="#fff"><tspan x="1130" y="299.6">3.5</tspan></text>
-<text x="1130" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a"><tspan x="1130" y="340.3">ตอบ 302</tspan></text>
-<text x="1130" text-anchor="middle" font-size="11.5" font-weight="400" fill="#475569"><tspan x="1130" y="359.0">Location</tspan></text>
-<path d="M160 330 L225 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M355 330 L435 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M565 330 L645 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M775 330 L855 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M985 330 L1065 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M500 282 L500 100" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M710 282 L710 100" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M920 282 L920 100" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M1130 282 L1130 100" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<rect x="300" y="520" width="710" height="62" fill="#f1f5f9" stroke="none"/>
-<line x1="300" x2="1010" y1="520" y2="520" stroke="#334155" stroke-width="2"/><line x1="300" x2="1010" y1="582" y2="582" stroke="#334155" stroke-width="2"/>
-<line x1="346" x2="346" y1="520" y2="582" stroke="#334155" stroke-width="1.5"/>
-<text x="323" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="323" y="555.9">D6</tspan></text>
-<text x="678" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="678" y="547.9">Redis</tspan></text>
-<text x="678" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="678" y="565.9">link:{code} · lim:{id} · rl:*</tspan></text>
-<rect x="1035" y="520" width="200" height="62" fill="#f1f5f9" stroke="none"/>
-<line x1="1035" x2="1235" y1="520" y2="520" stroke="#334155" stroke-width="2"/><line x1="1035" x2="1235" y1="582" y2="582" stroke="#334155" stroke-width="2"/>
-<line x1="1081" x2="1081" y1="520" y2="582" stroke="#334155" stroke-width="1.5"/>
-<text x="1058" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="1058" y="555.9">D6</tspan></text>
-<text x="1158" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="1158" y="547.9">Redis</tspan></text>
-<text x="1158" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="1158" y="565.9">clicks:queue</tspan></text>
-<rect x="60" y="650" width="230" height="62" fill="#f1f5f9" stroke="none"/>
-<line x1="60" x2="290" y1="650" y2="650" stroke="#334155" stroke-width="2"/><line x1="60" x2="290" y1="712" y2="712" stroke="#334155" stroke-width="2"/>
-<line x1="106" x2="106" y1="650" y2="712" stroke="#334155" stroke-width="1.5"/>
-<text x="83" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="83" y="685.9">D2</tspan></text>
-<text x="198" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="198" y="677.9">links</tspan></text>
-<text x="198" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="198" y="695.9">อ่านเมื่อ cache miss</tspan></text>
-<path d="M323 378 L323 520" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M347 520 L347 378" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M235 378 L235 650" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
-<path d="M251 650 L251 378" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
-<path d="M678 378 L678 520" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M702 520 L702 378" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M888 378 L888 520" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M912 520 L912 378" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<path d="M1130 378 L1130 520" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
-<text x="630" text-anchor="middle" font-size="12.5" font-weight="400" fill="#475569"><tspan x="630" y="756.4">เข้าคิวคลิกหลังตอบ 302 แล้ว (fire-and-forget) — ถ้า analytics ล่มก็ไม่กระทบผู้เข้าชม</tspan></text>
+<circle cx="300" cy="330" r="56" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="300" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="300" y="305.4">3.1</tspan></text>
+<line x1="260.8" x2="339.2" y1="310.96" y2="310.96" stroke="#93c5fd" stroke-width="1"/>
+<text x="300" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="300" y="341.6">หาลิงก์</tspan></text>
+<text x="300" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="300" y="364.7">cache → DB</tspan></text>
+<circle cx="510" cy="330" r="56" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="510" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="510" y="305.4">3.2</tspan></text>
+<line x1="470.8" x2="549.2" y1="310.96" y2="310.96" stroke="#93c5fd" stroke-width="1"/>
+<text x="510" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="510" y="341.6">ตรวจเงื่อนไข</tspan></text>
+<text x="510" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="510" y="364.7">ปิด/หมดอายุ/เริ่ม</tspan></text>
+<circle cx="720" cy="330" r="56" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="720" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="720" y="305.4">3.3</tspan></text>
+<line x1="680.8" x2="759.2" y1="310.96" y2="310.96" stroke="#93c5fd" stroke-width="1"/>
+<text x="720" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="720" y="341.6">ตรวจรหัสผ่าน</tspan></text>
+<text x="720" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="720" y="364.7">scrypt</tspan></text>
+<circle cx="930" cy="330" r="56" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="930" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="930" y="305.4">3.4</tspan></text>
+<line x1="890.8" x2="969.2" y1="310.96" y2="310.96" stroke="#93c5fd" stroke-width="1"/>
+<text x="930" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="930" y="341.6">นับสิทธิ์คลิก</tspan></text>
+<text x="930" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="930" y="364.7">INCR lim:{id}</tspan></text>
+<circle cx="1140" cy="330" r="56" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+<text x="1140" text-anchor="middle" font-size="13" font-weight="700" fill="#bfdbfe"><tspan x="1140" y="305.4">3.5</tspan></text>
+<line x1="1100.8" x2="1179.2" y1="310.96" y2="310.96" stroke="#93c5fd" stroke-width="1"/>
+<text x="1140" text-anchor="middle" font-size="14" font-weight="700" fill="#fff"><tspan x="1140" y="341.6">ตอบ 302</tspan></text>
+<text x="1140" text-anchor="middle" font-size="11" font-weight="400" fill="#dbeafe"><tspan x="1140" y="364.7">Location</tspan></text>
+<path d="M160 330 L244 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M356 330 L454 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M566 330 L664 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M776 330 L874 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M986 330 L1084 330" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M510 274 L510 100" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M720 274 L720 100" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M930 274 L930 100" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M1140 274 L1140 100" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="300" y="530" width="710" height="62" fill="#f1f5f9" stroke="none"/>
+<line x1="300" x2="1010" y1="530" y2="530" stroke="#334155" stroke-width="2"/><line x1="300" x2="1010" y1="592" y2="592" stroke="#334155" stroke-width="2"/>
+<line x1="346" x2="346" y1="530" y2="592" stroke="#334155" stroke-width="1.5"/>
+<text x="323" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="323" y="565.9">D6</tspan></text>
+<text x="678" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="678" y="557.9">Redis</tspan></text>
+<text x="678" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="678" y="575.9">link:{code} · lim:{id} · rl:*</tspan></text>
+<rect x="1035" y="530" width="200" height="62" fill="#f1f5f9" stroke="none"/>
+<line x1="1035" x2="1235" y1="530" y2="530" stroke="#334155" stroke-width="2"/><line x1="1035" x2="1235" y1="592" y2="592" stroke="#334155" stroke-width="2"/>
+<line x1="1081" x2="1081" y1="530" y2="592" stroke="#334155" stroke-width="1.5"/>
+<text x="1058" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="1058" y="565.9">D6</tspan></text>
+<text x="1158" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="1158" y="557.9">Redis</tspan></text>
+<text x="1158" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="1158" y="575.9">clicks:queue</tspan></text>
+<rect x="60" y="660" width="230" height="62" fill="#f1f5f9" stroke="none"/>
+<line x1="60" x2="290" y1="660" y2="660" stroke="#334155" stroke-width="2"/><line x1="60" x2="290" y1="722" y2="722" stroke="#334155" stroke-width="2"/>
+<line x1="106" x2="106" y1="660" y2="722" stroke="#334155" stroke-width="1.5"/>
+<text x="83" text-anchor="middle" font-size="14" font-weight="700" fill="#334155"><tspan x="83" y="695.9">D2</tspan></text>
+<text x="198" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a"><tspan x="198" y="687.9">links</tspan></text>
+<text x="198" text-anchor="middle" font-size="11" font-weight="400" fill="#475569"><tspan x="198" y="705.9">อ่านเมื่อ cache miss</tspan></text>
+<path d="M323 381.05878964487897 L323 530" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M347 530 L347 360.44667469527667" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M250 355.21904042583697 L250 660" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+<path d="M266 660 L266 374.49719092257396" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+<path d="M688 376 L688 530" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M712 530 L712 385.4" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M898 376 L898 530" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M922 530 L922 385.4" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M1140 386 L1140 530" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="630" text-anchor="middle" font-size="12.5" font-weight="400" fill="#0f172a"><tspan x="630" y="756.4">เข้าคิวคลิกหลังตอบ 302 แล้ว (fire-and-forget) — ถ้า analytics ล่มก็ไม่กระทบผู้เข้าชม</tspan></text>
 <g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="218" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="218" y="320.6">รหัสสั้น</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="395" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="395" y="320.6">ข้อมูลลิงก์</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="605" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="605" y="320.6">ผ่านเงื่อนไข</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="815" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="815" y="320.6">รหัสถูกต้อง</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1025" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1025" y="320.6">ได้สิทธิ์</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="508" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="508" y="196.1">403 ยังไม่เริ่ม</tspan><tspan x="508" y="213.1">404 ไม่พบ · 410 หมดอายุ</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="718" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="718" y="196.1">401 ขอรหัสผ่าน</tspan><tspan x="718" y="213.1">429 ลองผิดเกิน</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="928" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="928" y="204.6">410 ครบจำนวนคลิก</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1138" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1138" y="196.1">302 +</tspan><tspan x="1138" y="213.1">URL ต้นฉบับ</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="405" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="405" y="320.6">ข้อมูลลิงก์</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="615" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="615" y="320.6">ผ่านเงื่อนไข</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="825" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="825" y="320.6">รหัสถูกต้อง</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1035" text-anchor="middle" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1035" y="320.6">ได้สิทธิ์</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="518" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="518" y="196.1">403 ยังไม่เริ่ม</tspan><tspan x="518" y="213.1">404 ไม่พบ · 410 หมดอายุ</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="728" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="728" y="196.1">401 ขอรหัสผ่าน</tspan><tspan x="728" y="213.1">429 ลองผิดเกิน</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="938" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="938" y="204.6">410 ครบจำนวนคลิก</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1148" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1148" y="196.1">302 +</tspan><tspan x="1148" y="213.1">URL ต้นฉบับ</tspan></text></g>
 <g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="331" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="331" y="459.6">GET link:{code}</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="355" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="355" y="481.1">ลิงก์</tspan><tspan x="355" y="498.1">(cache hit)</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="227" text-anchor="end" font-size="13" font-weight="400" fill="#0f172a"><tspan x="227" y="564.5">SELECT เมื่อ cache miss</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="259" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="259" y="604.5">ข้อมูลลิงก์</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="671" text-anchor="end" font-size="13" font-weight="400" fill="#0f172a"><tspan x="671" y="453.6">นับครั้งที่ลอง</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="709" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="709" y="453.6">ผลตรวจ</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="881" text-anchor="end" font-size="13" font-weight="400" fill="#0f172a"><tspan x="881" y="453.6">INCR lim:{id}</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="919" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="919" y="445.1">สิทธิ์</tspan><tspan x="919" y="462.1">ที่เหลือ</tspan></text></g>
-<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1122" text-anchor="end" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1122" y="436.1">เหตุการณ์คลิก</tspan><tspan x="1122" y="453.1">(ip_hash · UA · ประเทศ)</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="355" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="355" y="486.1">ลิงก์</tspan><tspan x="355" y="503.1">(cache hit)</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="242" text-anchor="end" font-size="13" font-weight="400" fill="#0f172a"><tspan x="242" y="574.5">SELECT เมื่อ cache miss</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="274" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="274" y="624.5">ข้อมูลลิงก์</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="681" text-anchor="end" font-size="13" font-weight="400" fill="#0f172a"><tspan x="681" y="457.5">นับครั้งที่ลอง</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="719" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="719" y="457.5">ผลตรวจ</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="891" text-anchor="end" font-size="13" font-weight="400" fill="#0f172a"><tspan x="891" y="457.5">INCR lim:{id}</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="929" text-anchor="start" font-size="13" font-weight="400" fill="#0f172a"><tspan x="929" y="449.0">สิทธิ์</tspan><tspan x="929" y="466.0">ที่เหลือ</tspan></text></g>
+<g font-size="13" fill="#0f172a" stroke="#fff" stroke-width="6" stroke-linejoin="round" paint-order="stroke" style="paint-order:stroke"><text x="1132" text-anchor="end" font-size="13" font-weight="400" fill="#0f172a"><tspan x="1132" y="446.1">เหตุการณ์คลิก</tspan><tspan x="1132" y="463.1">(ip_hash · UA · ประเทศ)</tspan></text></g>
 </svg>

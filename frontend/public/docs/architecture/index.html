@@ -48,7 +48,6 @@ code{font:13px ui-monospace,Menlo,Consolas,monospace;background:#f1f5f9;padding:
 ul.flows{padding-left:20px;margin:8px 0}ul.flows li{margin:6px 0}
 .pn{display:flex;justify-content:space-between;gap:12px;margin-top:56px;padding-top:20px;border-top:1px solid var(--line);flex-wrap:wrap}
 .pn a{text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:500}.pn a:hover{border-color:var(--blue)}
-footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:14px}
 @media(max-width:640px){main{padding-top:22px}.bar{gap:6px}.brand small{display:none}.thumb{height:150px}}
 @media print{header,.pn,.toc,.back{display:none}.sv{overflow:visible;border:0}.sv svg{min-width:0}}
 </style></head><body>
@@ -59,7 +58,7 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <a class="back" href="/">เปิดเว็บ</a></div></header>
 <main id="main"><h1>Architecture</h1>
 <p class="lead">Micro-service 3 ตัวแยกหน้าที่ชัดเจน คุยกันผ่าน HTTP ภายในและ Redis</p>
-<div class="layout"><ul class="toc" aria-label="ในหน้านี้"><li><a href="#diagram">แผนภาพ</a></li><li><a href="#services">บริการ</a></li><li><a href="#flows">การไหลสำคัญ</a></li></ul><div class="content">
+<div class="layout"><ul class="toc" aria-label="ในหน้านี้"><li><a href="#diagram">แผนภาพ</a></li><li><a href="#services">บริการ</a></li></ul><div class="content">
 <section class="d" id="diagram"><h2>ภาพรวมสถาปัตยกรรม</h2><p class="lead">ลูกศรประ = การเข้าถึงรอง (cache miss, OIDC)</p>
 <figure><div class="sv" role="img" aria-label="Architecture" tabindex="0"><svg viewBox="0 0 1360 740" width="1360" height="740" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai','Sukhumvit Set',Thonburi,'Segoe UI',system-ui,sans-serif">
 <defs>
@@ -121,9 +120,5 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <figcaption><span>เลื่อนซ้าย-ขวาถ้าภาพกว้างกว่าจอ</span><span><a href="architecture.svg" target="_blank" rel="noopener">เปิดภาพเต็ม</a> · <a href="architecture.svg" download>ดาวน์โหลด SVG</a></span></figcaption></figure></section>
 <section class="d" id="services"><h2>บริการ</h2>
 <div class="tw"><table><thead><tr><th scope="col">บริการ</th><th scope="col">หน้าที่</th><th scope="col">ที่รัน</th></tr></thead><tbody><tr><td>frontend</td><td>หน้าเว็บ (Next.js export เป็น static) และหน้าเอกสารนี้</td><td>Cloudflare Workers · shorturl.kittametdev.com</td></tr><tr><td>core-api</td><td>Auth, ลิงก์, QR, admin, guest</td><td>Render · api.kittametdev.com</td></tr><tr><td>redirect-service</td><td>เปิดลิงก์สั้น → 302 เร็ว (cache Redis) และเข้าคิวคลิก</td><td>Render · s.kittametdev.com</td></tr><tr><td>analytics-service</td><td>ประมวลผลคิวคลิก ให้สถิติแก่ core-api</td><td>Render (ภายใน ป้องกันด้วย x-internal-key)</td></tr><tr><td>PostgreSQL 16</td><td>ข้อมูลหลักทั้งหมด</td><td>Neon</td></tr><tr><td>Redis 7</td><td>cache, session, rate limit, ตัวนับ, คิว</td><td>Upstash</td></tr></tbody></table></div></section>
-<section class="d" id="flows"><h2>การไหลสำคัญ</h2>
-<ul class="flows"><li><b>ย่อลิงก์</b> — เบราว์เซอร์ → core-api ตรวจ URL/โดเมนต้องห้าม → บันทึก <code>links</code> → ลบ cache เก่า</li>
-<li><b>เปิดลิงก์</b> — redirect-service อ่าน Redis (ไม่มีค่อยอ่าน DB แล้ว cache 1 ชั่วโมง) → ตรวจเงื่อนไข → 302 → เข้าคิวคลิกแล้วแจ้ง analytics ให้ flush</li>
-<li><b>สถิติ</b> — analytics ดึงคิวเป็น batch เขียนลง DB หน้า stats เรียก core-api → analytics (ถ้าล่ม แสดงยอดรวมจาก <code>click_count</code>)</li></ul></section></div></div><div class="pn"><a href="/docs/er/" rel="prev">← ER Diagram</a><span></span></div></main>
-<footer>วาดจากโค้ดจริงของระบบ · <a href="https://github.com/Dinozexe/Shorturl">ซอร์สโค้ดบน GitHub</a></footer>
+</div></div><div class="pn"><a href="/docs/er/" rel="prev">← ER Diagram</a><span></span></div></main>
 <script>(function(){var l=[].slice.call(document.querySelectorAll('.toc a'));if(!l.length||!('IntersectionObserver' in window))return;var m={};l.forEach(function(a){m[a.getAttribute('href').slice(1)]=a});var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){l.forEach(function(a){a.classList.remove('on')});m[e.target.id].classList.add('on')}})},{rootMargin:'-20% 0px -70% 0px'});Object.keys(m).forEach(function(id){var n=document.getElementById(id);if(n)o.observe(n)});l[0].classList.add('on')})();</script></body></html>
