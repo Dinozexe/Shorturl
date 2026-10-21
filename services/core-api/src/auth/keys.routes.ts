@@ -4,7 +4,8 @@ import { audit } from '../audit/audit.service';
 import { HttpError } from '../common/http-error';
 import { rateLimit } from '../common/rate-limit';
 import { prisma } from '../prisma/client';
-import { API_KEY_PREFIX, hashApiKey, requireAuth, webSessionOnly } from './auth.middleware';
+import { API_KEY_PREFIX, hashApiKey } from './api-key';
+import { requireAuth, webSessionOnly } from './auth.middleware';
 
 // API key สำหรับ CLI (`surl`): สร้าง/ดู/เพิกถอนได้จากหน้าเว็บเท่านั้น (ต้องล็อกอินด้วย session ไม่ใช่ key)
 export const keysRouter = Router();

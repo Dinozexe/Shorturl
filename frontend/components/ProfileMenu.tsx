@@ -76,18 +76,12 @@ export function ProfileMenu({ onLogout, inAdmin, variant = 'avatar', side = 'bel
               {t('login.back')}
             </Link>
           ) : (
-            <>
-              <Link href="/keys" role="menuitem" className={item}>
-                <AdminIcon name="lock" />
-                {t('nav.keys')}
+            user.role !== 'USER' && (
+              <Link href="/admin" role="menuitem" className={item}>
+                <AdminIcon name="overview" />
+                {t('nav.admin')}
               </Link>
-              {user.role !== 'USER' && (
-                <Link href="/admin" role="menuitem" className={item}>
-                  <AdminIcon name="overview" />
-                  {t('nav.admin')}
-                </Link>
-              )}
-            </>
+            )
           )}
           <div className="my-1 h-px bg-line" />
           <button type="button" role="menuitem" onClick={onLogout} className={item}>

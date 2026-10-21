@@ -201,7 +201,7 @@ ER, DFD L0–2, Architecture, PRD นี้
 
 ### P8 — API key + CLI ✅ เสร็จ
 - [x] ตาราง `api_keys` + `POST/GET/DELETE /api/keys` (เฉพาะ session เว็บ), `requireAuth` รับ `surl_…` → `viaKey` (ใช้ `/api/admin/*` ไม่ได้)
-- [x] หน้าเว็บ `/keys`
+- [ ] ~~หน้าเว็บ `/keys`~~ — ถอนออกแล้ว (เลือกไม่ให้มีหน้าจัดการรหัสบนเว็บ; กู้ได้จาก git)
 - [x] `cli/surl.mjs` (Node 18+, ไม่มี dependency): login/whoami/shorten/ls/stats/qr/on/off/rm/config/logout/dev
 
 **เสร็จเมื่อ:** `surl login --token …` แล้ว `surl shorten …` ได้ลิงก์; เพิกถอน key แล้วใช้ไม่ได้ทันที  

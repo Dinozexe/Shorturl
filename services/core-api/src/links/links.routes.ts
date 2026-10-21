@@ -64,7 +64,7 @@ linksRouter.post('/', rateLimit('link-create', 30, 60), async (req, res) => {
 });
 
 linksRouter.get('/', async (req, res) => {
-  const q = isString(req.query.q) ? req.query.q.trim().slice(0, 100) : '';
+  const q = isString(req.query.q) ? req.query.q.replace(/\u0000/g, '').trim().slice(0, 100) : ''; // ตัด NUL: Postgres รับใน text ไม่ได้
   const page = Math.max(1, Math.floor(Number(req.query.page)) || 1);
   const pageSize = Math.min(100, Math.max(1, Math.floor(Number(req.query.pageSize)) || 20));
   const { items, total } = await listLinks(req.user!.id, { q: q || undefined, page, pageSize });

@@ -21,7 +21,8 @@ const pageOf = (q: Record<string, unknown>) => ({
   page: Math.max(1, Math.floor(Number(q.page)) || 1),
   pageSize: Math.min(100, Math.max(1, Math.floor(Number(q.pageSize)) || 20)),
 });
-const qOf = (q: Record<string, unknown>) => (isString(q.q) ? q.q.trim().slice(0, 100) : '');
+// คำค้น: ตัด NUL ออก (Postgres เก็บ/เทียบ \u0000 ใน text ไม่ได้ → ไม่งั้น 500)
+const qOf = (q: Record<string, unknown>) => (isString(q.q) ? q.q.replace(/\u0000/g, '').trim().slice(0, 100) : '');
 // ตัวกรองช่วงเวลา: days=1|7|30|90 → createdAt ≥ เวลานั้น (ค่าอื่น = ไม่กรอง)
 const sinceOf = (q: Record<string, unknown>): Date | undefined => {
   const d = Number(q.days);

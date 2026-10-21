@@ -12,7 +12,11 @@
     "prisma:seed": "prisma db seed",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
-    "start:dev": "tsx watch src/main.ts"
+    "start:dev": "tsx watch src/main.ts",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test:unit": "node --import tsx --import ./tests/setup.ts --test tests/unit/*.test.ts",
+    "test:integration": "node --import tsx --import ./tests/setup.ts --test --test-concurrency=1 tests/integration/*.test.ts",
+    "test": "npm run test:unit && npm run test:integration"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

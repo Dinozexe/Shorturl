@@ -5,7 +5,13 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useI18n } from '@/lib/i18n';
 import type { Bucket, Stats } from '@/lib/types';
 
-/** กราฟแท่งรายวัน (div ล้วน ยืดตามความกว้าง) — อ่านค่าได้จาก title และ aria-label */
+/** แกนตั้ง: ค่าน้อยแสดงทุกจำนวนเต็ม (0,1,2…) ค่ามากแสดง 0 · กลาง · สูงสุด — ไม่มีเลขทศนิยม */
+function ticksOf(max: number): number[] {
+  if (max <= 4) return Array.from({ length: max + 1 }, (_, i) => i);
+  return [0, Math.round(max / 2), max];
+}
+
+/** กราฟแท่งรายวัน (div ล้วน ยืดตามความกว้าง): เส้นไกด์จาง + ค่าบนแกน, แท่งมนไล่เฉด, วันที่ไม่มีคนเปิดเป็นช่องว่างจางๆ ไม่ใช่ขีด, ชี้เมาส์/โฟกัสเห็นป้ายค่าของวันนั้น */
 export function DailyChart({ daily }: { daily: Stats['daily'] }) {
   const { t, fmt } = useI18n();
   const max = Math.max(1, ...daily.map((d) => d.clicks));
@@ -13,22 +19,46 @@ export function DailyChart({ daily }: { daily: Stats['daily'] }) {
   const first = daily[0];
   const mid = daily[Math.floor(daily.length / 2)];
   const last = daily[daily.length - 1];
+  const ticks = ticksOf(max);
+  const dense = daily.length > 14;
 
   return (
     <figure>
-      <div
-        role="img"
-        aria-label={t('stats.chartAria', { days: daily.length, total: fmt.number(total), max: fmt.number(max) })}
-        className="relative flex h-40 items-end gap-px border-b border-ink/60 pt-5"
-      >
-        <span className="absolute left-0 top-0 text-xs text-muted">{fmt.number(max)}</span>
-        {daily.map((d) => (
-          <div key={d.day} className="group relative flex h-full flex-1 items-end" title={t('stats.barTitle', { d: fmt.day(d.day), n: fmt.number(d.clicks) })}>
-            <div className={`w-full rounded-t-[2px] ${d.clicks > 0 ? 'bg-accent' : 'bg-line'}`} style={{ height: d.clicks > 0 ? `${Math.max(4, (d.clicks / max) * 100)}%` : '2px' }} />
+      <div className="flex gap-2">
+        <div className="relative h-44 w-7 shrink-0" aria-hidden="true">
+          {ticks.map((v) => (
+            <span key={v} className="absolute right-0 translate-y-1/2 text-[11px] leading-none tabular-nums text-muted" style={{ bottom: `${(v / max) * 100}%` }}>
+              {fmt.number(v)}
+            </span>
+          ))}
+        </div>
+
+        <div role="img" aria-label={t('stats.chartAria', { days: daily.length, total: fmt.number(total), max: fmt.number(max) })} className="relative h-44 min-w-0 flex-1">
+          {ticks.map((v) => (
+            <div key={v} className={`absolute inset-x-0 border-t ${v === 0 ? 'border-line' : 'border-dashed border-line/70'}`} style={{ bottom: `${(v / max) * 100}%` }} aria-hidden="true" />
+          ))}
+          <div className={`relative flex h-full items-end ${dense ? 'gap-[3px]' : 'gap-1.5'}`}>
+            {daily.map((d, i) => {
+              const edge = i < 3 ? 'left-0' : i > daily.length - 4 ? 'right-0' : 'left-1/2 -translate-x-1/2';
+              return (
+                <div key={d.day} tabIndex={0} className="group relative flex h-full min-w-0 flex-1 items-end rounded-t-md outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                  <div className="absolute inset-0 rounded-t-md bg-ink/[0.035] transition-colors group-hover:bg-ink/[0.07]" aria-hidden="true" />
+                  {d.clicks > 0 && (
+                    <div
+                      className="relative w-full rounded-t-md bg-gradient-to-t from-accent to-accent/75 transition-[filter] group-hover:brightness-110"
+                      style={{ height: `${Math.max(3, (d.clicks / max) * 100)}%` }}
+                    />
+                  )}
+                  <span role="tooltip" className={`pointer-events-none absolute -top-9 z-10 hidden whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-xs font-semibold text-paper shadow-lg group-hover:block group-focus-visible:block ${edge}`}>
+                    {t('stats.barTitle', { d: fmt.day(d.day), n: fmt.number(d.clicks) })}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-        ))}
+        </div>
       </div>
-      <figcaption className="mt-1.5 flex justify-between text-xs text-muted">
+      <figcaption className="mt-2 flex justify-between pl-9 text-xs text-muted">
         <span>{fmt.day(first.day)}</span>
         <span>{fmt.day(mid.day)}</span>
         <span>{fmt.day(last.day)}</span>

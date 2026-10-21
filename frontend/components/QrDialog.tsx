@@ -1,15 +1,18 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api } from '@/lib/api';
 import { copyText } from '@/lib/format';
 import { useI18n, type MsgKey } from '@/lib/i18n';
 import { ANGLES, CAPTION_STYLES, DEFAULT_STYLE, DOT_STYLES, EYE_STYLES, LOGOS, PRESETS, qrWarnings, renderQrSvg, svgToPngBlob, type CaptionStyle, type DotStyle, type EyeStyle, type LogoId, type QrMatrix, type QrStyle } from '@/lib/qrRender';
 import type { Link } from '@/lib/types';
-import { AdminIcon } from './Icon';
+import { AdminIcon, type AdminIconName } from './Icon';
 import { Modal } from './Modal';
 import { useToast } from './Toast';
+import { ColorPicker } from './ui/ColorPicker';
+import { FileDrop } from './ui/FileDrop';
 import { Select } from './ui/Select';
+import { Slider } from './ui/Slider';
 
 const SIZES = [
   { key: 'qr.small', px: 512 },
@@ -31,39 +34,49 @@ function save(blob: Blob, name: string) {
 
 // ---------- ชิ้นส่วนฟอร์ม ----------
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Card({ icon, title, children }: { icon: AdminIconName; title: string; children: ReactNode }) {
   return (
-    <fieldset className="flex flex-col gap-3 border-0 p-0">
-      <legend className="mb-0.5 text-sm font-bold">{title}</legend>
+    <section className="rounded-2xl border border-line p-4 sm:p-5" aria-label={title}>
+      <h3 className="flex items-center gap-2.5 text-sm font-bold">
+        <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent">
+          <AdminIcon name={icon} className="h-4 w-4" />
+        </span>
+        {title}
+      </h3>
+      <div className="mt-4 flex flex-col gap-5">{children}</div>
+    </section>
+  );
+}
+
+function SubTitle({ children }: { children: ReactNode }) {
+  return <p className="-mb-2 text-xs font-semibold text-muted">{children}</p>;
+}
+
+/** แถวตัวเลือกสี: ชื่อซ้าย ตัวเลือกขวา */
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex min-h-10 items-center justify-between gap-4">
+      <span className="text-sm font-medium">{label}</span>
       {children}
-    </fieldset>
+    </div>
   );
 }
 
-function Swatch({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <label className="flex items-center gap-2.5 text-sm font-medium">
-      <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl ring-1 ring-line" style={{ backgroundColor: value }}>
-        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" aria-label={label} />
-      </span>
-      <span className="flex flex-col leading-tight">
-        <span>{label}</span>
-        <span className="font-mono text-xs uppercase text-muted">{value}</span>
-      </span>
-    </label>
-  );
-}
-
+/** สวิตช์ (button role=switch) วาดเอง */
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium">
-      {label}
-      <span className="relative inline-flex h-6 w-10 shrink-0">
-        <input type="checkbox" role="switch" checked={checked} onChange={(e) => onChange(e.target.checked)} className="peer sr-only" />
-        <span className="absolute inset-0 rounded-full bg-ink/20 transition-colors peer-checked:bg-accent peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2" />
-        <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
-      </span>
-    </label>
+    <Row label={label}>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        onClick={() => onChange(!checked)}
+        className={`relative h-6 w-10 shrink-0 rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${checked ? 'bg-accent' : 'bg-ink/20'}`}
+      >
+        <span className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-4' : ''}`} />
+      </button>
+    </Row>
   );
 }
 
@@ -187,13 +200,12 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
   const { t } = useI18n();
   const [matrix, setMatrix] = useState<QrMatrix | null>(null);
   const [style, setStyle] = useState<QrStyle>(DEFAULT_STYLE);
-  const [upload, setUpload] = useState<string | null>(null);
+  const [upload, setUpload] = useState<{ src: string; name: string; size: number } | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [px, setPx] = useState<number>(1024);
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   // เปิดหน้าต่าง → โหลดเมทริกซ์ + สไตล์ที่บันทึกไว้
   useEffect(() => {
@@ -213,7 +225,7 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
   }, [link, t]);
 
   const patch = (p: Partial<QrStyle>) => setStyle((s) => ({ ...s, ...p }));
-  const rendered = useMemo(() => (matrix ? renderQrSvg(matrix, style, upload) : null), [matrix, style, upload]);
+  const rendered = useMemo(() => (matrix ? renderQrSvg(matrix, style, upload?.src ?? null) : null), [matrix, style, upload]);
   const warnings = useMemo(() => qrWarnings(style), [style]);
   const isLocal = link ? /^https?:\/\/(localhost|127\.|\[::1\])/.test(link.shortUrl) : false;
 
@@ -248,13 +260,12 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
     }
   };
 
-  const onFile = (file: File | undefined) => {
+  const onFile = (file: File) => {
     setUploadError(null);
-    if (!file) return;
     if (!LOGO_TYPES.includes(file.type)) return setUploadError(t('qr.logo.badType'));
     if (file.size > MAX_LOGO_BYTES) return setUploadError(t('qr.logo.tooBig'));
     const r = new FileReader();
-    r.onload = () => setUpload(String(r.result));
+    r.onload = () => setUpload({ src: String(r.result), name: file.name, size: file.size });
     r.readAsDataURL(file);
   };
 
@@ -319,113 +330,109 @@ export function QrDialog({ link, onClose, onSaved }: { link: Link | null; onClos
             {isLocal && <p className="rounded-xl bg-ink/[0.05] px-3 py-2 text-xs leading-relaxed text-muted">{t('qr.local')}</p>}
           </div>
 
-          {/* ขวา: ตัวเลือกปรับแต่ง */}
-          <div className="flex min-w-0 flex-col gap-6">
-            <Section title={t('qr.preset.title')}>
+          {/* ขวา: ตัวเลือกปรับแต่ง (แยกเป็นการ์ดตามหมวด) */}
+          <div className="flex min-w-0 flex-col gap-4">
+            <Card icon="palette" title={t('qr.preset.title')}>
               <div className="flex flex-wrap gap-2">
                 {PRESETS.map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => setStyle((s) => ({ ...DEFAULT_STYLE, caption: s.caption, logo: s.logo, logoSize: s.logoSize, margin: s.margin, ...p.style }))}
-                    className="flex items-center gap-2 rounded-full bg-ink/[0.05] py-1.5 pl-2 pr-3.5 text-sm font-medium transition-colors hover:bg-ink/[0.09]"
+                    className="flex items-center gap-2 rounded-full bg-ink/[0.05] py-1.5 pl-2 pr-3.5 text-sm font-medium outline-none transition-colors hover:bg-ink/[0.09] focus-visible:ring-2 focus-visible:ring-accent"
                   >
                     <span aria-hidden="true" className="h-5 w-5 rounded-full ring-1 ring-line" style={{ background: p.style.fg2 ? `linear-gradient(135deg, ${p.style.fg}, ${p.style.fg2})` : (p.style.fg ?? '#000') }} />
                     {t(`qr.preset.${p.id}` as MsgKey)}
                   </button>
                 ))}
               </div>
-            </Section>
+            </Card>
 
-            <Section title={t('qr.dots')}>
+            <Card icon="qr" title={t('qr.sec.shape')}>
+              <SubTitle>{t('qr.dots')}</SubTitle>
               <Choice<DotStyle> name="qr-dots" value={style.dots} onChange={(v) => patch({ dots: v })} options={DOT_STYLES.map((id) => ({ id, label: t(`qr.dots.${id}` as MsgKey), icon: dotIcons[id] }))} />
-            </Section>
-
-            <Section title={t('qr.eyes')}>
-              <div className="max-w-xs">
+              <SubTitle>{t('qr.eyes')}</SubTitle>
+              <div className="max-w-sm">
                 <Choice<EyeStyle> name="qr-eyes" value={style.eyes} onChange={(v) => patch({ eyes: v })} options={EYE_STYLES.map((id) => ({ id, label: t(`qr.eyes.${id}` as MsgKey), icon: eyeIcons[id] }))} />
               </div>
-            </Section>
+            </Card>
 
-            <Section title={t('qr.colors')}>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Swatch label={t('qr.fg')} value={style.fg} onChange={(v) => patch({ fg: v })} />
-                <div className="flex flex-col gap-3">
+            <Card icon="edit" title={t('qr.colors')}>
+              <div className="flex flex-col divide-y divide-line [&>*]:py-1 first:[&>*]:pt-0 last:[&>*]:pb-0">
+                <Row label={t('qr.fg')}>
+                  <ColorPicker label={t('qr.fg')} value={style.fg} onChange={(v) => patch({ fg: v })} />
+                </Row>
+
+                <div>
                   <Toggle label={t('qr.gradient')} checked={style.fg2 !== null} onChange={(on) => patch({ fg2: on ? (style.fg2 ?? '#0891b2') : null })} />
                   {style.fg2 !== null && (
-                    <>
-                      <Swatch label={t('qr.fg2')} value={style.fg2} onChange={(v) => patch({ fg2: v })} />
-                      <Select<string> label={t('qr.angle')} value={String(style.angle)} options={angleOptions} onChange={(v) => patch({ angle: Number(v) as QrStyle['angle'] })} className="w-full" />
-                    </>
+                    <div className="mb-2 ml-3 flex flex-col gap-1 border-l-2 border-accent/30 pl-4">
+                      <Row label={t('qr.fg2')}>
+                        <ColorPicker label={t('qr.fg2')} value={style.fg2} onChange={(v) => patch({ fg2: v })} />
+                      </Row>
+                      <Row label={t('qr.angle')}>
+                        <Select<string> label={t('qr.angle')} value={String(style.angle)} options={angleOptions} onChange={(v) => patch({ angle: Number(v) as QrStyle['angle'] })} className="w-48" />
+                      </Row>
+                    </div>
                   )}
                 </div>
-                <div className="flex flex-col gap-3">
+
+                <div>
                   <Toggle label={t('qr.transparent')} checked={style.bg === null} onChange={(on) => patch({ bg: on ? null : '#ffffff' })} />
-                  {style.bg !== null && <Swatch label={t('qr.bg')} value={style.bg} onChange={(v) => patch({ bg: v })} />}
+                  {style.bg !== null && (
+                    <div className="mb-2 ml-3 border-l-2 border-accent/30 pl-4">
+                      <Row label={t('qr.bg')}>
+                        <ColorPicker label={t('qr.bg')} value={style.bg} onChange={(v) => patch({ bg: v })} />
+                      </Row>
+                    </div>
+                  )}
                 </div>
-                <div className="flex flex-col gap-3">
+
+                <div>
                   <Toggle label={t('qr.eyeColor')} checked={style.eyeColor !== null} onChange={(on) => patch({ eyeColor: on ? style.fg : null })} />
-                  {style.eyeColor !== null && <Swatch label={t('qr.eyeColor')} value={style.eyeColor} onChange={(v) => patch({ eyeColor: v })} />}
+                  {style.eyeColor !== null && (
+                    <div className="mb-2 ml-3 border-l-2 border-accent/30 pl-4">
+                      <Row label={t('qr.eyeColor')}>
+                        <ColorPicker label={t('qr.eyeColor')} value={style.eyeColor} onChange={(v) => patch({ eyeColor: v })} />
+                      </Row>
+                    </div>
+                  )}
                 </div>
               </div>
-            </Section>
+            </Card>
 
-            <Section title={t('qr.logo')}>
+            <Card icon="image" title={t('qr.logo')}>
               <Choice<LogoId> name="qr-logo" value={upload ? ('none' as LogoId) : style.logo} onChange={(v) => { setUpload(null); patch({ logo: v }); }} options={LOGOS.map((id) => ({ id, label: t(`qr.logo.${id}` as MsgKey), icon: logoIcon(id) }))} />
-              <div className="flex flex-wrap items-center gap-2">
-                <input ref={fileRef} type="file" accept={LOGO_TYPES.join(',')} className="sr-only" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ''; }} />
-                <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-                  <AdminIcon name="plus" className="h-4 w-4" />
-                  {t('qr.logo.upload')}
-                </button>
-                {upload && (
-                  <button type="button" className="btn" onClick={() => setUpload(null)}>
-                    <AdminIcon name="x" className="h-4 w-4" />
-                    {t('qr.logo.remove')}
-                  </button>
-                )}
-                <span className="text-xs text-muted">{t('qr.logo.note')}</span>
-              </div>
-              {uploadError && (
-                <p role="alert" className="text-sm font-medium text-danger">
-                  {uploadError}
-                </p>
-              )}
-              {(style.logo !== 'none' || upload) && (
-                <label className="flex flex-col gap-1.5 text-sm font-medium">
-                  {t('qr.logo.size', { n: style.logoSize })}
-                  <input type="range" min={10} max={22} step={1} value={style.logoSize} onChange={(e) => patch({ logoSize: Number(e.target.value) })} className="w-full accent-[rgb(var(--accent))]" />
-                </label>
-              )}
-            </Section>
+              <FileDrop accept={LOGO_TYPES} preview={upload} error={uploadError} hint={t('qr.drop.hint')} onFile={onFile} onRemove={() => { setUpload(null); setUploadError(null); }} />
+              <p className="-mt-2 text-xs text-muted">{t('qr.logo.note')}</p>
+              {(style.logo !== 'none' || upload) && <Slider label={t('qr.logo.sizeLabel')} min={10} max={22} value={style.logoSize} onChange={(v) => patch({ logoSize: v })} format={(v) => `${v}%`} />}
+            </Card>
 
-            <Section title={t('qr.caption')}>
+            <Card icon="type" title={t('qr.caption')}>
               <input className="field" maxLength={24} placeholder={t('qr.caption.ph')} value={style.caption} onChange={(e) => patch({ caption: e.target.value })} aria-label={t('qr.caption')} />
-              <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('qr.cap.quick')}>
+              <div className="-mt-2 flex flex-wrap gap-1.5" role="group" aria-label={t('qr.cap.quick')}>
                 {(['qr.cap.q1', 'qr.cap.q2', 'qr.cap.q3', 'qr.cap.q4'] as const).map((k) => (
-                  <button key={k} type="button" onClick={() => patch({ caption: t(k) })} className="rounded-full bg-ink/[0.05] px-3 py-1 text-xs font-medium text-ink/80 transition-colors hover:bg-ink/[0.09]">
+                  <button key={k} type="button" onClick={() => patch({ caption: t(k) })} className="rounded-full bg-ink/[0.05] px-3 py-1 text-xs font-medium text-ink/80 outline-none transition-colors hover:bg-ink/[0.09] focus-visible:ring-2 focus-visible:ring-accent">
                     {t(k)}
                   </button>
                 ))}
               </div>
               {style.caption.trim() && (
-                <div className="max-w-xs">
+                <div className="max-w-sm">
                   <Choice<CaptionStyle> name="qr-capstyle" value={style.captionStyle} onChange={(v) => patch({ captionStyle: v })} options={CAPTION_STYLES.map((id) => ({ id, label: t(`qr.cap.${id}` as MsgKey), icon: capIcons[id] }))} />
                 </div>
               )}
-              <label className="flex flex-col gap-1.5 text-sm font-medium">
-                {t('qr.margin', { n: style.margin })}
-                <input type="range" min={2} max={8} step={1} value={style.margin} onChange={(e) => patch({ margin: Number(e.target.value) })} className="w-full accent-[rgb(var(--accent))]" />
-              </label>
-            </Section>
+              <Slider label={t('qr.marginLabel')} min={2} max={8} value={style.margin} onChange={(v) => patch({ margin: v })} format={(v) => t('qr.cells', { n: v })} />
+            </Card>
 
-            <div className="flex flex-wrap gap-2 border-t border-line pt-4">
-              <button type="button" className="btn-primary" disabled={saving} onClick={() => persist(style)}>
+            {/* แถบบันทึกค้างด้านล่าง: เลื่อนดูตัวเลือกยาวๆ ก็กดบันทึกได้ตลอด */}
+            <div className="sticky bottom-0 z-10 -mx-1 -mb-1 flex flex-wrap gap-2 border-t border-line bg-surface/90 px-1 pb-1 pt-3 backdrop-blur">
+              <button type="button" className="btn-primary h-11 flex-1 rounded-xl sm:flex-none sm:px-8" disabled={saving} onClick={() => persist(style)}>
                 <AdminIcon name="check" className="h-4 w-4" />
                 {t('qr.save')}
               </button>
-              <button type="button" className="btn" disabled={saving} onClick={() => persist(null)}>
-                <AdminIcon name="x" className="h-4 w-4" />
+              <button type="button" className="btn h-11 rounded-xl px-5" disabled={saving} onClick={() => persist(null)}>
+                <AdminIcon name="refresh" className="h-4 w-4" />
                 {t('qr.reset')}
               </button>
             </div>

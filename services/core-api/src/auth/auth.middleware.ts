@@ -1,8 +1,8 @@
 import type { RequestHandler } from 'express';
 import { Role } from '@prisma/client';
-import { createHash } from 'crypto';
 import jwt from 'jsonwebtoken';
 import { config } from '../common/config';
+import { API_KEY_PREFIX, hashApiKey } from './api-key';
 import { HttpError } from '../common/http-error';
 import { prisma } from '../prisma/client';
 import { redis } from '../redis/client';
@@ -16,8 +16,6 @@ interface AccessPayload {
 
 const SESSION_EXPIRED = 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่';
 
-export const API_KEY_PREFIX = 'surl_';
-export const hashApiKey = (key: string) => createHash('sha256').update(key).digest('hex');
 const LAST_USED_EVERY_MS = 60_000; // อัปเดต last_used_at ไม่ถี่กว่านี้ ไม่ให้ทุก request เขียน DB
 
 /** Bearer `surl_…`: ค้นด้วย sha256 (เก็บแต่ hash) — เพิกถอน = ลบแถว จึงใช้ไม่ได้ทันที; ใช้ได้เฉพาะ endpoint ที่ไม่ต้องมีบทบาทและไม่ใช่การจัดการ key */

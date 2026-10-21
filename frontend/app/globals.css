@@ -192,3 +192,33 @@
     @apply rounded-3xl bg-surface shadow-[0_8px_30px_rgba(15,18,28,0.06)] ring-1 ring-line/60;
   }
 }
+
+/* ===== แถบเลื่อน: บาง มนเต็มเม็ด สีจางตามธีม โผล่เข้มขึ้นเมื่อชี้/ลาก (ไม่ใช้แถบเทาหนาของระบบ) =====
+   Chrome/Safari/Edge ใช้ ::-webkit-scrollbar — ห้ามตั้ง scrollbar-width/color ซ้อน เพราะ Chrome 121+ จะปิดสไตล์ webkit ทิ้ง
+   Firefox ไม่รู้จัก webkit จึงใช้ตัวมาตรฐานภายใน @supports เฉพาะ Firefox */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--ink) / 0.2);
+  border: 3px solid transparent; /* เว้นขอบโปร่งรอบก้าน → ก้านดูบาง 6px แต่พื้นที่จับลากยังกว้าง */
+  background-clip: content-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--ink) / 0.38);
+}
+::-webkit-scrollbar-thumb:active {
+  background-color: rgb(var(--accent));
+}
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--ink) / 0.28) transparent;
+  }
+}

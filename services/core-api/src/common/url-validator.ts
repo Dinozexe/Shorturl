@@ -64,9 +64,10 @@ function isNonPublicV4(ip: number): boolean {
   });
 }
 
+// โดเมนที่ห้ามย่อ: เฉพาะที่ทำให้ลิงก์วนลูปหรือชี้ API ภายใน (โดเมนลิงก์สั้น + API) — หน้าเว็บหลัก (frontendOrigin) ย่อได้ เพราะเป็นหน้า static ไม่ redirect กลับมาที่ระบบ
 function ownHosts(): Set<string> {
   const hosts = new Set<string>();
-  for (const u of [config.publicBaseUrl, config.apiBaseUrl, config.frontendOrigin]) {
+  for (const u of [config.publicBaseUrl, config.apiBaseUrl]) {
     try {
       hosts.add(new URL(u).hostname.toLowerCase());
     } catch {

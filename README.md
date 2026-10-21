@@ -16,7 +16,7 @@
 | P5 | analytics-service (flush คิวคลิกลง DB เป็นชุด, สถิติ) + `GET /api/links/:id/stats` | เสร็จ |
 | P6 | Frontend (Next.js): เข้าสู่ระบบ (หน้าต่างเด้ง), ย่อลิงก์ (ไม่ล็อกอินได้แบบลิงก์สั้น 7 วัน), รายการ/ค้นหา, QR ปรับแต่งได้, สถิติ, แก้ไข/ปิด/ลบ, หน้าฟีเจอร์/รูปแบบบัญชี | เสร็จ |
 | P7 | แอดมิน `/admin` (ภาพรวม / ผู้ใช้ / ลิงก์ทั้งหมด / โดเมนที่บล็อก / audit log) — MODERATOR ใช้ภาพรวม/ลิงก์/โดเมน, ADMIN ใช้ได้ทั้งหมด | เสร็จ |
-| P8 | API key (หน้า `/keys`) + CLI สำหรับจัดการลิงก์ (`surl login/shorten/ls/stats/qr/on/off/rm`) | เสร็จ |
+| P8 | API key + CLI สำหรับจัดการลิงก์ (`surl login/shorten/ls/...`) | โค้ดฝั่ง API/CLI มีอยู่ แต่ **ปิดหน้าเว็บสร้างรหัสไว้** (ถอนหน้า `/keys` และเมนูออกตามที่เลือก) |
 | P9 | Deploy: `render.yaml` + Dockerfile ครบ 3 service + คู่มือ (`docs/deploy-render.md`) | เตรียมไฟล์เสร็จ — ขั้นสมัครบัญชี/ใส่ค่าลับ/ผูกโดเมนต้องทำเอง |
 | P10 | README ฉบับสมบูรณ์ + ซ้อมเดโม | ยังไม่ทำ |
 
@@ -32,7 +32,7 @@
 - Redirect แบบ 302 ผ่าน Redis cache (ไม่แตะฐานข้อมูลเมื่อมี cache) และเก็บคลิกผ่านคิว ไม่เขียน DB ใน request path
 - **QR Code ปรับแต่งได้** ต่อลิงก์: ลายจุด 5 แบบ, ตา 3 แบบ, สี/ไล่เฉด/พื้นโปร่งใส, โลโก้กลาง (สำเร็จรูปหรืออัปโหลดในเบราว์เซอร์), ข้อความใต้ QR (ป้าย/แถบ/ตัวอักษร), ตัวอย่างสด, สไตล์สำเร็จรูป, เตือนเมื่อสีสแกนยาก, บันทึกสไตล์ไว้กับลิงก์, ดาวน์โหลด PNG (512/1024/2048) และ SVG — ทุกลายทดสอบสแกนด้วย jsQR ผ่าน
 - **ป้องกันลิงก์** (ตั้งต่อลิงก์ ไม่บังคับ): รหัสผ่าน (หน้ากรอกรหัส, เก็บเป็น scrypt hash, ลองผิดเกิน 5 ครั้ง/10 นาทีถูกล็อก) · จำกัดจำนวนครั้งที่เปิดได้ (นับแบบ atomic ใน Redis เปิดพร้อมกันก็ไม่เกิน) · วันเริ่มใช้งาน — ดูกติกาใน `docs/api.md`
-- สถิติการคลิก: กราฟรายวัน 30 วัน, อุปกรณ์ (มือถือ/คอมพิวเตอร์/แท็บเล็ต/บอท) / ระบบปฏิบัติการ / เบราว์เซอร์ / ประเทศ / เว็บที่พามา (เก็บ IP แบบ hash เท่านั้น) — **ประเทศแสดงได้เมื่อรันหลัง Cloudflare** (`BEHIND_CLOUDFLARE=true`, อ่านจาก `CF-IPCountry`) ตอนรันในเครื่องจะเป็น "ไม่ทราบ"
+- สถิติการคลิก: กราฟรายวัน 30 วัน, อุปกรณ์ (มือถือ/คอมพิวเตอร์/แท็บเล็ต/บอท) / ระบบปฏิบัติการ / เบราว์เซอร์ / ประเทศ (เก็บ IP แบบ hash เท่านั้น; ระบบยังเก็บ referer ไว้ แต่ไม่แสดงในหน้าสถิติ) — **ประเทศแสดงได้เมื่อรันหลัง Cloudflare** (`BEHIND_CLOUDFLARE=true`, อ่านจาก `CF-IPCountry`) ตอนรันในเครื่องจะเป็น "ไม่ทราบ"
 - แอดมิน `/admin` (sidebar พับได้, ตารางข้อมูลพร้อม **ตัวกรอง/เรียง/ช่วงเวลา** และ **แบ่งหน้า** (เลขหน้า, ต่อหน้า 10–100), กดแถวดูรายละเอียดเต็ม (ลิงก์มีแท็บสถิติ), action เป็นไอคอน + modal ยืนยัน): ภาพรวม, ผู้ใช้และบทบาท (USER / MODERATOR / ADMIN), ลิงก์ทั้งหมด (+ ดูสถิติของลิงก์ใดก็ได้), **โดเมนที่บล็อก** (แสดงผลกระทบก่อนบล็อก และปิดลิงก์เดิมที่ชี้โดเมนนั้นอัตโนมัติ), audit log — MODERATOR ใช้ได้เฉพาะภาพรวม/ลิงก์/โดเมน
 - ล็อกอินแล้วผู้ดูแลถูกพาเข้า `/admin` ส่วนผู้ใช้ทั่วไปเข้า `/dashboard`; หน้าเว็บรองรับไทย/อังกฤษ และธีมสว่าง/มืด
 - CLI และ API key (ถ้ามีเวลา)
@@ -106,7 +106,9 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
 ### CLI จัดการลิงก์ (`surl`)
 
-สร้างรหัส API ที่หน้า `/keys` บนเว็บ (เมนูโปรไฟล์ → รหัส API; คัดลอกได้ครั้งเดียว) แล้ว:
+> ตอนนี้ **ไม่มีหน้าเว็บสร้างรหัส API** (ถอนออกแล้ว; กู้หน้า `/keys` ได้จาก git) CLI ด้านล่างจึงใช้ได้เมื่อมีรหัสที่สร้างผ่าน `POST /api/keys` (ต้องใช้ session ล็อกอิน) เท่านั้น
+
+รหัส API ใช้กับ CLI ดังนี้:
 
 ```bash
 npm link                                  # ครั้งเดียวที่ root ของโปรเจกต์ → ได้คำสั่ง surl (หรือใช้ node cli/surl.mjs แทน)
@@ -195,6 +197,15 @@ Prisma เป็นตัวจัดการ schema (`services/core-api/prisma
 
 ข้อสังเกต: Render free แต่ละ service หลับแยกกันหลังว่างราว 15 นาที ปลุกใช้เวลา 30–50 วินาที Frontend ถูก build เป็น static export จึงไม่มี server ฝั่ง Next.js และ `NEXT_PUBLIC_API_URL` ถูกฝังตอน build (เปลี่ยนแล้วต้อง build ใหม่)
 
+## ทดสอบและ CI
+
+ทุก push/PR รัน GitHub Actions (typecheck · build · **unit + integration test ≈ 426 ข้อ** บน Postgres/Redis จริง · build Docker · ตรวจช่องโหว่/ค่าลับหลุด · CodeQL) — รายละเอียด วิธีรันในเครื่อง และการตั้ง branch protection อยู่ที่ [`docs/ci.md`](docs/ci.md)
+
+```bash
+cd services/core-api && npm test      # เช่นเดียวกับ redirect-service, analytics-service, frontend
+./scripts/check-repo.sh               # ตรวจค่าลับหลุด/config ก่อน commit
+```
+
 ## โครงสร้างโฟลเดอร์
 
 ```
@@ -218,13 +229,15 @@ services/
     src/                  flush.ts stats.ts events.ts auth.ts app.ts db.ts redis.ts config.ts index.ts
     Dockerfile
 frontend/                 Next.js 14 (static export) + Tailwind
-  app/                    หน้า: / (ย่อลิงก์), /features, /plans, /login (เปิดหน้าต่างล็อกอิน), /dashboard, /keys, /admin
+  app/                    หน้า: / (ย่อลิงก์), /features, /plans, /login (เปิดหน้าต่างล็อกอิน), /dashboard, /admin
   components/             ฟอร์มย่อลิงก์, แถบผลลัพธ์, แถวลิงก์, dialog (QR / สถิติ / แก้ไข / ลบ), กราฟ
   lib/                    api.ts (access token ใน memory + refresh แบบ single-flight), auth.tsx, format.ts
 cli/surl.mjs             CLI (`surl dev/status/migrate` สำหรับพัฒนา · `surl login/shorten/ls/stats/qr/on/off/rm` ใช้กับ API key)
 render.yaml              Render Blueprint (3 service) — ดู docs/deploy-render.md
 package.json              (root) ลงทะเบียนคำสั่ง `surl` + `npm run dev`
-docs/                     prd, er-diagram, dfd, api, deploy-render, diagrams.html, img/
+docs/                     prd, er-diagram, dfd, api, deploy-render, ci, diagrams.html, img/
+.github/                 workflows (ci, codeql), dependabot, CODEOWNERS
+scripts/check-repo.sh     ตรวจค่าลับหลุด/config (ใช้ใน CI)
 docker-compose.yml        PostgreSQL + Redis สำหรับพัฒนา (เพิ่ม service แอปด้วย `docker compose --profile full up --build`)
 ```
 

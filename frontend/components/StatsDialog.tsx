@@ -34,7 +34,6 @@ export function StatsBody({ link, basePath = '/api/links' }: { link: Link; baseP
 
   useEffect(load, [load]);
 
-  const referrerLabel = (k: string | null) => (k ? k.replace(/^https?:\/\//, '') : t('stats.direct'));
   const countryLabel = (k: string | null) => (k ? fmt.country(k) : t('stats.unknown'));
   const deviceLabel = (k: string | null) => t(`device.${k ?? 'unknown'}` as 'device.unknown');
   const plainLabel = (k: string | null) => k ?? t('stats.unknown');
@@ -82,7 +81,6 @@ export function StatsBody({ link, basePath = '/api/links' }: { link: Link; baseP
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <Breakdown title={t('stats.referrers')} icon="links" items={data.referers} label={referrerLabel} />
             <Breakdown title={t('stats.countries')} icon="globe" items={data.countries} label={countryLabel} />
             <Breakdown title={t('stats.devices')} icon="device" items={data.devices} label={deviceLabel} />
             <Breakdown title={t('stats.os')} icon="monitor" items={data.os} label={plainLabel} />

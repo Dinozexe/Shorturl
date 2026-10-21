@@ -1,0 +1,40 @@
+# อัปเดต dependency อัตโนมัติ: รวม minor/patch เป็น PR เดียวต่อ ecosystem (ไม่ท่วม) ส่วน major แยก PR ให้ดูเอง
+version: 2
+updates:
+  - package-ecosystem: github-actions # อัปเดต SHA ที่ pin ไว้ใน workflow (SHA ที่ pin ไม่ได้รับ alert เองจึงต้องมีตัวนี้)
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    groups:
+      actions: { patterns: ['*'] }
+  - package-ecosystem: npm
+    directory: /services/core-api
+    schedule: { interval: weekly, day: monday }
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }
+  - package-ecosystem: npm
+    directory: /services/redirect-service
+    schedule: { interval: weekly, day: monday }
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }
+  - package-ecosystem: npm
+    directory: /services/analytics-service
+    schedule: { interval: weekly, day: monday }
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: { interval: weekly, day: monday }
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }
+    ignore:
+      - dependency-name: next
+        update-types: [version-update:semver-major] # Next 14→16 ต้องวางแผนย้ายเอง (static export + Tailwind) ไม่อัปอัตโนมัติ
+  - package-ecosystem: docker
+    directory: /services/core-api
+    schedule: { interval: weekly, day: monday }
+  - package-ecosystem: docker
+    directory: /services/redirect-service
+    schedule: { interval: weekly, day: monday }
+  - package-ecosystem: docker
+    directory: /services/analytics-service
+    schedule: { interval: weekly, day: monday }

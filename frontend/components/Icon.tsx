@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 // ไอคอนเส้นชุดเดียวของทั้งระบบ (ใช้กับปุ่ม action, เมนู, หน้าต่าง)
-export type AdminIconName = 'overview' | 'users' | 'links' | 'domains' | 'audit' | 'clicks' | 'ban' | 'home' | 'mylinks' | 'logout' | 'panel' | 'chevron' | 'plus' | 'check' | 'userCheck' | 'linkOff' | 'unlock' | 'chevronDown' | 'x' | 'copy' | 'qr' | 'edit' | 'trash' | 'download' | 'power' | 'eye' | 'alert' | 'refresh' | 'globe' | 'user' | 'calendar' | 'clock' | 'info' | 'device' | 'monitor' | 'browser' | 'inbox' | 'search' | 'lock';
+export type AdminIconName = 'overview' | 'users' | 'links' | 'domains' | 'audit' | 'clicks' | 'ban' | 'home' | 'mylinks' | 'logout' | 'panel' | 'chevron' | 'plus' | 'check' | 'userCheck' | 'linkOff' | 'unlock' | 'chevronDown' | 'x' | 'copy' | 'qr' | 'edit' | 'trash' | 'download' | 'power' | 'eye' | 'alert' | 'refresh' | 'globe' | 'user' | 'calendar' | 'clock' | 'info' | 'device' | 'monitor' | 'browser' | 'inbox' | 'search' | 'lock' | 'palette' | 'image' | 'type';
 
 const svg = { viewBox: '0 0 24 24', className: 'h-[18px] w-[18px] shrink-0', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true };
 const PATHS: Record<AdminIconName, ReactNode> = {
@@ -88,6 +88,22 @@ const PATHS: Record<AdminIconName, ReactNode> = {
       <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
     </>
   ),
+  palette: (
+    <>
+      <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z" />
+      <circle cx="7.5" cy="11" r="1" />
+      <circle cx="9.5" cy="7" r="1" />
+      <circle cx="14.5" cy="7" r="1" />
+    </>
+  ),
+  image: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="3" />
+      <circle cx="9" cy="10" r="1.6" />
+      <path d="m21 16-5-5-8 9" />
+    </>
+  ),
+  type: <path d="M5 7V5h14v2M12 5v14M9 19h6" />,
   chevronDown: <path d="m6 9 6 6 6-6" />,
   copy: (
     <>

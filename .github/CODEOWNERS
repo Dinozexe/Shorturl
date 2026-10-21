@@ -1,0 +1,5 @@
+# ไฟล์ที่กระทบความปลอดภัย/การ deploy: ต้องให้เจ้าของรีวิวก่อน merge (เปิด "Require review from Code Owners" ใน branch protection)
+*                      @Dinozexe
+/.github/              @Dinozexe
+/render.yaml           @Dinozexe
+/services/*/Dockerfile @Dinozexe

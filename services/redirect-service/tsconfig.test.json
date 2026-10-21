@@ -1,0 +1,6 @@
+{
+  // ตรวจชนิดข้อมูลทั้ง src และ tests (ไม่สร้างไฟล์) — `npm run typecheck`; ตัว build จริงใช้ tsconfig.json ที่รวมแค่ src
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "rootDir": null },
+  "include": ["src", "tests"]
+}

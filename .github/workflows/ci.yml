@@ -1,0 +1,199 @@
+# CI: ตรวจทุก push/PR — typecheck, build, unit + integration test (Postgres/Redis จริง), build Docker, ตรวจช่องโหว่ และค่าลับหลุด
+# แนวปฏิบัติที่ใช้: สิทธิ์ขั้นต่ำ · pin action ด้วย commit SHA (Dependabot อัปเดตให้) · ยกเลิกรอบเก่า · timeout ทุก job · cache npm · health check ของ service
+# ผลรวมอยู่ที่ job `ci-ok` — ตั้งเป็น required check ใน branch protection (และ Render "Auto-Deploy: After CI checks pass")
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read # ค่าเริ่มต้นอ่านอย่างเดียว; job ไหนต้องมากกว่านี้ให้ประกาศเอง
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }} # PR ที่ push ซ้ำ = ยกเลิกรอบเก่า; main ไม่ยกเลิก (ให้ครบทุก commit)
+
+env:
+  CI: true
+  NODE_VERSION: '20' # ตรงกับ Docker image ของทุก service (node:20-alpine)
+
+jobs:
+  backend:
+    name: Backend (typecheck · build · test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: shorturl
+          POSTGRES_PASSWORD: shorturl
+          POSTGRES_DB: shorturl_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U shorturl -d shorturl_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      # ทดสอบใช้ฐานแยกชื่อมี "test" เสมอ (ตัวรันเทสต์ปฏิเสธถ้าไม่ใช่) — ไม่มี secret จริงใน CI
+      TEST_DATABASE_URL: postgresql://shorturl:shorturl@localhost:5432/shorturl_test
+      TEST_REDIS_URL: redis://localhost:6379/14
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false # ไม่ทิ้ง token ใน .git/config ให้ขั้นตอนถัดไปเห็น
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            services/core-api/package-lock.json
+            services/redirect-service/package-lock.json
+            services/analytics-service/package-lock.json
+
+      - name: ติดตั้ง dependency (npm ci = ตาม lockfile เป๊ะ)
+        run: |
+          for s in core-api redirect-service analytics-service; do
+            (cd services/$s && npm ci --no-audit --no-fund)
+          done
+      - name: Prisma generate + migrate ฐานทดสอบ
+        working-directory: services/core-api
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+
+      - name: Typecheck (รวมไฟล์ทดสอบ)
+        run: |
+          for s in core-api redirect-service analytics-service; do
+            echo "::group::typecheck $s"; (cd services/$s && npm run typecheck); echo "::endgroup::"
+          done
+      - name: Build
+        run: |
+          for s in core-api redirect-service analytics-service; do
+            echo "::group::build $s"; (cd services/$s && npm run build); echo "::endgroup::"
+          done
+
+      - name: core-api — unit + integration
+        working-directory: services/core-api
+        run: npm test
+      - name: redirect-service — unit + integration
+        working-directory: services/redirect-service
+        run: npm test
+      - name: analytics-service — unit + integration
+        working-directory: services/analytics-service
+        run: npm test
+
+  frontend:
+    name: Frontend (typecheck · test · build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - name: Build (static export → out/)
+        env:
+          NEXT_PUBLIC_API_URL: https://api.example.test
+        run: npm run build
+      - name: ตรวจผล build
+        run: |
+          test -f out/index.html || { echo "ไม่มี out/index.html"; exit 1; }
+          for p in dashboard admin features plans login; do test -f "out/$p/index.html" || { echo "ขาดหน้า /$p"; exit 1; }; done
+          test -f out/_headers || { echo "ขาด _headers (header ความปลอดภัยของ Cloudflare)"; exit 1; }
+          ! test -e out/keys || { echo "หน้า /keys ถูกถอดแล้ว ไม่ควรกลับมาโดยไม่ตั้งใจ"; exit 1; }
+          grep -rq "api.example.test" out/_next/static || { echo "NEXT_PUBLIC_API_URL ไม่ถูกฝังใน build"; exit 1; }
+          ! grep -rq "localhost:4000" out/_next/static || { echo "ค่า API ของเครื่อง dev หลุดเข้า build"; exit 1; }
+
+  docker:
+    name: Docker build (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [core-api, redirect-service, analytics-service]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build image (ไม่ push — เช็คว่า Render จะ build ผ่าน)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: services/${{ matrix.service }}
+          push: false
+          tags: shorturl-${{ matrix.service }}:ci
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  audit:
+    name: Dependency audit (${{ matrix.dir }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dir: services/core-api, blocking: true }
+          - { dir: services/redirect-service, blocking: true }
+          - { dir: services/analytics-service, blocking: true }
+          # Next 14 มีประกาศช่องโหว่ฝั่ง server (image optimizer, server actions ฯลฯ) ที่เราไม่ได้ deploy เพราะใช้ static export;
+          # ทางแก้คืออัป Next 16 (breaking) จึงรายงานไว้ไม่บล็อก — ดู docs/ci.md
+          - { dir: frontend, blocking: false }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: npm audit (เฉพาะ dependency ที่ใช้จริงตอนรัน, ระดับ high ขึ้นไป)
+        working-directory: ${{ matrix.dir }}
+        continue-on-error: ${{ !matrix.blocking }}
+        run: npm audit --omit=dev --audit-level=high
+
+  hygiene:
+    name: Repo hygiene (ค่าลับ · config)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: pip install --quiet pyyaml
+      - run: ./scripts/check-repo.sh
+
+  ci-ok:
+    name: CI ผ่านทั้งหมด
+    if: always()
+    needs: [backend, frontend, docker, audit, hygiene]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: ตรวจผลทุก job (skipped/cancelled/failure = ไม่ผ่าน)
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "ผล: $RESULTS"
+          for r in $RESULTS; do [ "$r" = "success" ] || { echo "::error::มี job ที่ไม่สำเร็จ ($r)"; exit 1; }; done
