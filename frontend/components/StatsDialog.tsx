@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '@/lib/api';
 import { AdminIcon } from './Icon';
 import { ErrorState } from './ui/ErrorState';
@@ -11,6 +11,10 @@ import { Breakdown, DailyChart } from './charts';
 import { Modal } from './Modal';
 
 const RANGES = [7, 30, 90];
+// analytics-service บนแพ็กเกจฟรีอาจหลับ: ถ้า core-api ตอบ unavailable ให้ลองใหม่เองระยะหนึ่งก่อนยอมแสดงว่าโหลดไม่ได้
+const WAKE_RETRIES = 6;
+const WAKE_RETRY_MS = 5000;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export function StatsBody({ link, basePath = '/api/links' }: { link: Link; basePath?: string }) {
   const { t, fmt } = useI18n();
@@ -18,15 +22,36 @@ export function StatsBody({ link, basePath = '/api/links' }: { link: Link; baseP
   const [data, setData] = useState<StatsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [waking, setWaking] = useState(false);
+  const run = useRef(0); // เลขรอบล่าสุด: รอบเก่าที่ยังค้างอยู่เมื่อเปลี่ยนลิงก์/ช่วงเวลา/ปิดหน้าต่างจะถูกทิ้งผล
 
   const load = useCallback(() => {
+    const mine = ++run.current;
     setLoading(true);
+    setWaking(false);
     setError(null);
-    api<StatsResponse>(`${basePath}/${link.id}/stats?days=${days}`)
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : t('stats.loadFail')))
-      .finally(() => setLoading(false));
+    (async () => {
+      for (let attempt = 0; ; attempt++) {
+        const res = await api<StatsResponse>(`${basePath}/${link.id}/stats?days=${days}`);
+        if (mine !== run.current) return;
+        if (!('unavailable' in res) || attempt >= WAKE_RETRIES) {
+          setData(res);
+          return;
+        }
+        setWaking(true);
+        await sleep(WAKE_RETRY_MS);
+        if (mine !== run.current) return;
+      }
+    })()
+      .catch((e) => mine === run.current && setError(e instanceof Error ? e.message : t('stats.loadFail')))
+      .finally(() => {
+        if (mine !== run.current) return;
+        setLoading(false);
+        setWaking(false);
+      });
   }, [link, days, t, basePath]);
+
+  useEffect(() => () => void run.current++, []);
 
   useEffect(() => {
     setData(null);
@@ -58,7 +83,7 @@ export function StatsBody({ link, basePath = '/api/links' }: { link: Link; baseP
       </div>
 
       {error && <ErrorState message={error} onRetry={load} busy={loading} className="rounded-2xl bg-ink/[0.03]" />}
-      {loading && !data && !error && <LoadingState text={t('stats.loading')} />}
+      {loading && !data && !error && <LoadingState text={waking ? t('stats.waking') : t('stats.loading')} />}
 
       {data && 'unavailable' in data && <ErrorState title={t('stats.unavailableTitle')} message={t('stats.unavailableBody', { n: fmt.number(data.total) })} onRetry={load} busy={loading} className="rounded-2xl bg-ink/[0.03]" />}
 

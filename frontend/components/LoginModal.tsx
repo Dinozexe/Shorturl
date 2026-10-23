@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { api, API_URL } from '@/lib/api';
+import { api, API_URL, waitForServer } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { peekPendingUrl } from '@/lib/pending';
@@ -50,6 +50,8 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   const [providers, setProviders] = useState<Provider[] | null>(null);
+  const [providersTry, setProvidersTry] = useState(0); // เพิ่มค่าเพื่อสั่งโหลดรายชื่อผู้ให้บริการใหม่
+  const [providersStalled, setProvidersStalled] = useState(false); // รอเซิร์ฟเวอร์ตื่นจนหมดเวลาแล้ว
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -75,10 +77,21 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!open || providers) return;
-    api<Provider[]>('/api/auth/sso/providers', { auth: false })
-      .then(setProviders)
-      .catch(() => setProviders([]));
-  }, [open, providers]);
+    let cancelled = false;
+    setProvidersStalled(false);
+    // เซิร์ฟเวอร์ฟรีอาจหลับอยู่: รอให้ตื่นก่อน ไม่งั้นจะเข้าใจผิดว่า Google ยังไม่ได้เปิดใช้
+    waitForServer()
+      .then((awake) => (awake ? api<Provider[]>('/api/auth/sso/providers', { auth: false }) : null))
+      .then((list) => {
+        if (cancelled) return;
+        if (list) setProviders(list);
+        else setProvidersStalled(true);
+      })
+      .catch(() => !cancelled && setProvidersStalled(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [open, providers, providersTry]);
 
   useEffect(() => {
     const d = ref.current;
@@ -215,8 +228,22 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
                     {t('login.with', { name: p.label })}
                   </a>
                 ) : (
-                  <button key={p.id} type="button" onClick={() => setError(t('login.notConfigured', { name: p.label }))} className={cls}>
-                    <Icon className="h-5 w-5" />
+                  <button
+                    key={p.id}
+                    type="button"
+                    aria-busy={!providers && !providersStalled}
+                    onClick={() => {
+                      if (providers) return setError(t('login.notConfigured', { name: p.label }));
+                      if (providersStalled) setProvidersTry((n) => n + 1); // รอบก่อนหมดเวลา: เริ่มรอใหม่
+                      setError(t(providersStalled ? 'login.ssoRetry' : 'login.ssoWaking', { name: p.label }));
+                    }}
+                    className={cls}
+                  >
+                    {providers ? (
+                      <Icon className="h-5 w-5" />
+                    ) : (
+                      <span aria-hidden="true" className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-accent motion-reduce:animate-none" />
+                    )}
                     {t('login.with', { name: p.label })}
                   </button>
                 );
