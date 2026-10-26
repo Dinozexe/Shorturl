@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://shorturl.kittametdev.com'),
   title: 'Short URL By Kittamet',
   description: 'ทำลิงก์ยาวให้สั้น สร้าง QR Code และดูสถิติว่ามีคนเปิดกี่ครั้ง จากอุปกรณ์และเว็บไหน',
+  manifest: '/manifest.json',
   openGraph: {
     title: 'Short URL By Kittamet',
     description: 'ทำลิงก์ยาวให้สั้น สร้าง QR Code และดูสถิติการเปิดลิงก์',

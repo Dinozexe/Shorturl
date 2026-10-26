@@ -35,6 +35,7 @@ export function LinkBar({ value, onChange, placeholder, label, submit, disabled,
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
           aria-invalid={invalid ? true : undefined}
           aria-describedby={describedBy}
         />
