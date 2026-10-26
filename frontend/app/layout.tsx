@@ -15,8 +15,21 @@ const sansThai = localFont({ src: './fonts/noto-sans-thai-thai.woff2', weight: '
 const mono = localFont({ src: './fonts/jetbrains-mono-latin.woff2', weight: '400 600', style: 'normal', variable: '--font-mono', display: 'swap' });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://shorturl.kittametdev.com'),
   title: 'Short URL By Kittamet',
   description: 'ทำลิงก์ยาวให้สั้น สร้าง QR Code และดูสถิติว่ามีคนเปิดกี่ครั้ง จากอุปกรณ์และเว็บไหน',
+  openGraph: {
+    title: 'Short URL By Kittamet',
+    description: 'ทำลิงก์ยาวให้สั้น สร้าง QR Code และดูสถิติการเปิดลิงก์',
+    type: 'website',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Short URL By Kittamet' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Short URL By Kittamet',
+    description: 'ทำลิงก์ยาวให้สั้น สร้าง QR Code และดูสถิติการเปิดลิงก์',
+    images: ['/og-image.png'],
+  },
 };
 
 // ตั้งธีมและภาษา "ก่อนวาดหน้า" กันหน้ากะพริบ (ขาว→มืด): ใช้ค่าที่ผู้ใช้เคยเลือก ถ้ายังไม่เคยเลือกให้ตามค่าของเครื่อง; ค่าเก็บใน localStorage ของเบราว์เซอร์นี้เท่านั้น
