@@ -54,7 +54,7 @@
 
 | Service | หน้าที่ | Stack | Port (dev) |
 |---|---|---|---|
-| `frontend` | หน้าเว็บ dashboard / admin | Next.js 14, React 18, Tailwind 3 | 3000 |
+| `frontend` | หน้าเว็บ dashboard / admin | Next.js 16, React 19, Tailwind 4 | 3000 |
 | `services/core-api` | SSO, JWT, ลิงก์, QR, แอดมิน | Express 5 + Prisma 5 | 4000 |
 | `services/redirect-service` | `GET /:code` → 302, ส่งคลิกเข้าคิว | Express + ioredis + pg | 4001 |
 | `services/analytics-service` | เขียนคลิกลง DB เป็นชุด, สถิติ (internal) | Express + ioredis + pg | 4002 |
@@ -226,7 +226,7 @@ services/
   analytics-service/      Express: flush คิวคลิกลง DB (transaction เดียว), สถิติ, ลบคลิกเก่า (internal เท่านั้น)
     src/                  flush.ts stats.ts events.ts auth.ts app.ts db.ts redis.ts config.ts index.ts
     Dockerfile
-frontend/                 Next.js 14 (static export) + Tailwind
+frontend/                 Next.js 16 (static export) + Tailwind 4
   app/                    หน้า: / (ย่อลิงก์), /features, /plans, /login (เปิดหน้าต่างล็อกอิน), /dashboard, /admin
   components/             ฟอร์มย่อลิงก์, แถบผลลัพธ์, แถวลิงก์, dialog (QR / สถิติ / แก้ไข / ลบ), กราฟ
   lib/                    api.ts (access token ใน memory + refresh แบบ single-flight), auth.tsx, format.ts

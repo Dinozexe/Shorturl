@@ -158,9 +158,7 @@ jobs:
           - { dir: services/core-api, blocking: true }
           - { dir: services/redirect-service, blocking: true }
           - { dir: services/analytics-service, blocking: true }
-          # Next 14 มีประกาศช่องโหว่ฝั่ง server (image optimizer, server actions ฯลฯ) ที่เราไม่ได้ deploy เพราะใช้ static export;
-          # ทางแก้คืออัป Next 16 (breaking) จึงรายงานไว้ไม่บล็อก — ดู docs/ci.md
-          - { dir: frontend, blocking: false }
+          - { dir: frontend, blocking: true }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

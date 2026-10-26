@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.ts";
 
 :root {
   --paper: 255 255 255; /* พื้นหน้า: ขาวล้วน */
